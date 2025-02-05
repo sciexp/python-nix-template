@@ -19,6 +19,8 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "xdoctest>=1.2.0",
 ]
 lint = [
     "ruff>=0.9.4",
@@ -31,7 +33,14 @@ default-groups = ["dev", "lint"]
 packages = ["src/mypackage"]
 
 [tool.pytest.ini_options]
-addopts = "-ra -q"
+addopts = """
+-rA
+--xdoctest
+--disable-warnings
+--cov=src/mypackage/
+--cov-report=term-missing
+--durations=0
+"""
 testpaths = [
     "src/mypackage/tests",
 ]
