@@ -24,19 +24,19 @@ name = "mypackage"
 version = "0.1.0"
 source = { editable = "." }
 
-[package.optional-dependencies]
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
 lint = [
     { name = "ruff" },
 ]
-test = [
-    { name = "pytest" },
-]
 
 [package.metadata]
-requires-dist = [
-    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0.0" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.2.0" },
-]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.3.4" }]
+lint = [{ name = "ruff", specifier = ">=0.9.4" }]
 
 [[package]]
 name = "packaging"
