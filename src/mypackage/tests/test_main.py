@@ -1,13 +1,56 @@
 """Tests for main module."""
 
-from mypackage.main import greet
+from expression import Error, Ok
+
+from mypackage.main import create_greeting, greet, validate_name
+
+
+def test_validate_name_valid():
+    """Test name validation with valid input."""
+    assert validate_name("alice") == Ok("Alice")
+    assert validate_name(" bob ") == Ok("Bob")
+
+
+def test_validate_name_invalid():
+    """Test name validation with invalid input."""
+    assert validate_name("") == Error("Name cannot be empty")
+    assert validate_name(" ") == Error("Name cannot be empty")
+    assert validate_name("a") == Error("Name must be at least 2 characters")
+    assert validate_name("x" * 51) == Error("Name must be at most 50 characters")
+
+
+def test_create_greeting_valid():
+    """Test greeting creation with valid input."""
+    assert create_greeting("alice") == Ok("Hello, Alice!")
+    assert create_greeting(" bob ") == Ok("Hello, Bob!")
+
+
+def test_create_greeting_invalid():
+    """Test greeting creation with invalid input."""
+    result = create_greeting("")
+    assert result.is_error()
+
+    result = create_greeting("a")
+    assert result.is_error()
 
 
 def test_greet_default():
     """Test greet function with default argument."""
-    assert greet() == "Hello, World!"
+    result = greet()
+    assert result == Ok("Hello, World!")
 
 
 def test_greet_custom():
     """Test greet function with custom name."""
-    assert greet("Python") == "Hello, Python!"
+    result = greet("Alice")
+    assert result == Ok("Hello, Alice!")
+
+
+def test_greet_invalid():
+    """Test greet function with invalid input."""
+    result = greet("a")
+    assert result.is_error()
+    error_msg = result.bind(
+        lambda ok: Ok(None)
+    ).default_value("Name must be at least 2 characters")
+    assert error_msg == "Name must be at least 2 characters"
