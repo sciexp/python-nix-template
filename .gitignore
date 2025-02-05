@@ -1,0 +1,45 @@
+# Editor temporary/working/backup files
+
+.#*
+*\#*\#
+[#]*#
+*~
+*$
+*.bak
+*.kdev4
+*.log
+*.swp
+*.swo
+*.pdb
+.vscode
+
+# Python files
+
+## setup.py working directory
+build
+## setup.py dist directory
+dist
+## Egg metadata
+*.egg-info
+## coverage
+.coverage
+coverage.xml
+
+## Environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+## Jupyter
+.ipynb_checkpoints
+
+# OS generated files
+
+.directory
+.cursorrules
+.gdb_history
+.DS_Store?
+Icon?
