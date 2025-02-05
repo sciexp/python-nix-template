@@ -15,12 +15,17 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.optional-dependencies]
-test = [
-    "pytest>=7.0.0",
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
 ]
 lint = [
-    "ruff>=0.2.0",
+    "ruff>=0.9.4",
 ]
+
+[tool.uv]
+default-groups = ["dev", "lint"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mypackage"]
