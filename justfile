@@ -20,14 +20,12 @@ lock: _ensure-venv
 # Run tests
 [group('python package')]
 test: _ensure-venv
-    uv pip install -e ".[test]"
     uv run pytest
 
 # Run linting
 [group('python package')]
 lint: _ensure-venv
-    uv pip install -e ".[lint]"
-    uv run ruff check src/
+    uvx ruff check src/
 
 # Helper recipes
 _ensure-venv:
