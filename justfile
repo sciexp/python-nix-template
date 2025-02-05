@@ -1,4 +1,3 @@
-# Core package management
 default:
     @just --list
 
@@ -21,18 +20,18 @@ lock: _ensure-venv
 # Run tests
 [group('python package')]
 test: _ensure-venv
-    uv pip install -e .[test]
-    pytest
+    uv pip install -e ".[test]"
+    uv run pytest
 
 # Run linting
 [group('python package')]
 lint: _ensure-venv
-    uv pip install -e .[lint]
-    ruff check src/
+    uv pip install -e ".[lint]"
+    uv run ruff check src/
 
 # Helper recipes
 _ensure-venv:
     #!/usr/bin/env bash
     if [ ! -d ".venv" ]; then
         uv venv
-    fi 
+    fi
