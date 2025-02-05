@@ -6,7 +6,23 @@ A nix template for a python package managed with uv and uv2nix.
 
 - Modern python packaging with `pyproject.toml`
 - Fast dependency management with `uv`
-- Reproducible developer environemtns and builds with `nix` and `uv2nix`
+- Reproducible developer environments and builds with `nix` and `uv2nix`
+- Industrial-strength functional programming patterns:
+  - Railway-oriented programming with `expression` for type-safe error handling
+  - Effect tracking via monad transformers for composable side effects
+  - Runtime type checking with `beartype` for robust type safety
+  - Pure functions and immutable data types for reliable code
+  - Composition of effectful functions using monadic bind operations
+
+## Example Package
+
+The template includes an example package demonstrating functional programming best practices:
+
+- Railway-oriented validation and error handling
+- Effect tracking for side effects and error propagation
+- Type-safe function composition with monadic operations
+- Comprehensive test coverage with property-based testing
+- Runtime type checking for additional safety
 
 ## Development
 
