@@ -1,5 +1,4 @@
 # Editor temporary/working/backup files
-
 .#*
 *\#*\#
 [#]*#
@@ -11,19 +10,6 @@
 *.swp
 *.swo
 *.pdb
-.vscode
-
-# Python files
-
-## setup.py working directory
-build
-## setup.py dist directory
-dist
-## Egg metadata
-*.egg-info
-## coverage
-.coverage
-coverage.xml
 
 ## Environments
 .venv
@@ -33,13 +19,58 @@ ENV/
 env.bak/
 venv.bak/
 
-## Jupyter
-.ipynb_checkpoints
-
 # OS generated files
-
 .directory
 .cursorrules
+.cursor
 .gdb_history
-.DS_Store?
+.DS_Store
 Icon?
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.ipynb_checkpoints
+.pytest_cache/
+.ruff_cache/
+
+# coverage
+.coverage
+coverage.xml
+
+# variables
+.env
+
+# uv
+.uv/
+.python-version
+
+# nix
+result
+result-*
+.direnv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
