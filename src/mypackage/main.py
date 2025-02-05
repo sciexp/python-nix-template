@@ -10,4 +10,4 @@ def greet(name: str = "World") -> str:
     Returns:
         A greeting message.
     """
-    return f"Hello, {name}!" 
+    return f"Hello, {name}!"

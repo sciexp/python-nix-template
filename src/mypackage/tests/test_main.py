@@ -10,4 +10,4 @@ def test_greet_default():
 
 def test_greet_custom():
     """Test greet function with custom name."""
-    assert greet("Python") == "Hello, Python!" 
+    assert greet("Python") == "Hello, Python!"
