@@ -16,6 +16,28 @@ This project uses `just` for task running. List available commands with:
 just
 ```
 
+### Prerequisites
+
+If you'd like to develop `python-nix-template` you'll need the [nix package
+manager](https://nix.dev). You can optionally make use of
+[direnv](https://direnv.net/) to automatically activate the environment. The
+project includes a Makefile to help bootstrap your development environment.
+
+It provides:
+
+1. Installation of the nix package manager using the Determinate Systems
+   installer
+2. Installation of direnv for automatic environment activation
+3. Link to instructions for shell configuration
+
+To get started, run:
+
+   ```bash
+   make bootstrap
+   ```
+
+Run `make` alone for a listing of available targets.
+
 ### Quick Start
 
 1. Create and sync virtual environment:
