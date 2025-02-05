@@ -1,3 +1,4 @@
+# Core package management
 default:
     @just --list
 
@@ -26,6 +27,16 @@ test: _ensure-venv
 [group('python package')]
 lint: _ensure-venv
     uvx ruff check src/
+
+# Run linting and fix errors
+[group('python package')]
+lint-fix: _ensure-venv
+    uvx ruff check --fix src/
+
+# Run type checking
+[group('python package')]
+type: _ensure-venv
+    uv run pyright src/
 
 # Helper recipes
 _ensure-venv:
