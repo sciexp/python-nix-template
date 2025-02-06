@@ -90,3 +90,18 @@ _ensure-venv:
     if [ ! -d ".venv" ]; then
         uv venv
     fi
+
+# Enter the Nix development shell
+[group('nix')]
+dev: 
+    nix develop
+
+# Validate the Nix flake configuration
+[group('nix')]
+flake-check:
+    nix flake check
+
+# Update all flake inputs to their latest versions
+[group('nix')]
+flake-update:
+    nix flake update
