@@ -126,7 +126,12 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "hypothesis" },
     { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "xdoctest" },
 ]
 lint = [
     { name = "ruff" },
@@ -137,6 +142,9 @@ test = [
     { name = "pytest-cov" },
     { name = "xdoctest" },
 ]
+types = [
+    { name = "pyright" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -145,7 +153,14 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pyright", specifier = ">=1.1.393" }]
+dev = [
+    { name = "hypothesis", specifier = ">=6.125.1" },
+    { name = "pyright", specifier = ">=1.1.393" },
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "ruff", specifier = ">=0.9.4" },
+    { name = "xdoctest", specifier = ">=1.2.0" },
+]
 lint = [{ name = "ruff", specifier = ">=0.9.4" }]
 test = [
     { name = "hypothesis", specifier = ">=6.125.1" },
@@ -153,6 +168,7 @@ test = [
     { name = "pytest-cov", specifier = ">=6.0.0" },
     { name = "xdoctest", specifier = ">=1.2.0" },
 ]
+types = [{ name = "pyright", specifier = ">=1.1.393" }]
 
 [[package]]
 name = "nodeenv"
