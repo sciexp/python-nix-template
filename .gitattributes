@@ -1,0 +1,3 @@
+Makefile linguist-detectable=false
+uv.lock linguist-generated=true
+pixi.lock linguist-generated=true
