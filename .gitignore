@@ -24,6 +24,7 @@ venv.bak/
 .directory
 .cursorrules
 .cursor
+external-references
 .gdb_history
 .DS_Store
 Icon?
