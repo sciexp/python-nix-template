@@ -24,7 +24,9 @@ help-sort: ## Display alphabetized version of help (no section headings).
 	awk 'BEGIN {FS = ":.*?## "}; /^[A-Za-z0-9_ \-]*?:.*##/ {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 HELP_TARGETS_PATTERN ?= test
-help-targets: ## Print commands for all targets matching a given pattern. eval "$(make help-targets HELP_TARGETS_PATTERN=test | sed 's/\x1b\[[0-9;]*m//g')"
+help-targets: ## Print commands for all targets matching a given pattern. Copy this example into your shell:
+help-targets: ## Copy this example into your shell:
+help-targets: ## eval "$(make help-targets HELP_TARGETS_PATTERN=bootstrap | sed 's/\x1b\[[0-9;]*m//g')"
 	@make help-sort | awk '{print $$1}' | grep '$(HELP_TARGETS_PATTERN)' | xargs -I {} printf "printf '___\n\n{}:\n\n'\nmake -n {}\nprintf '\n'\n"
 
 # catch-all pattern rule
