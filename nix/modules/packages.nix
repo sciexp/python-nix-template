@@ -22,15 +22,5 @@
         default = mypackage312;
       };
 
-      # nix run
-      # apps = {
-      #   default = {
-      #     type = "app";
-      #     program = "${pkgs.lib.getExe self'.packages.default}";
-      #   };
-      # };
-
-      # defer to pre-commit
-      # formatter = pkgs.nixfmt-rfc-style;
     };
 }
