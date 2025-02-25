@@ -1,92 +1,92 @@
 [project]
-name = "mypackage"
-version = "0.1.0"
-description = "A Python package template using Nix and uv"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+  { name = "Your Name", email = "your.email@example.com" },
 ]
 dependencies = [
-    "beartype>=0.19.0",
-    "expression>=5.5.0",
+  "beartype>=0.19.0",
+  "expression>=5.5.0",
 ]
-requires-python = ">=3.11"
+description = "A Python package template using Nix and uv"
+license = { text = "AGPL-3.0-or-later" }
+name = "mypackage"
 readme = "README.md"
-license = {text = "AGPL-3.0-or-later"}
+requires-python = ">=3.11"
+version = "0.1.0"
 
 [project.scripts]
 mypackage-greet = "mypackage.main:greet"
 
 [build-system]
-requires = ["hatchling"]
 build-backend = "hatchling.build"
+requires      = ["hatchling"]
 
 [project.optional-dependencies]
 
 [dependency-groups]
+dev = [
+  { include-group = "lint" },
+  { include-group = "test" },
+  { include-group = "types" },
+]
 lint = [
-    "ruff>=0.9.4",
+  "ruff>=0.9.4",
 ]
 test = [
-    "hypothesis>=6.125.1",
-    "pytest>=8.3.4",
-    "pytest-cov>=6.0.0",
-    "xdoctest>=1.2.0",
+  "hypothesis>=6.125.1",
+  "pytest-cov>=6.0.0",
+  "pytest>=8.3.4",
+  "xdoctest>=1.2.0",
 ]
 types = [
-    "pyright>=1.1.393",
-]
-dev = [
-    {include-group = "lint"},
-    {include-group = "test"},
-    {include-group = "types"},
+  "pyright>=1.1.393",
 ]
 
 [tool.uv]
 default-groups = ["lint", "test", "types"]
 
 [tool.pixi.workspace]
-channels = ["conda-forge"]
-platforms = ["linux-64","osx-arm64"]
-preview = ["pixi-build"]
+channels  = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64"]
+preview   = ["pixi-build"]
 
 [tool.pixi.dependencies]
-python = ">=3.11"
-beartype = ">=0.19.0"
+beartype   = ">=0.19.0"
 expression = ">=5.5.0"
+python     = ">=3.11"
 
 [tool.pixi.pypi-dependencies]
 mypackage = { path = ".", editable = true }
 
 [tool.pixi.environments]
 default = { solve-group = "default" }
-lint = { features = ["lint"], solve-group = "default" }
-test = { features = ["test"], solve-group = "default" }
-types = { features = ["types"], solve-group = "default" }
-dev = { features = ["dev"], solve-group = "default" }
+dev     = { features = ["dev"], solve-group = "default" }
+lint    = { features = ["lint"], solve-group = "default" }
+test    = { features = ["test"], solve-group = "default" }
+types   = { features = ["types"], solve-group = "default" }
 
 [tool.pixi.feature.test.tasks]
 test = "pytest"
 
 [tool.pixi.feature.lint.tasks]
-lint = "ruff check src/"
+lint     = "ruff check src/"
 lint-fix = "ruff check --fix src/"
 
 [tool.pixi.feature.types.tasks]
 types = "pyright src/"
 
 [tool.pixi.package]
-name = "mypackage"
+name    = "mypackage"
 version = "0.1.0"
 
 [tool.pixi.package.run-dependencies]
-beartype = ">=0.19.0"
+beartype   = ">=0.19.0"
 expression = ">=5.5.0"
 
 [tool.pixi.package.build]
 backend = { name = "pixi-build-python", version = "0.1.*" }
 channels = [
-  "https://prefix.dev/pixi-build-backends",
   "https://prefix.dev/conda-forge",
+  "https://prefix.dev/pixi-build-backends",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -103,19 +103,19 @@ addopts = """
 """
 log_level = "INFO"
 testpaths = [
-    "src/mypackage/tests",
+  "src/mypackage/tests",
 ]
 
 [tool.ruff]
-line-length = 88
+line-length    = 88
+src            = ["src"]
 target-version = "py311"
-src = ["src"]
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-] 
+  "B", # flake8-bugbear
+  "E", # pycodestyle errors
+  "F", # pyflakes
+  "I", # isort
+  "W", # pycodestyle warnings
+]
