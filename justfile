@@ -105,3 +105,42 @@ flake-check:
 [group('nix')]
 flake-update:
     nix flake update
+
+# Run CI checks locally with `om ci`
+[group('nix')]
+ci:
+    om ci
+
+# Build development container image
+[group('nix')]
+build-dev-container:
+    nix build .#devcontainerImage
+
+# Run development container with port 8888 exposed
+[group('nix')]
+run-dev-container:
+    docker load < $(nix build .#devcontainerImage --print-out-paths)
+    docker run -it --rm -p 8888:8888 mypackage-dev:latest
+
+# Build production container image
+[group('nix')]
+build-container:
+    nix build .#containerImage
+
+# Run production container with port 8888 exposed
+[group('nix')]
+run-container:
+    docker load < $(nix build .#containerImage --print-out-paths)
+    docker run -it --rm -p 8888:8888 mypackage:latest
+
+# Initialize new project from template
+[group('template')]
+template-init:
+    echo "Use: nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template -o ~/my-python-project"
+
+# Verify template functionality by creating and checking a test project
+[group('template')]
+template-verify:
+    om init -t .#default ./tmp-verify-template
+    cd ./tmp-verify-template && nix flake check
+    rm -rf ./tmp-verify-template
