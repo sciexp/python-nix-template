@@ -1,0 +1,11 @@
+include = [".taplo.toml", "pyproject.toml"]
+
+[formatting]
+align_entries       = true
+array_auto_collapse = false
+column_width        = 88
+indent_string       = "  "
+indent_tables       = false
+reorder_arrays      = true
+reorder_keys        = true
+trailing_newline    = true
