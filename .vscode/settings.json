@@ -1,0 +1,69 @@
+{
+  "[ipynb]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "autoHide.autoHideAuxiliaryBar": false,
+  "autoHide.autoHidePanel": false,
+  "autoHide.autoHideSideBar": false,
+  "autoHide.hideOnOpen": false,
+  "cloudcode.autoDependencies": "on",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always",
+    "source.organizeImports": "always"
+  },
+  "editor.fontSize": 16,
+  "editor.formatOnSave": true,
+  "files.autoSave": "onFocusChange",
+  // "files.autoSave": "afterDelay",
+  // "files.autoSaveDelay": 1000,
+  "files.watcherExclude": {
+    "**/.devenv/**": true,
+    "**/.direnv/**": true,
+    "**/.hypothesis/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.nox/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.ruff_cache/**": true,
+    "**/.solid/**": true,
+    "**/.venv/**": true,
+    "**/bazel-*/**": true,
+  },
+  "notebook.codeActionsOnSave": {
+    "notebook.source.fixAll": "explicit",
+    "notebook.source.organizeImports": "explicit"
+  },
+  "notebook.formatOnCellExecution": true,
+  "notebook.formatOnSave.enabled": true,
+  "search.exclude": {
+    "**/.devenv/**": true,
+    "**/.direnv/**": true,
+    "**/.hypothesis/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.ruff_cache/**": true,
+    "**/.solid/**": true,
+    "**/.venv/**": true,
+    "**/bazel-*/**": true,
+  },
+  // this is a workaround for 1000% CPU usage by
+  // /Applications/Visual Studio Code.app/Contents/Resources/app/node_modules.asar.unpacked/@vscode/ripgrep/bin/rg
+  // https://github.com/microsoft/vscode/issues/186279#issuecomment-1633159669
+  "search.followSymlinks": false,
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.scrollback": 100000,
+  "workbench.colorTheme": "Catppuccin Mocha",
+  "workbench.iconTheme": "vscode-icons",
+  // Passing --no-cov to pytestArgs is required to respect breakpoints
+  // when debugging tests.
+  // https://github.com/microsoft/vscode-python/issues/693#issuecomment-367848085
+  "python.testing.pytestArgs": [
+    "-rA",
+    "--xdoc",
+    "--disable-warnings",
+    "-v",
+    "--no-cov"
+  ]
+}
