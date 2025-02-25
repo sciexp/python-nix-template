@@ -13,6 +13,9 @@ requires-python = ">=3.11"
 readme = "README.md"
 license = {text = "AGPL-3.0-or-later"}
 
+[project.scripts]
+mypackage-greet = "mypackage.main:greet"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
