@@ -108,7 +108,7 @@
         };
 
       gitHubOrg = "cameronraysmith";
-      packageName = "mypackage";
+      packageName = "python-nix-template";
       version = builtins.getEnv "VERSION";
       isVersionNonEmpty = builtins.isString version && builtins.stringLength version > 0;
 
