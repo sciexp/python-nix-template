@@ -30,9 +30,10 @@
           inherit name;
           inputsFrom = [ config.pre-commit.devShell ];
           packages = with pkgs; [
-            virtualenv
-            uv
             just
+            pixi
+            uv
+            virtualenv
           ];
 
           env = {
