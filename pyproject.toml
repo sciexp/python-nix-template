@@ -24,9 +24,13 @@ requires      = ["hatchling"]
 
 [dependency-groups]
 dev = [
+  { include-group = "interactive" },
   { include-group = "lint" },
   { include-group = "test" },
   { include-group = "types" },
+]
+interactive = [
+  "ipython>=8.32.0",
 ]
 lint = [
   "ruff>=0.9.4",
