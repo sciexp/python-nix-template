@@ -57,7 +57,8 @@ conda-env:
 # Update conda environment pixi lockfile
 [group('conda package')]
 lock-conda:
-    pixi lock
+    pixi list
+    pixi tree
 
 # Run tests in conda environment with pixi
 [group('conda package')]
