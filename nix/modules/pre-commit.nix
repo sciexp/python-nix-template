@@ -7,6 +7,8 @@
     pre-commit.settings = {
       hooks = {
         nixpkgs-fmt.enable = true;
+        ruff.enable = true;
+        ruff-format.enable = true;
         taplo.enable = true;
       };
     };
