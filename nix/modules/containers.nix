@@ -4,6 +4,7 @@
   perSystem =
     { config
     , self'
+    , inputs'
     , pkgs
     , lib
     , system
@@ -19,6 +20,9 @@
       defaultPythonVersion = "py312";
       defaultPythonSet = pythonSets.${defaultPythonVersion};
       defaultEditablePythonSet = editablePythonSets.${defaultPythonVersion};
+
+      defaultPythonEnv = defaultPythonSet.mkVirtualEnv "mypackage-env" baseWorkspace.deps.default;
+      defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "mypackage-editable-env" baseWorkspace.deps.all;
 
       buildMultiUserNixImage = import "${inputs.nixpod.outPath}/containers/nix.nix";
 
@@ -66,13 +70,13 @@
           inherit pkgs name tag;
           storeOwner = containerUserInfo;
           maxLayers = 121;
-          fromImage = inputs.nixpod.legacyPackages.${system}.sudoImage;
+          fromImage = inputs'.nixpod.packages.sudoImage;
           compressor = "zstd";
 
           extraPkgs = containerSysPackages ++ extraPkgs ++ [ pythonPackageEnv ];
           extraContents =
             [
-              inputs.nixpod.legacyPackages.${system}.homeConfigurations.${containerUsername}.activationPackage
+              inputs'.nixpod.legacyPackages.homeConfigurations.${containerUsername}.activationPackage
             ]
             ++ extraContents;
 
@@ -124,13 +128,13 @@
       packages = lib.optionalAttrs isLinux {
         devcontainerImage = mkBaseContainer {
           name = "mypackage-dev";
-          pythonPackageEnv = defaultEditablePythonSet;
+          pythonPackageEnv = defaultEditablePythonEnv;
           extraPkgs = containerDevPackages;
         };
 
         containerImage = mkBaseContainer {
           name = "mypackage";
-          pythonPackageEnv = defaultPythonSet;
+          pythonPackageEnv = defaultPythonEnv;
         };
       };
 
