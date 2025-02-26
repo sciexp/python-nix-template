@@ -1,8 +1,7 @@
 """Main module for mypackage demonstrating functional programming patterns."""
 
 from beartype import beartype
-from beartype.typing import Generator, Optional
-from expression import Error, Ok, Result, effect
+from expression import Error, Ok, Result
 
 
 @beartype
@@ -38,15 +37,23 @@ def create_greeting(name: str) -> Result[str, Error]:
     return validate_name(name).bind(lambda n: Ok(f"Hello, {n}!"))
 
 
-@effect.result[str, ValueError]()
-def greet(name: Optional[str] = None) -> Generator[Optional[str], str, Optional[str]]:
+@beartype
+def greet(name: str = "World") -> str:
     """Greet someone by name.
 
     Args:
         name: Optional name to greet. Defaults to "World".
 
     Returns:
-        Generator yielding Optional[str], receiving str, and returning Optional[str]
+        Greeting message or error message
     """
-    result = yield from create_greeting(name or "World")
-    return result
+    greeting = create_greeting(name)
+
+    match greeting:
+        case Result(tag="ok"):
+            return greeting.ok
+        case Result(tag="error"):
+            print(
+                f"Verify you've respected the input constraints:\n\n{greeting.error}\n"
+            )
+            return "This is supposed to be a hello world program, but it failed."
