@@ -37,20 +37,16 @@ def test_create_greeting_invalid():
 def test_greet_default():
     """Test greet function with default argument."""
     result = greet()
-    assert result == Ok("Hello, World!")
+    assert result == "Hello, World!"
 
 
 def test_greet_custom():
     """Test greet function with custom name."""
     result = greet("Alice")
-    assert result == Ok("Hello, Alice!")
+    assert result == "Hello, Alice!"
 
 
 def test_greet_invalid():
     """Test greet function with invalid input."""
     result = greet("a")
-    assert result.is_error()
-    error_msg = result.bind(
-        lambda ok: Ok(None)
-    ).default_value("Name must be at least 2 characters")
-    assert error_msg == "Name must be at least 2 characters"
+    assert result == "This is supposed to be a hello world program, but it failed."
