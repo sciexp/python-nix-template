@@ -64,7 +64,6 @@
                     (old.src + "/pyproject.toml")
                     (old.src + "/README.md")
                     (old.src + "/src/mypackage/__init__.py")
-                    (old.src + "/src/mypackage/main.py")
                   ];
                 };
                 nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem { editables = [ ]; };
