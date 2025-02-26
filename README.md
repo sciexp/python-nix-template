@@ -1,36 +1,25 @@
 # python-nix-template
 
-A nix template for a python package managed with uv and uv2nix.
+A nix template for python packages managed with
+[uv2nix](https://github.com/pyproject-nix/uv2nix) and
+[flake-parts](https://github.com/hercules-ci/flake-parts). The structure mirrors
+those in the [omnix registry](#credits) to the extent possible with python and
+its ecosystem.
 
 ## Features
 
 - Modern python packaging with `pyproject.toml`
 - Fast dependency management with `uv`
 - Reproducible developer environments and builds with `nix` and `uv2nix`
-- Industrial-strength functional programming patterns:
+- Functional programming patterns briefly illustrated in the sample package:
   - Railway-oriented programming with `expression` for type-safe error handling
   - Effect tracking via monad transformers for composable side effects
   - Runtime type checking with `beartype` for robust type safety
   - Pure functions and immutable data types for reliable code
   - Composition of effectful functions using monadic bind operations
-
-## Example Package
-
-The template includes an example package demonstrating functional programming best practices:
-
-- Railway-oriented validation and error handling
-- Effect tracking for side effects and error propagation
-- Type-safe function composition with monadic operations
-- Comprehensive test coverage with property-based testing
-- Runtime type checking for additional safety
+- conda ecosystem compatibility via `pixi`
 
 ## Development
-
-This project uses `just` for task running. List available commands with:
-
-```bash
-just
-```
 
 ### Prerequisites
 
@@ -48,11 +37,24 @@ It provides:
 
 To get started, run:
 
-   ```bash
-   make bootstrap
-   ```
+```shell
+make bootstrap
+```
 
 Run `make` alone for a listing of available targets.
+
+After nix and direnv are installed, you can either run `direnv allow` or `nix
+develop` to enter a [development shell](./nix/modules/devshell.nix) that will
+contain necessary system-level dependencies.
+
+### Task runner
+
+This project uses `just` as a task runner, which is provided in the [development
+shell](#prerequisites). List available commands with:
+
+```bash
+just
+```
 
 ### Quick Start
 
@@ -81,4 +83,24 @@ Run `make` alone for a listing of available targets.
    just build
    ```
 
-Run `just` alone for a listing of available recipes.
+Run `just` alone for a listing of all available task recipes.
+
+## credits
+
+### python
+
+- [beartypte/beartype](https://github.com/beartype/beartype)
+- [dbrattli/Expression](https://github.com/dbrattli/Expression)
+
+### python in nix
+
+- [uv2nix](https://github.com/pyproject-nix/uv2nix)
+
+### nix
+
+See the [omnix registry
+flake](https://github.com/juspay/omnix/blob/1.0.0/crates/omnix-init/registry/flake.nix)
+
+- [srid/haskell-template](https://github.com/srid/haskell-template)
+- [srid/rust-nix-template](https://github.com/srid/rust-nix-template)
+- [hercules-ci/flake-parts](https://github.com/hercules-ci/flake-parts)
