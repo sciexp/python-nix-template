@@ -72,7 +72,7 @@
           extraPkgs = containerSysPackages ++ extraPkgs ++ [ pythonPackageEnv ];
           extraContents =
             [
-              inputs.nixpod.legacyPackages.${system}.homeConfigurations.jovyan.activationPackage
+              inputs.nixpod.legacyPackages.${system}.homeConfigurations.${containerUsername}.activationPackage
             ]
             ++ extraContents;
 
