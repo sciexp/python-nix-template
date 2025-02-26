@@ -1,13 +1,15 @@
-{ inputs
-, ...
+{
+  inputs,
+  ...
 }:
 {
   perSystem =
-    { config
-    , self'
-    , pkgs
-    , lib
-    , ...
+    {
+      config,
+      self',
+      pkgs,
+      lib,
+      ...
     }:
     let
       # Define supported Python versions

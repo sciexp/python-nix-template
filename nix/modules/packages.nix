@@ -1,17 +1,19 @@
-{ inputs
-, ...
+{
+  inputs,
+  ...
 }:
 {
   perSystem =
-    { config
-    , self'
-    , pkgs
-    , lib
-    , baseWorkspace
-    , pythonSets
-    , editablePythonSets
-    , pythonVersions
-    , ...
+    {
+      config,
+      self',
+      pkgs,
+      lib,
+      baseWorkspace,
+      pythonSets,
+      editablePythonSets,
+      pythonVersions,
+      ...
     }:
     {
       # nix build

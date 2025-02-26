@@ -1,18 +1,21 @@
-{ inputs
-, ...
-}: {
+{
+  inputs,
+  ...
+}:
+{
   perSystem =
-    { config
-    , self'
-    , inputs'
-    , pkgs
-    , lib
-    , system
-    , baseWorkspace
-    , pythonSets
-    , editablePythonSets
-    , pythonVersions
-    , ...
+    {
+      config,
+      self',
+      inputs',
+      pkgs,
+      lib,
+      system,
+      baseWorkspace,
+      pythonSets,
+      editablePythonSets,
+      pythonVersions,
+      ...
     }:
     let
       isLinux = pkgs.stdenv.isLinux;
@@ -57,14 +60,14 @@
       ];
 
       mkBaseContainer =
-        { name
-        , tag ? "latest"
-        , pythonPackageEnv
-        , extraContents ? [ ]
-        , extraPkgs ? [ ]
-        , extraEnv ? [ ]
-        , extraConfig ? { }
-        ,
+        {
+          name,
+          tag ? "latest",
+          pythonPackageEnv,
+          extraContents ? [ ],
+          extraPkgs ? [ ],
+          extraEnv ? [ ],
+          extraConfig ? { },
         }:
         buildMultiUserNixImage {
           inherit pkgs name tag;
@@ -74,11 +77,9 @@
           compressor = "zstd";
 
           extraPkgs = containerSysPackages ++ extraPkgs ++ [ pythonPackageEnv ];
-          extraContents =
-            [
-              inputs'.nixpod.legacyPackages.homeConfigurations.${containerUsername}.activationPackage
-            ]
-            ++ extraContents;
+          extraContents = [
+            inputs'.nixpod.legacyPackages.homeConfigurations.${containerUsername}.activationPackage
+          ] ++ extraContents;
 
           extraFakeRootCommands = ''
             chown -R ${containerUsername}:wheel /nix
@@ -86,29 +87,32 @@
 
           nixConf = {
             allowed-users = [ "*" ];
-            experimental-features = [ "nix-command" "flakes" ];
+            experimental-features = [
+              "nix-command"
+              "flakes"
+            ];
             max-jobs = [ "auto" ];
             sandbox = "false";
-            trusted-users = [ "root" "${containerUsername}" "runner" ];
+            trusted-users = [
+              "root"
+              "${containerUsername}"
+              "runner"
+            ];
           };
 
-          extraEnv =
-            [
-              "NB_USER=${containerUsername}"
-              "NB_UID=1000"
-              "NB_PREFIX=/"
-              "LD_LIBRARY_PATH=${pythonPackageEnv}/lib:/usr/local/nvidia/lib64"
-              "NVIDIA_DRIVER_CAPABILITIES='compute,utility'"
-              "NVIDIA_VISIBLE_DEVICES=all"
-              "QUARTO_PYTHON=${pythonPackageEnv}/bin/python"
-            ]
-            ++ extraEnv;
+          extraEnv = [
+            "NB_USER=${containerUsername}"
+            "NB_UID=1000"
+            "NB_PREFIX=/"
+            "LD_LIBRARY_PATH=${pythonPackageEnv}/lib:/usr/local/nvidia/lib64"
+            "NVIDIA_DRIVER_CAPABILITIES='compute,utility'"
+            "NVIDIA_VISIBLE_DEVICES=all"
+            "QUARTO_PYTHON=${pythonPackageEnv}/bin/python"
+          ] ++ extraEnv;
 
-          extraConfig =
-            {
-              ExposedPorts."8888/tcp" = { };
-            }
-            // extraConfig;
+          extraConfig = {
+            ExposedPorts."8888/tcp" = { };
+          } // extraConfig;
         };
 
       gitHubOrg = "cameronraysmith";
@@ -120,9 +124,13 @@
         let
           envVar = builtins.getEnv "NIX_IMAGE_SYSTEMS";
         in
-        if envVar == ""
-        then [ "x86_64-linux" "aarch64-linux" ]
-        else builtins.filter (sys: sys != "") (builtins.split " " envVar);
+        if envVar == "" then
+          [
+            "x86_64-linux"
+            "aarch64-linux"
+          ]
+        else
+          builtins.filter (sys: sys != "") (builtins.split " " envVar);
     in
     {
       packages = lib.optionalAttrs isLinux {

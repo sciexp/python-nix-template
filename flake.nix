@@ -42,10 +42,11 @@
   };
 
   outputs =
-    inputs@{ self
-    , flake-parts
-    , nixpkgs
-    , ...
+    inputs@{
+      self,
+      flake-parts,
+      nixpkgs,
+      ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       # https://github.com/NixOS/nixpkgs/blob/24.05/lib/systems/flake-systems.nix

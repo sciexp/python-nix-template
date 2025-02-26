@@ -1,23 +1,25 @@
-{ inputs
-, ...
+{
+  inputs,
+  ...
 }:
 {
   perSystem =
-    { config
-    , self'
-    , pkgs
-    , lib
-    , baseWorkspace
-    , editablePythonSets
-    , pythonVersions
-    , ...
+    {
+      config,
+      self',
+      pkgs,
+      lib,
+      baseWorkspace,
+      editablePythonSets,
+      pythonVersions,
+      ...
     }:
     let
       # Function to create development shell
       mkDevShell =
-        { name
-        , pythonVersion
-        ,
+        {
+          name,
+          pythonVersion,
         }:
         let
           # Get the actual Python interpreter first
