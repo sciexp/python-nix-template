@@ -62,18 +62,19 @@ python     = ">=3.11"
 mypackage = { path = ".", editable = true }
 
 [tool.pixi.environments]
-default = { solve-group = "default" }
-dev     = { features = ["dev"], solve-group = "default" }
-lint    = { features = ["lint"], solve-group = "default" }
-test    = { features = ["test"], solve-group = "default" }
-types   = { features = ["types"], solve-group = "default" }
+default     = { solve-group = "default" }
+dev         = { features = ["dev"], solve-group = "default" }
+interactive = { features = ["interactive"], solve-group = "default" }
+lint        = { features = ["lint"], solve-group = "default" }
+test        = { features = ["test"], solve-group = "default" }
+types       = { features = ["types"], solve-group = "default" }
 
 [tool.pixi.feature.test.tasks]
 test = "pytest"
 
 [tool.pixi.feature.lint.tasks]
-lint     = "ruff check src/"
-lint-fix = "ruff check --fix src/"
+lint       = "ruff check --fix src/"
+lint-check = "ruff check src/"
 
 [tool.pixi.feature.types.tasks]
 types = "pyright src/"
