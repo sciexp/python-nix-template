@@ -54,11 +54,16 @@ conda-env:
     pixi install
     @echo "Conda environment is ready. Activate it with 'pixi shell'"
 
-# Update conda environment pixi lockfile
+# Update pixi lockfile
 [group('conda package')]
-lock-conda:
+lock-pixi:
     pixi list
     pixi tree
+
+# Update conda environment
+[group('conda package')]
+lock-conda:
+    pixi project export conda-explicit-spec conda/ --ignore-pypi-errors
 
 # Run tests in conda environment with pixi
 [group('conda package')]
