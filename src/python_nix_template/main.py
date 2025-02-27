@@ -1,4 +1,4 @@
-"""Main module for mypackage demonstrating functional programming patterns."""
+"""Main module for python_nix_template demonstrating functional programming patterns."""
 
 from beartype import beartype
 from expression import Error, Ok, Result

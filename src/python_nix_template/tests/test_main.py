@@ -2,7 +2,7 @@
 
 from expression import Error, Ok
 
-from mypackage.main import create_greeting, greet, validate_name
+from python_nix_template.main import create_greeting, greet, validate_name
 
 
 def test_validate_name_valid():

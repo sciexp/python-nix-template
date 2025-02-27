@@ -2,7 +2,7 @@
 
 __version__ = "0.1.0"
 
-from mypackage.main import greet
+from python_nix_template.main import greet
 
 __all__ = [
     "greet",
