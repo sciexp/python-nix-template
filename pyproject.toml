@@ -7,7 +7,7 @@ dependencies = [
   "expression>=5.5.0",
 ]
 description = "A Python package template using Nix and uv"
-license = { text = "AGPL-3.0-or-later" }
+license = { text = "Apache-2.0" }
 name = "mypackage"
 readme = "README.md"
 requires-python = ">=3.11"
