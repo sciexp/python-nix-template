@@ -57,3 +57,5 @@ def greet(name: str = "World") -> str:
                 f"Verify you've respected the input constraints:\n\n{greeting.error}\n"
             )
             return "This is supposed to be a hello world program, but it failed."
+        case _:
+            return "The return type is not a Result."
