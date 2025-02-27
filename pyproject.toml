@@ -42,7 +42,7 @@ test = [
   "xdoctest>=1.2.0",
 ]
 types = [
-  "pyright>=1.1.393",
+  "pyright>=1.1.395",
 ]
 
 [tool.uv]
