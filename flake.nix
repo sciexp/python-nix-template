@@ -41,6 +41,19 @@
     git-hooks.flake = false;
   };
 
+  nixConfig = {
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "pyproject-nix.cachix.org-1:UNzugsOlQIu2iOz0VyZNBQm2JSrL/kwxeCcFGw+jMe0="
+      "sciexp.cachix.org-1:HaliIGqJrFN7CDrzYVHqWS4uSISorWAY1bWNmNl8T08="
+    ];
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      "https://pyproject-nix.cachix.org"
+      "https://sciexp.cachix.org"
+    ];
+  };
+
   outputs =
     inputs@{
       self,
