@@ -100,33 +100,33 @@ runs:
         echo "Using Git SHA Short: $GIT_SHA_SHORT"
         FQN_GIT_SHA="${{ inputs.imageFQN }}:$GIT_SHA"
 
-        # This section currently doesn't account for the case where
-        # a new image is being pushed to a repository for the first time.
-        # As a workaround, when creating new images from this action,
-        # the follwing four commented lines can be toggled with those below
-        # them.
-        echo "Image FQN with Git SHA: $FQN_GIT_SHA"
-        df -h
-        echo "Image $FQN_GIT_SHA does not exist. Building."
-        nix-channel --update
-        podman manifest inspect docker.io/library/flocken:latest || true
-        podman manifest inspect quay.io/flocken:latest || true
-        ${{ inputs.nixCommand }}
+        # # This section currently doesn't account for the case where
+        # # a new image is being pushed to a repository for the first time.
+        # # As a workaround, when creating new images from this action,
+        # # the follwing four commented lines can be toggled with those below
+        # # them.
+        # echo "Image FQN with Git SHA: $FQN_GIT_SHA"
+        # df -h
+        # echo "Image $FQN_GIT_SHA does not exist. Building."
+        # nix-channel --update
+        # podman manifest inspect docker.io/library/flocken:latest || true
+        # podman manifest inspect quay.io/flocken:latest || true
+        # ${{ inputs.nixCommand }}
 
-        # if SKOPEO_OUTPUT=$(skopeo inspect "docker://$FQN_GIT_SHA" 2>&1); then
-        #   echo "Image $FQN_GIT_SHA already exists. Skipping build."
-        # else
-        #   if echo "$SKOPEO_OUTPUT" | grep -q 'manifest unknown'; then
-        #     echo "Image $FQN_GIT_SHA does not exist. Building."
-        #     nix-channel --update
-        #     podman manifest inspect docker.io/library/flocken:latest || true
-        #     podman manifest inspect quay.io/flocken:latest || true
-        #     ${{ inputs.nixCommand }}
-        #   else
-        #     echo "Failed to inspect image with error: $SKOPEO_OUTPUT"
-        #     exit 1
-        #   fi
-        # fi
+        if SKOPEO_OUTPUT=$(skopeo inspect "docker://$FQN_GIT_SHA" 2>&1); then
+          echo "Image $FQN_GIT_SHA already exists. Skipping build."
+        else
+          if echo "$SKOPEO_OUTPUT" | grep -q 'manifest unknown'; then
+            echo "Image $FQN_GIT_SHA does not exist. Building."
+            nix-channel --update
+            podman manifest inspect docker.io/library/flocken:latest || true
+            podman manifest inspect quay.io/flocken:latest || true
+            ${{ inputs.nixCommand }}
+          else
+            echo "Failed to inspect image with error: $SKOPEO_OUTPUT"
+            exit 1
+          fi
+        fi
 
         df -h
       env:
