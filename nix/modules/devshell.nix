@@ -34,6 +34,7 @@
           packages = with pkgs; [
             just
             pixi
+            teller
             uv
             virtualenv
           ];
