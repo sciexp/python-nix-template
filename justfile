@@ -129,7 +129,7 @@ container-build-dev:
 [group('nix')]
 container-run-dev:
     docker load < $(nix build .#devcontainerImage --print-out-paths)
-    docker run -it --rm -p 8888:8888 mypackage-dev:latest
+    docker run -it --rm -p 8888:8888 python-nix-template-dev:latest
 
 # Build production container image
 [group('nix')]
@@ -140,7 +140,7 @@ container-build:
 [group('nix')]
 container-run:
     docker load < $(nix build .#containerImage --print-out-paths)
-    docker run -it --rm -p 8888:8888 mypackage:latest
+    docker run -it --rm -p 8888:8888 python-nix-template:latest
 
 ## Python package
 
