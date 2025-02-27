@@ -2,19 +2,27 @@
 authors = [
   { name = "Your Name", email = "your.email@example.com" },
 ]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
 dependencies = [
   "beartype>=0.19.0",
   "expression>=5.5.0",
 ]
 description = "A Python package template using Nix and uv"
 license = { text = "Apache-2.0" }
-name = "mypackage"
+name = "python-nix-template"
 readme = "README.md"
 requires-python = ">=3.11"
 version = "0.1.0"
 
 [project.scripts]
-mypackage-greet = "mypackage.main:greet"
+python-nix-template = "python_nix_template.main:greet"
 
 [build-system]
 build-backend = "hatchling.build"
@@ -59,7 +67,7 @@ expression = ">=5.5.0"
 python     = ">=3.11"
 
 [tool.pixi.pypi-dependencies]
-mypackage = { path = ".", editable = true }
+python-nix-template = { path = ".", editable = true }
 
 [tool.pixi.environments]
 default     = { solve-group = "default" }
@@ -80,7 +88,7 @@ lint-check = "ruff check src/"
 types = "pyright src/"
 
 [tool.pixi.package]
-name    = "mypackage"
+name    = "python-nix-template"
 version = "0.1.0"
 
 [tool.pixi.package.run-dependencies]
@@ -95,20 +103,20 @@ channels = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mypackage"]
+packages = ["src/python_nix_template"]
 
 [tool.pytest.ini_options]
 addopts = """
 -rA
 --xdoctest
 --disable-warnings
---cov=src/mypackage/
+--cov=src/python_nix_template/
 --cov-report=term-missing
 --durations=0
 """
 log_level = "INFO"
 testpaths = [
-  "src/mypackage/tests",
+  "src/python_nix_template/tests",
 ]
 
 [tool.ruff]
