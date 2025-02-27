@@ -166,7 +166,7 @@ jobs:
 
     strategy:
       matrix:
-        image: [mypackage, mypackagedev]
+        image: [python-nix-template, python-nix-template-dev]
       fail-fast: false
 
     steps:
