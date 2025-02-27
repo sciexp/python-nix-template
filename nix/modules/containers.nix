@@ -118,7 +118,6 @@
       gitHubOrg = "cameronraysmith";
       packageName = "python-nix-template";
       version = builtins.getEnv "VERSION";
-      isVersionNonEmpty = builtins.isString version && builtins.stringLength version > 0;
 
       includedSystems =
         let
@@ -157,13 +156,10 @@
           autoTags.branch = false;
           registries = {
             "ghcr.io" = {
-              enable = isVersionNonEmpty;
-              repo = "${gitHubOrg}/${packageName}";
-              username = builtins.getEnv "GITHUB_ACTOR";
-              password = "$GH_TOKEN";
+              repo = lib.mkForce "${gitHubOrg}/${packageName}";
             };
           };
-          images = map (sys: inputs.self.packages.${sys}.containerImage) includedSystems;
+          imageFiles = map (sys: inputs.self.packages.${sys}.containerImage) includedSystems;
           tags = [
             (builtins.getEnv "GIT_SHA_SHORT")
             (builtins.getEnv "GIT_SHA")
@@ -182,13 +178,10 @@
           autoTags.branch = false;
           registries = {
             "ghcr.io" = {
-              enable = isVersionNonEmpty;
-              repo = "${gitHubOrg}/${packageName}dev";
-              username = builtins.getEnv "GITHUB_ACTOR";
-              password = "$GH_TOKEN";
+              repo = lib.mkForce "${gitHubOrg}/${packageName}-dev";
             };
           };
-          images = map (sys: inputs.self.packages.${sys}.devcontainerImage) includedSystems;
+          imageFiles = map (sys: inputs.self.packages.${sys}.devcontainerImage) includedSystems;
           tags = [
             (builtins.getEnv "GIT_SHA_SHORT")
             (builtins.getEnv "GIT_SHA")
