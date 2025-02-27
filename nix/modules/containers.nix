@@ -133,20 +133,20 @@
     in
     {
       packages = lib.optionalAttrs isLinux {
+        containerImage = mkBaseContainer {
+          name = "mypackage";
+          pythonPackageEnv = defaultPythonEnv;
+        };
+
         devcontainerImage = mkBaseContainer {
           name = "mypackage-dev";
           pythonPackageEnv = defaultEditablePythonEnv;
           extraPkgs = containerDevPackages;
         };
-
-        containerImage = mkBaseContainer {
-          name = "mypackage";
-          pythonPackageEnv = defaultPythonEnv;
-        };
       };
 
       legacyPackages = lib.optionalAttrs isLinux {
-        containerManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
+        mypackageManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
           inherit version;
           github = {
             enable = true;
@@ -168,7 +168,7 @@
           ];
         };
 
-        devcontainerManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
+        mypackagedevManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
           inherit version;
           github = {
             enable = true;
