@@ -24,8 +24,8 @@
       defaultPythonSet = pythonSets.${defaultPythonVersion};
       defaultEditablePythonSet = editablePythonSets.${defaultPythonVersion};
 
-      defaultPythonEnv = defaultPythonSet.mkVirtualEnv "mypackage-env" baseWorkspace.deps.default;
-      defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "mypackage-editable-env" baseWorkspace.deps.all;
+      defaultPythonEnv = defaultPythonSet.mkVirtualEnv "python-nix-template-env" baseWorkspace.deps.default;
+      defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "python-nix-template-editable-env" baseWorkspace.deps.all;
 
       buildMultiUserNixImage = import "${inputs.nixpod.outPath}/containers/nix.nix";
 
@@ -134,19 +134,19 @@
     {
       packages = lib.optionalAttrs isLinux {
         containerImage = mkBaseContainer {
-          name = "mypackage";
+          name = "python-nix-template";
           pythonPackageEnv = defaultPythonEnv;
         };
 
         devcontainerImage = mkBaseContainer {
-          name = "mypackage-dev";
+          name = "python-nix-template-dev";
           pythonPackageEnv = defaultEditablePythonEnv;
           extraPkgs = containerDevPackages;
         };
       };
 
       legacyPackages = lib.optionalAttrs isLinux {
-        mypackageManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
+        python-nix-templateManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
           inherit version;
           github = {
             enable = true;
@@ -168,7 +168,7 @@
           ];
         };
 
-        mypackagedevManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
+        python-nix-template-devManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
           inherit version;
           github = {
             enable = true;
