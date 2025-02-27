@@ -53,7 +53,7 @@ ghsecrets repo="cameronraysmith/python-nix-template":
 
 # Package commands (conda)
 [group('conda package')]
-build-conda:
+conda-build:
     pixi build
 
 # Create and sync conda environment with pixi
@@ -64,38 +64,38 @@ conda-env:
 
 # Update pixi lockfile
 [group('conda package')]
-lock-pixi:
+pixi-lock:
     pixi list
     pixi tree
 
 # Update conda environment
 [group('conda package')]
-lock-conda:
+conda-lock:
     pixi project export conda-explicit-spec conda/ --ignore-pypi-errors
 
 # Run tests in conda environment with pixi
 [group('conda package')]
-test-conda:
+conda-test:
     pixi run -e test pytest
 
 # Run linting in conda environment with pixi
 [group('conda package')]
-lint-conda:
+conda-lint:
     pixi run -e lint ruff check src/
 
 # Run linting and fix errors in conda environment with pixi
 [group('conda package')]
-lint-fix-conda:
+conda-lint-fix:
     pixi run -e lint ruff check --fix src/
 
 # Run type checking in conda environment with pixi
 [group('conda package')]
-type-conda:
+conda-type:
     pixi run -e types pyright src/
 
 # Run all checks in conda environment (lint, type, test)
 [group('conda package')]
-check-conda: lint-conda type-conda test-conda
+conda-check: conda-lint conda-type conda-test
     @printf "\n\033[92mAll conda checks passed!\033[0m\n"
 
 ## Nix
@@ -122,23 +122,23 @@ ci:
 
 # Build development container image
 [group('nix')]
-build-dev-container:
+container-build-dev:
     nix build .#devcontainerImage
 
 # Run development container with port 8888 exposed
 [group('nix')]
-run-dev-container:
+container-run-dev:
     docker load < $(nix build .#devcontainerImage --print-out-paths)
     docker run -it --rm -p 8888:8888 mypackage-dev:latest
 
 # Build production container image
 [group('nix')]
-build-container:
+container-build:
     nix build .#containerImage
 
 # Run production container with port 8888 exposed
 [group('nix')]
-run-container:
+container-run:
     docker load < $(nix build .#containerImage --print-out-paths)
     docker run -it --rm -p 8888:8888 mypackage:latest
 
@@ -157,27 +157,47 @@ venv: _ensure-venv
 
 # Update lockfile from pyproject.toml
 [group('python package')]
-lock: _ensure-venv
+uv-lock: _ensure-venv
     uv lock
 
 # Run tests
 [group('python package')]
-test: _ensure-venv
+test:
+    pytest
+
+# Run tests in uv virtual environment
+[group('python package')]
+uv-test: _ensure-venv
     uv run pytest
 
 # Run linting
 [group('python package')]
-lint: _ensure-venv
+lint:
+    ruff check src/
+
+# Run linting in uv virtual environment
+[group('python package')]
+uv-lint: _ensure-venv
     uvx ruff check src/
 
 # Run linting and fix errors
 [group('python package')]
-lint-fix: _ensure-venv
+lint-fix:
+    ruff check --fix src/
+
+# Run linting and fix errors in uv virtual environment
+[group('python package')]
+uv-lint-fix: _ensure-venv
     uvx ruff check --fix src/
 
-# Run type checking
+# Run type checking in uv virtual environment
 [group('python package')]
-type: _ensure-venv
+type:
+    pyright src/
+
+# Run type checking in uv virtual environment
+[group('python package')]
+uv-type: _ensure-venv
     uv run pyright src/
 
 # Run all checks (lint, type, test)
