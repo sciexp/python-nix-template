@@ -189,67 +189,6 @@ wheels = [
 ]
 
 [[package]]
-name = "mypackage"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "beartype" },
-    { name = "expression" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "hypothesis" },
-    { name = "ipython" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-    { name = "xdoctest" },
-]
-interactive = [
-    { name = "ipython" },
-]
-lint = [
-    { name = "ruff" },
-]
-test = [
-    { name = "hypothesis" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "xdoctest" },
-]
-types = [
-    { name = "pyright" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "beartype", specifier = ">=0.19.0" },
-    { name = "expression", specifier = ">=5.5.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "hypothesis", specifier = ">=6.125.1" },
-    { name = "ipython", specifier = ">=8.32.0" },
-    { name = "pyright", specifier = ">=1.1.395" },
-    { name = "pytest", specifier = ">=8.3.4" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "ruff", specifier = ">=0.9.4" },
-    { name = "xdoctest", specifier = ">=1.2.0" },
-]
-interactive = [{ name = "ipython", specifier = ">=8.32.0" }]
-lint = [{ name = "ruff", specifier = ">=0.9.4" }]
-test = [
-    { name = "hypothesis", specifier = ">=6.125.1" },
-    { name = "pytest", specifier = ">=8.3.4" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "xdoctest", specifier = ">=1.2.0" },
-]
-types = [{ name = "pyright", specifier = ">=1.1.395" }]
-
-[[package]]
 name = "nodeenv"
 version = "1.9.1"
 source = { registry = "https://pypi.org/simple" }
@@ -376,6 +315,67 @@ sdist = { url = "https://files.pythonhosted.org/packages/be/45/9b538de8cef30e17c
 wheels = [
     { url = "https://files.pythonhosted.org/packages/36/3b/48e79f2cd6a61dbbd4807b4ed46cb564b4fd50a76166b1c4ea5c1d9e2371/pytest_cov-6.0.0-py3-none-any.whl", hash = "sha256:eee6f1b9e61008bd34975a4d5bab25801eb31898b032dd55addc93e96fcaaa35", size = 22949 },
 ]
+
+[[package]]
+name = "python-nix-template"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "beartype" },
+    { name = "expression" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "hypothesis" },
+    { name = "ipython" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "xdoctest" },
+]
+interactive = [
+    { name = "ipython" },
+]
+lint = [
+    { name = "ruff" },
+]
+test = [
+    { name = "hypothesis" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "xdoctest" },
+]
+types = [
+    { name = "pyright" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "beartype", specifier = ">=0.19.0" },
+    { name = "expression", specifier = ">=5.5.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "hypothesis", specifier = ">=6.125.1" },
+    { name = "ipython", specifier = ">=8.32.0" },
+    { name = "pyright", specifier = ">=1.1.395" },
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "ruff", specifier = ">=0.9.4" },
+    { name = "xdoctest", specifier = ">=1.2.0" },
+]
+interactive = [{ name = "ipython", specifier = ">=8.32.0" }]
+lint = [{ name = "ruff", specifier = ">=0.9.4" }]
+test = [
+    { name = "hypothesis", specifier = ">=6.125.1" },
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "xdoctest", specifier = ">=1.2.0" },
+]
+types = [{ name = "pyright", specifier = ">=1.1.395" }]
 
 [[package]]
 name = "ruff"
