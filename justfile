@@ -1,47 +1,55 @@
-# Core package management
+# List all recipes
 default:
     @just --list
 
-# Package commands
-[group('python package')]
-build: _ensure-venv
-    uv build
+# Contents (alphabetical)
+## CI/CD
+## Conda package
+## Nix
+## Python package
+## Secrets
+## Template
 
-# Sync and enter uv virtual environment
-[group('python package')]
-venv: _ensure-venv
-    uv sync
-    @echo "Virtual environment is ready. Activate it with 'source .venv/bin/activate'"
+## CI/CD
 
-# Update lockfile from pyproject.toml
-[group('python package')]
-lock: _ensure-venv
-    uv lock
+# Set gcloud context
+[group('CI/CD')]
+gcloud-context:
+    gcloud config configurations activate "$GCP_PROJECT_NAME"
 
-# Run tests
-[group('python package')]
-test: _ensure-venv
-    uv run pytest
+# Update github vars for repo from environment variables
+[group('CI/CD')]
+ghvars repo="cameronraysmith/python-nix-template":
+  @echo "vars before updates:"
+  @echo
+  PAGER=cat gh variable list --repo={{ repo }}
+  @echo
+  gh variable set CACHIX_CACHE_NAME --repo={{ repo }} --body="$CACHIX_CACHE_NAME"
+  gh variable set FAST_FORWARD_ACTOR --repo={{ repo }} --body="$FAST_FORWARD_ACTOR"
+  @echo
+  @echo "vars after updates (wait 3 seconds for github to update):"
+  sleep 3
+  @echo
+  PAGER=cat gh variable list --repo={{ repo }}
 
-# Run linting
-[group('python package')]
-lint: _ensure-venv
-    uvx ruff check src/
+# Update github secrets for repo from environment variables
+[group('CI/CD')]
+ghsecrets repo="cameronraysmith/python-nix-template":
+  @echo "secrets before updates:"
+  @echo
+  PAGER=cat gh secret list --repo={{ repo }}
+  @echo
+  eval "$(teller sh)" && \
+  gh secret set CACHIX_AUTH_TOKEN --repo={{ repo }} --body="$CACHIX_AUTH_TOKEN" && \
+  gh secret set FAST_FORWARD_PAT --repo={{ repo }} --body="$FAST_FORWARD_PAT" && \
+  gh secret set GITGUARDIAN_API_KEY --repo={{ repo }} --body="$GITGUARDIAN_API_KEY"
+  @echo
+  @echo "secrets after updates (wait 3 seconds for github to update):"
+  sleep 3
+  @echo
+  PAGER=cat gh secret list --repo={{ repo }}
 
-# Run linting and fix errors
-[group('python package')]
-lint-fix: _ensure-venv
-    uvx ruff check --fix src/
-
-# Run type checking
-[group('python package')]
-type: _ensure-venv
-    uv run pyright src/
-
-# Run all checks (lint, type, test)
-[group('python package')]
-check: lint type test
-    @printf "\n\033[92mAll checks passed!\033[0m\n"
+## Conda package
 
 # Package commands (conda)
 [group('conda package')]
@@ -90,12 +98,7 @@ type-conda:
 check-conda: lint-conda type-conda test-conda
     @printf "\n\033[92mAll conda checks passed!\033[0m\n"
 
-# Helper recipes
-_ensure-venv:
-    #!/usr/bin/env bash
-    if [ ! -d ".venv" ]; then
-        uv venv
-    fi
+## Nix
 
 # Enter the Nix development shell
 [group('nix')]
@@ -138,6 +141,120 @@ build-container:
 run-container:
     docker load < $(nix build .#containerImage --print-out-paths)
     docker run -it --rm -p 8888:8888 mypackage:latest
+
+## Python package
+
+# Package commands
+[group('python package')]
+build: _ensure-venv
+    uv build
+
+# Sync and enter uv virtual environment
+[group('python package')]
+venv: _ensure-venv
+    uv sync
+    @echo "Virtual environment is ready. Activate it with 'source .venv/bin/activate'"
+
+# Update lockfile from pyproject.toml
+[group('python package')]
+lock: _ensure-venv
+    uv lock
+
+# Run tests
+[group('python package')]
+test: _ensure-venv
+    uv run pytest
+
+# Run linting
+[group('python package')]
+lint: _ensure-venv
+    uvx ruff check src/
+
+# Run linting and fix errors
+[group('python package')]
+lint-fix: _ensure-venv
+    uvx ruff check --fix src/
+
+# Run type checking
+[group('python package')]
+type: _ensure-venv
+    uv run pyright src/
+
+# Run all checks (lint, type, test)
+[group('python package')]
+check: lint type test
+    @printf "\n\033[92mAll checks passed!\033[0m\n"
+
+# Helper recipes
+_ensure-venv:
+    #!/usr/bin/env bash
+    if [ ! -d ".venv" ]; then
+        uv venv
+    fi
+
+## Secrets
+
+# Define the project variable
+gcp_project_id := env_var_or_default('GCP_PROJECT_ID', 'development')
+
+# Show existing secrets
+[group('secrets')]
+show:
+  @teller show
+
+# Create a secret with the given name
+[group('secrets')]
+create-secret name:
+  @gcloud secrets create {{name}} --replication-policy="automatic" --project {{gcp_project_id}}
+
+# Populate a single secret with the contents of a dotenv-formatted file
+[group('secrets')]
+populate-single-secret name path:
+  @gcloud secrets versions add {{name}} --data-file={{path}} --project {{gcp_project_id}}
+
+# Populate each line of a dotenv-formatted file as a separate secret
+[group('secrets')]
+populate-separate-secrets path:
+  @grep -v '^[[:space:]]*#' {{path}} | while IFS= read -r line; do \
+     KEY=$(echo $line | cut -d '=' -f 1); \
+     VALUE=$(echo $line | cut -d '=' -f 2); \
+     gcloud secrets create $KEY --replication-policy="automatic" --project {{gcp_project_id}} 2>/dev/null; \
+     printf "$VALUE" | gcloud secrets versions add $KEY --data-file=- --project {{gcp_project_id}}; \
+   done
+
+# Complete process: Create a secret and populate it with the entire contents of a dotenv file
+[group('secrets')]
+create-and-populate-single-secret name path:
+  @just create-secret {{name}}
+  @just populate-single-secret {{name}} {{path}}
+
+# Complete process: Create and populate separate secrets for each line in the dotenv file
+[group('secrets')]
+create-and-populate-separate-secrets path:
+  @just populate-separate-secrets {{path}}
+
+# Retrieve the contents of a given secret
+[group('secrets')]
+get-secret name:
+  @gcloud secrets versions access latest --secret={{name}} --project={{gcp_project_id}}
+
+# Create empty dotenv from template
+[group('secrets')]
+seed-dotenv:
+  @cp .template.env .env
+
+# Export unique secrets to dotenv format
+[group('secrets')]
+export:
+  @teller export env | sort | uniq | grep -v '^$' > .secrets.env
+
+# Check secrets are available in teller shell.
+[group('secrets')]
+check-secrets:
+  @printf "Check teller environment for secrets\n\n"
+  @teller run -s -- env | grep -E 'GITHUB|CACHIX' | teller redact
+
+## Template
 
 # Initialize new project from template
 [group('template')]
