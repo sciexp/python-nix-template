@@ -61,13 +61,13 @@
           lib.composeManyExtensions [
             (makeEditableOverlay baseWorkspace)
             (final: prev: {
-              mypackage = prev.mypackage.overrideAttrs (old: {
+              python-nix-template = prev.python-nix-template.overrideAttrs (old: {
                 src = lib.fileset.toSource {
                   root = old.src;
                   fileset = lib.fileset.unions [
                     (old.src + "/pyproject.toml")
                     (old.src + "/README.md")
-                    (old.src + "/src/mypackage/__init__.py")
+                    (old.src + "/src/python_nix_template/__init__.py")
                   ];
                 };
                 nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem { editables = [ ]; };
