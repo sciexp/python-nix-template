@@ -9,6 +9,8 @@
       self',
       pkgs,
       lib,
+      packageOverrides ? (_: _: { }),
+      sdistOverrides ? (_: _: { }),
       ...
     }:
     let
@@ -47,8 +49,8 @@
             lib.composeManyExtensions [
               inputs.pyproject-build-systems.overlays.default
               (makeOverlay baseWorkspace)
-              # Add package-specific overrides
-              (_final: _prev: { })
+              packageOverrides
+              sdistOverrides
             ]
           );
 
