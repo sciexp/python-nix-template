@@ -16,11 +16,11 @@ specific lockfile to construct a command of the form
 mamba create --name <env> --file <explicit spec file>
 ```
 
-For example, for a conda environment named `mypackage` and the `dev` environment
+For example, for a conda environment named `python-nix-template` and the `dev` environment
 from the [pyproject.toml](../pyproject.toml) on x86_64-linux architecture run
 
 ```sh
-mamba create --name mypackage --file dev_linux-64_conda_spec.txt
+mamba create --name python-nix-template --file dev_linux-64_conda_spec.txt
 ```
 
 These environments will be missing packages that are sourced from pypi in the
