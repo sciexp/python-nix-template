@@ -214,11 +214,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1740600318,
-        "narHash": "sha256-bIUsim48d2T50ERZnDoDmubWdBmWAAcUHCIIgWTjd+Q=",
+        "lastModified": 1740620365,
+        "narHash": "sha256-wyHTjqRauOGlVob0LvxwsZIWnZX/2qZqyumXHCPOlEo=",
         "owner": "cameronraysmith",
         "repo": "nixpod",
-        "rev": "6fe7d426fab2a33c901850e055e194bfe77386d4",
+        "rev": "1dc5c170b989b720eaf30484a624e9c1269adbb3",
         "type": "github"
       },
       "original": {
