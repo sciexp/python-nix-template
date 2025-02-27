@@ -54,18 +54,18 @@
     {
       devShells = rec {
         # Create development shells for each Python version
-        mypackage311 = mkDevShell {
-          name = "mypackage-3.11";
+        pythonNixTemplate311 = mkDevShell {
+          name = "python-nix-template-3.11";
           pythonVersion = "py311";
         };
 
-        mypackage312 = mkDevShell {
-          name = "mypackage-3.12";
+        pythonNixTemplate312 = mkDevShell {
+          name = "python-nix-template-3.12";
           pythonVersion = "py312";
         };
 
         # Default shell uses Python 3.12
-        default = mypackage312;
+        default = pythonNixTemplate312;
       };
     };
 }
