@@ -134,7 +134,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@a48face58194521af687ce7df4c802b1b558e743 # ratchet:DeterminateSystems/nix-installer-action@main
         with:
           extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
-      - uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # ratchet:cachix/cachix-action@v15
+      - name: Setup remote cache
+        uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # ratchet:cachix/cachix-action@v15
         with:
           name: "${{ vars.CACHIX_CACHE_NAME }}"
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
@@ -146,14 +147,16 @@ jobs:
         run: nix --accept-flake-config profile install "github:juspay/omnix"
       - name: Summarize flake
         run: om show .
+      # - name: Run flake CI
+      #   run: om ci
       - name: Run flake CI
-        run: om ci
+        run: |
+          nix run github:srid/nixci -- build
 
   build-nix-images:
     runs-on: ubuntu-latest
     needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'build-images') || (github.event_name == 'workflow_dispatch' && inputs.run_build_images) ) }}
-
     concurrency:
       group: bni-${{ matrix.image }}-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
