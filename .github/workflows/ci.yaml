@@ -139,7 +139,7 @@ jobs:
         with:
           name: "${{ vars.CACHIX_CACHE_NAME }}"
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-          extraPullNames: srid
+          extraPullNames: nix-community,pyproject-nix,sciexp,srid
       - name: Setup tmate debug session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
         if: ${{ inputs.debug_enabled }}
