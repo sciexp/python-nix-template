@@ -2,10 +2,10 @@
   "version": "0.1.0",
   "configurations": [
     {
-      "name": "MyPackage: Debug CLI",
+      "name": "python-nix-template: Debug CLI",
       "type": "debugpy",
       "request": "launch",
-      "module": "mypackage",
+      "module": "python_nix_template",
       "args": [
       ],
       "console": "integratedTerminal",
