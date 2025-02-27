@@ -14,7 +14,7 @@
         {
           name = "package-name";
           description = "Name of the Python package";
-          placeholder = "mypackage";
+          placeholder = "python-nix-template";
         }
         {
           name = "author";
