@@ -17,6 +17,11 @@
           placeholder = "python-nix-template";
         }
         {
+          name = "git-org";
+          description = "GitHub organization or user name";
+          placeholder = "cameronraysmith";
+        }
+        {
           name = "author";
           description = "Author name";
           placeholder = "Your Name";
