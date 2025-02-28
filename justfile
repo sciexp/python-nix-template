@@ -49,6 +49,11 @@ ghsecrets repo="cameronraysmith/python-nix-template":
   @echo
   PAGER=cat gh secret list --repo={{ repo }}
 
+# Run pre-commit hooks (see pre-commit.nix and note the yaml is git-ignored)
+[group('CI/CD')]
+pre-commit:
+  pre-commit run --all-files
+
 ## Conda package
 
 # Package commands (conda)
@@ -279,7 +284,7 @@ check-secrets:
 # Initialize new project from template
 [group('template')]
 template-init:
-    echo "Use: nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template -o ~/my-python-project"
+    echo "Use: nix --accept-flake-config run github:juspay/omnix -- init github:cameronraysmith/python-nix-template -o new-python-project"
 
 # Verify template functionality by creating and checking a test project
 [group('template')]
