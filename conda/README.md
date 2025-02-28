@@ -4,7 +4,7 @@ The files in this directory are automatically generated from the
 [pyproject.toml](../pyproject.toml) by running
 
 ```sh
-just -n lock-conda
+just -n conda-lock
 ```
 
 in the repository root directory.
