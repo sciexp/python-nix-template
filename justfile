@@ -19,7 +19,7 @@ gcloud-context:
 
 # Update github vars for repo from environment variables
 [group('CI/CD')]
-ghvars repo="cameronraysmith/python-nix-template":
+ghvars repo="sciexp/python-nix-template":
   @echo "vars before updates:"
   @echo
   PAGER=cat gh variable list --repo={{ repo }}
@@ -34,7 +34,7 @@ ghvars repo="cameronraysmith/python-nix-template":
 
 # Update github secrets for repo from environment variables
 [group('CI/CD')]
-ghsecrets repo="cameronraysmith/python-nix-template":
+ghsecrets repo="sciexp/python-nix-template":
   @echo "secrets before updates:"
   @echo
   PAGER=cat gh secret list --repo={{ repo }}
@@ -284,7 +284,7 @@ check-secrets:
 # Initialize new project from template
 [group('template')]
 template-init:
-    echo "Use: nix --accept-flake-config run github:juspay/omnix -- init github:cameronraysmith/python-nix-template -o new-python-project"
+    echo "Use: nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template -o new-python-project"
 
 # Verify template functionality by creating and checking a test project
 [group('template')]

@@ -115,7 +115,7 @@
           } // extraConfig;
         };
 
-      gitHubOrg = "cameronraysmith";
+      gitHubOrg = "sciexp";
       packageName = "python-nix-template";
       version = builtins.getEnv "VERSION";
 

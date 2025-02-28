@@ -12,7 +12,7 @@ You can use [omnix](https://omnix.page/om/init.html)[^omnix] to initialize this 
 
 ```sh
 nix --accept-flake-config run github:juspay/omnix -- \
-init github:cameronraysmith/python-nix-template -o new-python-project
+init github:sciexp/python-nix-template -o new-python-project
 ```
 
 [^omnix]: If you have omnix installed you just need `om init ...` and not `nix run ... -- init`
@@ -127,8 +127,8 @@ default                                           # List all recipes
 
 [CI/CD]
 gcloud-context                                    # Set gcloud context
-ghsecrets repo="cameronraysmith/python-nix-template" # Update github secrets for repo from environment variables
-ghvars repo="cameronraysmith/python-nix-template" # Update github vars for repo from environment variables
+ghsecrets repo="sciexp/python-nix-template" # Update github secrets for repo from environment variables
+ghvars repo="sciexp/python-nix-template" # Update github vars for repo from environment variables
 pre-commit                                        # Run pre-commit hooks (see pre-commit.nix and note the yaml is git-ignored)
 
 [conda package]

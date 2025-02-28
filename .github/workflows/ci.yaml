@@ -199,7 +199,7 @@ jobs:
         with:
           triggerEventName: ${{ github.event_name }}
           imageName: "${{ matrix.image }}"
-          imageFQN: "ghcr.io/cameronraysmith/${{ matrix.image }}"
+          imageFQN: "ghcr.io/sciexp/${{ matrix.image }}"
           nixCommand: "nix run .#${{ matrix.image }}Manifest --impure --accept-flake-config --print-build-logs --show-trace"
           releaseVersion: ""
           cachixCacheName: ${{ vars.CACHIX_CACHE_NAME }}

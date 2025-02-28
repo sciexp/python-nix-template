@@ -19,7 +19,7 @@
         {
           name = "git-org";
           description = "GitHub organization or user name";
-          placeholder = "cameronraysmith";
+          placeholder = "sciexp";
         }
         {
           name = "author";
