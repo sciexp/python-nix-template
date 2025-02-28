@@ -129,7 +129,7 @@ container-build-dev:
 [group('nix')]
 container-run-dev:
     docker load < $(nix build .#devcontainerImage --print-out-paths)
-    docker run -it --rm -p 8888:8888 python-nix-template-dev:latest
+    docker run -it --rm -p 8888:8888 mypackage-dev:latest
 
 # Build production container image
 [group('nix')]
@@ -140,13 +140,13 @@ container-build:
 [group('nix')]
 container-run:
     docker load < $(nix build .#containerImage --print-out-paths)
-    docker run -it --rm -p 8888:8888 python-nix-template:latest
+    docker run -it --rm -p 8888:8888 mypackage:latest
 
 ## Python package
 
 # Package commands
 [group('python package')]
-build: _ensure-venv
+uv-build: _ensure-venv
     uv build
 
 # Sync and enter uv virtual environment
