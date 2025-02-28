@@ -47,8 +47,7 @@ help-targets: ## eval "$(make help-targets HELP_TARGETS_PATTERN=bootstrap | sed 
 .PHONY: bootstrap
 bootstrap: ## Main bootstrap target that runs all necessary setup steps
 bootstrap: install-nix install-direnv
-	@echo "\nBootstrap of nix and direnv complete! Please note:"
-	@echo ""
+	@printf "\nBootstrap of nix and direnv complete! Please note:\n\n"
 	@echo "- Start a new shell session before continuing"
 	@echo "- Run 'nix develop' to enter the development environment"
 	@echo ""
