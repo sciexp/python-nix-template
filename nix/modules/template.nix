@@ -12,9 +12,14 @@
       template = templates.default;
       params = [
         {
-          name = "package-name";
-          description = "Name of the Python package";
+          name = "package-name-kebab-case";
+          description = "Name of the Python package (kebab-case)";
           placeholder = "python-nix-template";
+        }
+        {
+          name = "package-name-snake-case";
+          description = "Name of the Python package (snake_case)";
+          placeholder = "python_nix_template";
         }
         {
           name = "git-org";
