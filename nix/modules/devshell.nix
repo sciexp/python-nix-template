@@ -37,6 +37,7 @@
             teller
             uv
             virtualenv
+            config.packages.set-git-env
           ];
 
           env = {
@@ -48,6 +49,7 @@
           shellHook = ''
             unset PYTHONPATH
             export REPO_ROOT=$(git rev-parse --show-toplevel)
+            set-git-env
           '';
         };
     in
