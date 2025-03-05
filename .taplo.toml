@@ -1,4 +1,8 @@
-include = [".taplo.toml", "pyproject.toml"]
+include = [
+  ".taplo.toml",
+  "packages/*/pyproject.toml",
+  "pyproject.toml",
+]
 
 [formatting]
 align_entries       = true
