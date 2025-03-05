@@ -77,7 +77,8 @@ development commands.
 - Modern python packaging with `pyproject.toml`
 - Fast dependency management with `uv`
 - Reproducible developer environments and builds with `nix` and `uv2nix`
-- Functional programming patterns briefly illustrated in the sample package:
+- See the optional monorepo workspace package [pnt-functional](./packages/pnt-functional)
+  for a brief illustration of functional programming patterns (disabled by default):
   - Railway-oriented programming with `expression` for type-safe error handling
   - Effect tracking via monad transformers for composable side effects
   - Runtime type checking with `beartype` for robust type safety
