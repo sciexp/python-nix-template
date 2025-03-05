@@ -106,14 +106,14 @@ conda-check: conda-lint conda-type conda-test
 
 ## Monorepo
 
-# Apply monorepo patch to convert project to monorepo structure
+# Apply monorepo patch to configure project for monorepo structure
 [group('monorepo')]
-monorepo_patch:
+monorepo-patch:
     git apply scripts/monorepo_pyproject.patch
 
-# Reverse monorepo patch to revert to single package structure
+# Reverse monorepo patch to revert to single root package
 [group('monorepo')]
-monorepo_reverse:
+monorepo-reverse:
     git apply --reverse scripts/monorepo_pyproject.patch
 
 ## Nix
