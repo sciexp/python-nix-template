@@ -124,64 +124,68 @@ by running `just` alone.
 <summary>just recipes</summary>
 
 ```sh
-default                                           # List all recipes
+default                                     # List all recipes
 
 [CI/CD]
-gcloud-context                                    # Set gcloud context
+gcloud-context                              # Set gcloud context
 ghsecrets repo="sciexp/python-nix-template" # Update github secrets for repo from environment variables
-ghvars repo="sciexp/python-nix-template" # Update github vars for repo from environment variables
-pre-commit                                        # Run pre-commit hooks (see pre-commit.nix and note the yaml is git-ignored)
+ghvars repo="sciexp/python-nix-template"    # Update github vars for repo from environment variables
+pre-commit                                  # Run pre-commit hooks (see pre-commit.nix and note the yaml is git-ignored)
 
 [conda package]
-conda-build                                       # Package commands (conda)
-conda-check                                       # Run all checks in conda environment (lint, type, test)
-conda-env                                         # Create and sync conda environment with pixi
-conda-lint                                        # Run linting in conda environment with pixi
-conda-lint-fix                                    # Run linting and fix errors in conda environment with pixi
-conda-lock                                        # Update conda environment
-conda-test                                        # Run tests in conda environment with pixi
-conda-type                                        # Run type checking in conda environment with pixi
-pixi-lock                                         # Update pixi lockfile
+conda-build                                 # Package commands (conda)
+conda-check                                 # Run all checks in conda environment (lint, type, test)
+conda-env                                   # Create and sync conda environment with pixi
+conda-lint                                  # Run linting in conda environment with pixi
+conda-lint-fix                              # Run linting and fix errors in conda environment with pixi
+conda-lock                                  # Update conda environment
+conda-test                                  # Run tests in conda environment with pixi
+conda-type                                  # Run type checking in conda environment with pixi
+pixi-lock                                   # Update pixi lockfile
+
+[monorepo]
+monorepo_patch                              # Apply monorepo patch to convert project to monorepo structure
+monorepo_reverse                            # Reverse monorepo patch to revert to single package structure
 
 [nix]
-ci                                                # Run CI checks locally with `om ci`
-container-build                                   # Build production container image
-container-build-dev                               # Build development container image
-container-run                                     # Run production container with port 8888 exposed
-container-run-dev                                 # Run development container with port 8888 exposed
-dev                                               # Enter the Nix development shell
-flake-check                                       # Validate the Nix flake configuration
-flake-update                                      # Update all flake inputs to their latest versions
+ci                                          # Run CI checks locally with `om ci`
+container-build                             # Build production container image
+container-build-dev                         # Build development container image
+container-run                               # Run production container with port 8888 exposed
+container-run-dev                           # Run development container with port 8888 exposed
+dev                                         # Enter the Nix development shell
+flake-check                                 # Validate the Nix flake configuration
+flake-update                                # Update all flake inputs to their latest versions
 
 [python package]
-check                                             # Run all checks (lint, type, test)
-lint                                              # Run linting
-lint-fix                                          # Run linting and fix errors
-test                                              # Run tests
-type                                              # Run type checking in uv virtual environment
-uv-build                                          # Package commands
-uv-lint                                           # Run linting in uv virtual environment
-uv-lint-fix                                       # Run linting and fix errors in uv virtual environment
-uv-lock                                           # Update lockfile from pyproject.toml
-uv-test                                           # Run tests in uv virtual environment
-uv-type                                           # Run type checking in uv virtual environment
-venv                                              # Sync and enter uv virtual environment
+check                                       # Run all checks (lint, type, test)
+lint                                        # Run linting
+lint-fix                                    # Run linting and fix errors
+test                                        # Run tests
+type                                        # Run type checking in uv virtual environment
+uv-build                                    # Package commands
+uv-lint                                     # Run linting in uv virtual environment
+uv-lint-fix                                 # Run linting and fix errors in uv virtual environment
+uv-lock                                     # Update lockfile from pyproject.toml
+uv-test                                     # Run tests in uv virtual environment
+uv-type                                     # Run type checking in uv virtual environment
+venv                                        # Sync and enter uv virtual environment
 
 [secrets]
-check-secrets                                     # Check secrets are available in teller shell.
-create-and-populate-separate-secrets path         # Complete process: Create and populate separate secrets for each line in the dotenv file
-create-and-populate-single-secret name path       # Complete process: Create a secret and populate it with the entire contents of a dotenv file
-create-secret name                                # Create a secret with the given name
-export                                            # Export unique secrets to dotenv format
-get-secret name                                   # Retrieve the contents of a given secret
-populate-separate-secrets path                    # Populate each line of a dotenv-formatted file as a separate secret
-populate-single-secret name path                  # Populate a single secret with the contents of a dotenv-formatted file
-seed-dotenv                                       # Create empty dotenv from template
-show                                              # Show existing secrets
+check-secrets                               # Check secrets are available in teller shell.
+create-and-populate-separate-secrets path   # Complete process: Create and populate separate secrets for each line in the dotenv file
+create-and-populate-single-secret name path # Complete process: Create a secret and populate it with the entire contents of a dotenv file
+create-secret name                          # Create a secret with the given name
+export                                      # Export unique secrets to dotenv format
+get-secret name                             # Retrieve the contents of a given secret
+populate-separate-secrets path              # Populate each line of a dotenv-formatted file as a separate secret
+populate-single-secret name path            # Populate a single secret with the contents of a dotenv-formatted file
+seed-dotenv                                 # Create empty dotenv from template
+show                                        # Show existing secrets
 
 [template]
-template-init                                     # Initialize new project from template
-template-verify                                   # Verify template functionality by creating and checking a test project
+template-init                               # Initialize new project from template
+template-verify                             # Verify template functionality by creating and checking a test project
 ```
 
 </details>
