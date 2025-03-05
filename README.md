@@ -17,7 +17,9 @@ init github:sciexp/python-nix-template -o new-python-project
 
 [^omnix]: If you have omnix installed you just need `om init ...` and not `nix run ... -- init`
 
-### Quick Start
+### Quick start
+
+#### nix-managed environment
 
 The template supports three types of development environments:
 
@@ -33,7 +35,15 @@ make bootstrap
 
 only the very first time you are setting up one of these templates. This will
 verify you have the [nix package manager](https://nix.dev) and
-[direnv](https://direnv.net/) installed. After this running
+[direnv](https://direnv.net/) installed. Registration of the repository contents requires
+creating a git repository, for example with
+
+```sh
+git init && git commit --allow-empty -m "initial commit (empty)" && git add .
+```
+
+but does not require committing.
+After this running
 
 ```sh
 direnv allow
@@ -44,6 +54,9 @@ version of your PATH variable. These include the `just` task runner, which
 provides an alternative to using [GNU Make](https://www.gnu.org/software/make/)
 as a task runner. See the [task runner](#task-runner) section for a listing of
 development commands.
+
+You should now be able to run `pytest` or `just test` to confirm the package
+tests pass in the devshell environment.
 
 #### python virtualenv
 
