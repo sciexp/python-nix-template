@@ -5,6 +5,7 @@ default:
 # Contents (alphabetical)
 ## CI/CD
 ## Conda package
+## Monorepo
 ## Nix
 ## Python package
 ## Secrets
@@ -102,6 +103,18 @@ conda-type:
 [group('conda package')]
 conda-check: conda-lint conda-type conda-test
     @printf "\n\033[92mAll conda checks passed!\033[0m\n"
+
+## Monorepo
+
+# Apply monorepo patch to convert project to monorepo structure
+[group('monorepo')]
+monorepo_patch:
+    git apply scripts/monorepo_pyproject.patch
+
+# Reverse monorepo patch to revert to single package structure
+[group('monorepo')]
+monorepo_reverse:
+    git apply --reverse scripts/monorepo_pyproject.patch
 
 ## Nix
 
