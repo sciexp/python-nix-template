@@ -22,6 +22,12 @@
           placeholder = "python_nix_template";
         }
         {
+          name = "monorepo-package";
+          description = "Include the functional programming monorepo package in the project";
+          paths = [ "packages/pnt-functional" ];
+          value = false;
+        }
+        {
           name = "git-org";
           description = "GitHub organization or user name";
           placeholder = "sciexp";
