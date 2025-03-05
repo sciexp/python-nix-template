@@ -5,10 +5,50 @@
     templates.default = {
       description = "A Python project template for Nix using uv2nix and flake-parts";
       path = builtins.path { path = inputs.self; };
+      welcomeText = ''
+        Welcome to the python-nix-template!
+
+        Don't forget to `cd` into your new project directory.
+
+        If you do not have nix and direnv installed, check
+
+        ```bash
+        make -n bootstrap
+        ```
+
+        and rerun without the `-n` if you are comfortable with the commands. Otherwise,
+        manually install the nix package manager and direnv.
+
+        In order to recognize the `flake.nix` and associated files, create a git 
+        repository, stage the files, and run `direnv allow` to load the environment.
+
+        You can copy and paste
+
+        ```bash
+        git init && git commit --allow-empty -m "initial commit (empty)" && git add . && direnv allow
+        ```
+
+        or, if you prefer, run the commands manually to verify or modify them
+
+        ```bash
+        ❯ git init
+        Initialized empty Git repository in ...
+
+        ❯ git commit --allow-empty -m "initial commit (empty)"
+        [main (root-commit) bba59e7] initial commit (empty)
+
+        ❯ git add .
+
+        ❯ direnv allow
+        ```
+
+        You should then be able to run `pytest` to verify the project is working.
+        See the README for more information.
+      '';
     };
 
     # https://omnix.page/om/init.html#spec
-    om.templates.default = {
+    om.templates.python-nix-template = {
       template = templates.default;
       params = [
         {
