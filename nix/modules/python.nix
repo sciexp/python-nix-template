@@ -72,6 +72,13 @@
                 };
                 nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem { editables = [ ]; };
               });
+              pnt-functional = prev.pnt-functional.overrideAttrs (old: {
+                nativeBuildInputs =
+                  old.nativeBuildInputs
+                  ++ final.resolveBuildSystem {
+                    editables = [ ];
+                  };
+              });
             })
           ]
         );
