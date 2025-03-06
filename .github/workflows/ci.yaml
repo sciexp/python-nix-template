@@ -289,6 +289,8 @@ jobs:
   build-and-release-main-package:
     needs: [release, detect-changes]
     if: ${{ needs.release.outputs.released == 'true' }}
+    permissions:
+      contents: write
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: "."
@@ -302,6 +304,8 @@ jobs:
   build-and-release-functional-package:
     needs: [release, detect-changes]
     if: ${{ needs.release.outputs.released == 'true' }}
+    permissions:
+      contents: write
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: "packages/pnt-functional"
