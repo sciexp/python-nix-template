@@ -17,15 +17,7 @@
     "packageManager": "yarn@4.6.0",
     "private": true,
     "release": {
-        "branches": [
-            {
-                "name": "main"
-            },
-            {
-                "name": "beta",
-                "prerelease": true
-            }
-        ],
+        "extends": "../../package.json",
         "npmPublish": false,
         "plugins": [
             [
@@ -37,7 +29,17 @@
                             "BREAKING-CHANGE"
                         ]
                     },
-                    "preset": "conventionalcommits"
+                    "preset": "conventionalcommits",
+                    "releaseRules": [
+                        {
+                            "release": "patch",
+                            "scope": "pnt-functional"
+                        },
+                        {
+                            "release": "patch",
+                            "scope": "functional"
+                        }
+                    ]
                 }
             ],
             [
@@ -64,6 +66,16 @@
                 "@semantic-release/github",
                 {
                     "addReleases": "bottom",
+                    "assets": [
+                        {
+                            "label": "Source Distribution (tar.gz)",
+                            "path": "dist/*.tar.gz"
+                        },
+                        {
+                            "label": "Python Wheel",
+                            "path": "dist/*.whl"
+                        }
+                    ],
                     "failComment": false,
                     "successComment": false
                 }
@@ -72,8 +84,8 @@
                 "semantic-release-major-tag",
                 {
                     "customTags": [
-                        "v${major}",
-                        "v${major}.${minor}"
+                        "pnt-functional-v${major}",
+                        "pnt-functional-v${major}.${minor}"
                     ]
                 }
             ],
@@ -81,9 +93,12 @@
                 "@semantic-release/git",
                 {
                     "assets": [
+                        "pyproject.toml",
+                        "uv.lock",
+                        "src/pnt_functional/__init__.py",
                         "CHANGELOG.md"
                     ],
-                    "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+                    "message": "chore(release): pnt-functional ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
                 }
             ]
         ]
