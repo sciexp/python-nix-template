@@ -1,4 +1,8 @@
-from python_nix_template import main
+# TODO: restore absolute imports when
+# https://github.com/juspay/omnix/issues/425
+# is resolved
+# from python_nix_template import main
+from .. import main
 
 
 def test_main(capsys):
