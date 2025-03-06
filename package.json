@@ -37,6 +37,10 @@
       {
         "name": "beta",
         "prerelease": true
+      },
+      {
+        "name": "release",
+        "prerelease": true
       }
     ],
     "plugins": [
