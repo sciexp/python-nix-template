@@ -1,0 +1,117 @@
+{
+  "name": "python-nix-template",
+  "version": "0.0.0-development",
+  "private": true,
+  "description": "Python Nix Template with uv2nix integration",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sciexp/python-nix-template.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "yarn@4.6.0",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.1",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
+    "cross-env": "^7.0.3",
+    "semantic-release": "^24.2.3",
+    "semantic-release-major-tag": "^0.3.2"
+  },
+  "scripts": {
+    "semantic-release": "semantic-release",
+    "test-release": "semantic-release --dry-run --no-ci",
+    "test-release:main": "cross-env GITHUB_REF=refs/heads/main semantic-release --dry-run --no-ci",
+    "test-release:current": "semantic-release --dry-run --no-ci --branches $(git branch --show-current)",
+    "test-release:direct": "semantic-release --dry-run --no-ci --branches release",
+    "test-package-release": "cd $PACKAGE_PATH && semantic-release --dry-run --no-ci"
+  },
+  "release": {
+    "branches": [
+      {
+        "name": "main"
+      },
+      {
+        "name": "beta",
+        "prerelease": true
+      }
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING-CHANGE"
+            ]
+          }
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING-CHANGE",
+              "NOTABLE CHANGE",
+              "NOTABLE-CHANGE"
+            ]
+          }
+        }
+      ],
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogTitle": "# Changelog"
+        }
+      ],
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "dist/*.tar.gz",
+              "label": "Source Distribution (tar.gz)"
+            },
+            {
+              "path": "dist/*.whl",
+              "label": "Python Wheel"
+            }
+          ],
+          "failComment": false,
+          "successComment": false,
+          "addReleases": "bottom"
+        }
+      ],
+      [
+        "semantic-release-major-tag",
+        {
+          "customTags": [
+            "v${major}",
+            "v${major}.${minor}"
+          ]
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
+          "assets": [
+            "pyproject.toml",
+            "uv.lock",
+            "*/__init__.py",
+            "CHANGELOG.md"
+          ]
+        }
+      ]
+    ],
+    "npmPublish": false
+  }
+}
