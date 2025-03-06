@@ -195,6 +195,54 @@ jobs:
       monorepo: "true"
       checkout_ref: ${{ needs.set-variables.outputs.checkout_ref }}
 
+  test-release:
+    runs-on: ubuntu-latest
+    needs: [set-variables, detect-changes, test-unirepo, test-monorepo]
+    if: |
+      github.event_name == 'pull_request' && 
+      needs.set-variables.outputs.dry_run_release == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - name: python-nix-template
+            path: "."
+            change-output: main-package-changed
+            apply-monorepo-patch: false
+          - name: pnt-functional
+            path: packages/pnt-functional
+            change-output: functional-package-changed
+            apply-monorepo-patch: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply monorepo patch
+        if: ${{ matrix.package.apply-monorepo-patch }}
+        run: git apply scripts/monorepo_pyproject.patch
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.package.path }}
+          npm install
+
+      - name: Test semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd ${{ matrix.package.path }}
+          npx semantic-release --dry-run --no-ci
+
+      - name: Report results
+        run: |
+          echo "✅ Dry-run release check for ${{ matrix.package.name }} completed successfully"
+
   release:
     runs-on: ubuntu-latest
     needs: [nixci, test-unirepo, test-monorepo]
