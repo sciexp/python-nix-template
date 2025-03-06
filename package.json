@@ -75,16 +75,6 @@
       [
         "@semantic-release/github",
         {
-          "assets": [
-            {
-              "path": "dist/*.tar.gz",
-              "label": "Source Distribution (tar.gz)"
-            },
-            {
-              "path": "dist/*.whl",
-              "label": "Python Wheel"
-            }
-          ],
           "failComment": false,
           "successComment": false,
           "addReleases": "bottom"
@@ -104,9 +94,6 @@
         {
           "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
           "assets": [
-            "pyproject.toml",
-            "uv.lock",
-            "*/__init__.py",
             "CHANGELOG.md"
           ]
         }
