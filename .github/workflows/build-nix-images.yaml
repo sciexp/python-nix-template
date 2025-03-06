@@ -1,0 +1,120 @@
+name: Build Nix Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: "Run with tmate.io debugging enabled"
+        required: true
+        type: boolean
+        default: false
+      version:
+        description: "Version to tag images with"
+        required: true
+        type: string
+      images:
+        description: "JSON array of images to build"
+        required: true
+        type: string
+      branch:
+        description: "Branch to checkout"
+        required: true
+        type: string
+      revision:
+        description: "Git revision to checkout"
+        required: false
+        type: string
+      mode:
+        description: "Build mode"
+        required: false
+        type: string
+        default: "prod"
+
+  workflow_call:
+    inputs:
+      debug_enabled:
+        description: "Run with tmate.io debugging enabled"
+        required: true
+        type: string
+      version:
+        description: "Version to tag images with"
+        required: true
+        type: string
+      images:
+        description: "JSON array of images to build"
+        required: true
+        type: string
+      branch:
+        description: "Branch to checkout"
+        required: true
+        type: string
+      revision:
+        description: "Git revision to checkout"
+        required: false
+        type: string
+      mode:
+        description: "Build mode"
+        required: false
+        type: string
+        default: "prod"
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: ${{ fromJson(inputs.images) }}
+      fail-fast: false
+
+    steps:
+      - name: Maximize build space
+        uses: cameronraysmith/maximize-build-space@fdf0c06b18d92be98aa64cb68ae4ea4c9bc4794d # ratchet:cameronraysmith/maximize-build-space@print-usage
+        with:
+          build-mount-path: /nix
+          build-mount-path-ownership: "root:root"
+          root-reserve-mb: 34816
+          swap-size-mb: 1024
+          remove-dotnet: "true"
+          remove-android: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -yq zstd
+          sudo apt-get clean
+
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Setup tmate debug session
+        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
+        if: ${{ inputs.debug_enabled == 'true' }}
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@a48face58194521af687ce7df4c802b1b558e743 # ratchet:DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
+
+      - name: Setup remote cache
+        uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # ratchet:cachix/cachix-action@v15
+        with:
+          name: "${{ vars.CACHIX_CACHE_NAME }}"
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          extraPullNames: nix-community,pyproject-nix,sciexp,srid
+
+      - name: Build ${{ matrix.image }} image
+        uses: ./.github/actions/build-nix-image
+        with:
+          triggerEventName: "workflow_dispatch"
+          imageName: "${{ matrix.image }}"
+          imageFQN: "ghcr.io/sciexp/${{ matrix.image }}"
+          nixCommand: "nix run .#${{ matrix.image }}Manifest --impure --accept-flake-config --print-build-logs --show-trace"
+          releaseVersion: "${{ inputs.version }}"
+          cachixCacheName: ${{ vars.CACHIX_CACHE_NAME }}
+          cachixAuthToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
