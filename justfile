@@ -305,3 +305,28 @@ template-verify:
     om init -t .#default ./tmp-verify-template
     cd ./tmp-verify-template && nix flake check
     rm -rf ./tmp-verify-template
+
+# Release testing with yarn
+[group('release')]
+test-release:
+    yarn test-release
+
+# Test release as if on main branch
+[group('release')]
+test-release-as-main:
+    yarn test-release:main
+
+# Test release with explicit branch override
+[group('release')]
+test-release-on-current-branch:
+    yarn test-release:current
+
+# Test release directly on release branch
+[group('release')]
+test-release-direct:
+    yarn test-release:direct
+
+# Test package release
+[group('release')]
+test-package-release PACKAGE_PATH="." PACKAGE_NAME="python-nix-template":
+    PACKAGE_PATH={{PACKAGE_PATH}} yarn test-package-release
