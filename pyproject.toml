@@ -16,12 +16,6 @@ python-nix-template = "python_nix_template:main"
 build-backend = "hatchling.build"
 requires      = ["hatchling"]
 
-# [tool.uv.sources]
-# pnt-functional = { workspace = true }
-
-# [tool.uv.workspace]
-# members = ["packages/*"]
-
 [tool.hatch.build.targets.wheel]
 packages = ["src/python_nix_template"]
 
@@ -87,8 +81,6 @@ channels = [
 hatchling = "*"
 
 [tool.pytest.ini_options]
-# Add source locations to pytest-cov e.g.:
-# --cov=packages/pnt-functional/src/pnt_functional/
 addopts = """
 -rA
 --xdoctest
@@ -99,8 +91,6 @@ addopts = """
 """
 log_level = "INFO"
 testpaths = [
-  # Add test locations e.g.:
-  # "packages/pnt-functional/src/pnt_functional/tests",
   "src/python_nix_template/tests",
 ]
 
