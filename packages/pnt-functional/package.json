@@ -93,7 +93,6 @@
         "url": "https://github.com/sciexp/python-nix-template.git"
     },
     "scripts": {
-        "semantic-release": "semantic-release",
         "test-release": "semantic-release --dry-run --no-ci"
     },
     "version": "0.0.0-development"
