@@ -3262,6 +3262,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pnt-functional@workspace:packages/pnt-functional":
+  version: 0.0.0-use.local
+  resolution: "pnt-functional@workspace:packages/pnt-functional"
+  dependencies:
+    "@semantic-release/changelog": "npm:^6.0.3"
+    "@semantic-release/git": "npm:^10.0.1"
+    "@semantic-release/github": "npm:^11.0.1"
+    conventional-changelog-conventionalcommits: "npm:^8.0.0"
+    cross-env: "npm:^7.0.3"
+    semantic-release: "npm:^24.2.3"
+    semantic-release-major-tag: "npm:^0.3.2"
+  languageName: unknown
+  linkType: soft
+
 "postcss-selector-parser@npm:^6.1.2":
   version: 6.1.2
   resolution: "postcss-selector-parser@npm:6.1.2"
