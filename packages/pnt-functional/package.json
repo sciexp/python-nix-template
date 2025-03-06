@@ -1,0 +1,104 @@
+{
+    "description": "Python Nix Template with uv2nix integration",
+    "devDependencies": {
+        "@semantic-release/changelog": "^6.0.3",
+        "@semantic-release/git": "^10.0.1",
+        "@semantic-release/github": "^11.0.1",
+        "conventional-changelog-conventionalcommits": "^8.0.0",
+        "cross-env": "^7.0.3",
+        "semantic-release": "^24.2.3",
+        "semantic-release-major-tag": "^0.3.2"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "license": "MIT",
+    "name": "pnt-functional",
+    "packageManager": "yarn@4.6.0",
+    "private": true,
+    "release": {
+        "branches": [
+            {
+                "name": "main"
+            },
+            {
+                "name": "beta",
+                "prerelease": true
+            }
+        ],
+        "npmPublish": false,
+        "plugins": [
+            [
+                "@semantic-release/commit-analyzer",
+                {
+                    "parserOpts": {
+                        "noteKeywords": [
+                            "BREAKING CHANGE",
+                            "BREAKING-CHANGE"
+                        ]
+                    },
+                    "preset": "conventionalcommits"
+                }
+            ],
+            [
+                "@semantic-release/release-notes-generator",
+                {
+                    "parserOpts": {
+                        "noteKeywords": [
+                            "BREAKING CHANGE",
+                            "BREAKING-CHANGE",
+                            "NOTABLE CHANGE",
+                            "NOTABLE-CHANGE"
+                        ]
+                    },
+                    "preset": "conventionalcommits"
+                }
+            ],
+            [
+                "@semantic-release/changelog",
+                {
+                    "changelogTitle": "# Changelog"
+                }
+            ],
+            [
+                "@semantic-release/github",
+                {
+                    "addReleases": "bottom",
+                    "failComment": false,
+                    "successComment": false
+                }
+            ],
+            [
+                "semantic-release-major-tag",
+                {
+                    "customTags": [
+                        "v${major}",
+                        "v${major}.${minor}"
+                    ]
+                }
+            ],
+            [
+                "@semantic-release/git",
+                {
+                    "assets": [
+                        "CHANGELOG.md"
+                    ],
+                    "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+                }
+            ]
+        ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/sciexp/python-nix-template.git"
+    },
+    "scripts": {
+        "semantic-release": "semantic-release",
+        "test-package-release": "cd $PACKAGE_PATH && semantic-release --dry-run --no-ci",
+        "test-release": "semantic-release --dry-run --no-ci",
+        "test-release:current": "semantic-release --dry-run --no-ci --branches $(git branch --show-current)",
+        "test-release:direct": "semantic-release --dry-run --no-ci --branches release",
+        "test-release:main": "cross-env GITHUB_REF=refs/heads/main semantic-release --dry-run --no-ci"
+    },
+    "version": "0.0.0-development"
+}
