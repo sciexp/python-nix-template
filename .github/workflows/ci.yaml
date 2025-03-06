@@ -70,6 +70,7 @@ jobs:
       debug: ${{ steps.set-variables.outputs.debug }}
       skip_ci: ${{ steps.set-variables.outputs.skip_ci }}
       skip_tests: ${{ steps.set-variables.outputs.skip_tests }}
+      dry_run_release: ${{ steps.set-variables.outputs.dry_run_release }}
       checkout_ref: ${{ steps.set-variables.outputs.checkout_ref }}
       checkout_rev: ${{ steps.set-variables.outputs.checkout_rev }}
 
@@ -80,6 +81,7 @@ jobs:
           DEBUG="false"
           SKIP_CI="false"
           SKIP_TESTS="false"
+          DRY_RUN_RELEASE="false"
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             DEBUG="${{ inputs.debug_enabled }}"
@@ -94,6 +96,9 @@ jobs:
             fi
             if ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }}; then
               DEBUG="true"
+            fi
+            if ${{ contains(github.event.pull_request.labels.*.name, 'release-dry-run') }}; then
+              DRY_RUN_RELEASE="true"
             fi
             CHECKOUT_REF="${{ github.event.pull_request.head.ref }}"
             CHECKOUT_REV="${{ github.event.pull_request.head.sha }}"
@@ -111,8 +116,14 @@ jobs:
           echo "DEBUG=$DEBUG" >> $GITHUB_OUTPUT
           echo "SKIP_CI=$SKIP_CI" >> $GITHUB_OUTPUT
           echo "SKIP_TESTS=$SKIP_TESTS" >> $GITHUB_OUTPUT
+          echo "DRY_RUN_RELEASE=$DRY_RUN_RELEASE" >> $GITHUB_OUTPUT
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> $GITHUB_OUTPUT
           echo "CHECKOUT_REV=$CHECKOUT_REV" >> $GITHUB_OUTPUT
+
+  detect-changes:
+    needs: set-variables
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
+    uses: ./.github/workflows/detect-changes.yaml
 
   nixci:
     runs-on: ${{ matrix.os }}
@@ -156,7 +167,7 @@ jobs:
         run: |
           nix run github:srid/nixci -- build
 
-  test-python:
+  test-unirepo:
     needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }}
     strategy:
@@ -186,7 +197,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [nixci, test-python, test-monorepo]
+    needs: [nixci, test-unirepo, test-monorepo]
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     environment:
       name: release
