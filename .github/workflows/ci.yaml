@@ -237,7 +237,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd ${{ matrix.package.path }}
-          npx semantic-release --dry-run --no-ci
+          npx semantic-release --dry-run --no-ci --branches ${{ github.ref_name }}
 
       - name: Report results
         run: |
