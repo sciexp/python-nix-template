@@ -102,7 +102,9 @@ jobs:
           extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
 
       - name: Setup remote cache
-        uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # ratchet:cachix/cachix-action@v15
+        # TODO: disable continue-on-error https://www.github.com/cachix/cachix-action/issues/200
+        uses: cachix/cachix-action@be5295a636153b6ad194d3245f78f8e0b78dc704 # ratchet:cachix/cachix-action@master
+        continue-on-error: true
         with:
           name: "${{ vars.CACHIX_CACHE_NAME }}"
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
