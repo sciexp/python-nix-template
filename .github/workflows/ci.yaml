@@ -219,25 +219,19 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Get PR target branch
-        id: get-target-branch
-        run: |
-          TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
-          echo "TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_OUTPUT
-          echo "Target branch: $TARGET_BRANCH"
+          ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Simulate PR merge
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-          git checkout ${{ steps.get-target-branch.outputs.TARGET_BRANCH }}
+          git checkout ${{ github.event.pull_request.base.ref }}
 
           PR_BRANCH="${{ github.event.pull_request.head.ref }}"
           PR_SHA="${{ github.event.pull_request.head.sha }}"
 
-          echo "Simulating merge of PR branch '$PR_BRANCH' ($PR_SHA) into target branch '${{ steps.get-target-branch.outputs.TARGET_BRANCH }}'"
+          echo "Simulating merge of PR branch '$PR_BRANCH' ($PR_SHA) into target branch '${{ github.event.pull_request.base.ref }}'"
 
           git merge $PR_SHA --ff-only || {
             echo "Cannot fast-forward merge. This could be because the PR branch is not up to date with the target branch."
@@ -263,7 +257,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "GITHUB_ACTIONS=$GITHUB_ACTIONS"
+          unset GITHUB_ACTIONS
+          echo "GITHUB_ACTIONS=$GITHUB_ACTIONS"
           yarn workspace ${{ matrix.package.name }} test-release
+          echo "GITHUB_ACTIONS=$GITHUB_ACTIONS"
 
       - name: Report results
         run: |
