@@ -11,6 +11,9 @@
   "engines": {
     "node": ">=18"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "packageManager": "yarn@4.6.0",
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
@@ -23,11 +26,7 @@
   },
   "scripts": {
     "semantic-release": "semantic-release",
-    "test-release": "semantic-release --dry-run --no-ci",
-    "test-release:main": "cross-env GITHUB_REF=refs/heads/main semantic-release --dry-run --no-ci",
-    "test-release:current": "semantic-release --dry-run --no-ci --branches $(git branch --show-current)",
-    "test-release:direct": "semantic-release --dry-run --no-ci --branches release",
-    "test-package-release": "cd $PACKAGE_PATH && semantic-release --dry-run --no-ci"
+    "test-release": "semantic-release --dry-run --no-ci"
   },
   "release": {
     "branches": [
@@ -36,10 +35,6 @@
       },
       {
         "name": "beta",
-        "prerelease": true
-      },
-      {
-        "name": "release",
         "prerelease": true
       }
     ],
