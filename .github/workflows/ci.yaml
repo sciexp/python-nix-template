@@ -314,7 +314,7 @@ jobs:
 
   publish-main-package:
     needs: [release, build-and-release-main-package]
-    if: ${{ needs.release.outputs.released == 'true' }}
+    if: ${{ needs.release.outputs.released == 'true' && needs.build-and-release-main-package.outputs.released == 'true' }}
     uses: ./.github/workflows/python-release.yaml
     with:
       package-name: "python-nix-template"
@@ -323,7 +323,7 @@ jobs:
 
   publish-functional-package:
     needs: [release, build-and-release-functional-package]
-    if: ${{ needs.release.outputs.released == 'true' }}
+    if: ${{ needs.release.outputs.released == 'true' && needs.build-and-release-functional-package.outputs.released == 'true' }}
     uses: ./.github/workflows/python-release.yaml
     with:
       package-name: "pnt-functional"
