@@ -218,7 +218,32 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
-          ref: ${{ needs.set-variables.outputs.checkout_ref }}
+          fetch-depth: 0
+
+      - name: Get PR target branch
+        id: get-target-branch
+        run: |
+          TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
+          echo "TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+          echo "Target branch: $TARGET_BRANCH"
+
+      - name: Simulate PR merge
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git checkout ${{ steps.get-target-branch.outputs.TARGET_BRANCH }}
+
+          PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+          PR_SHA="${{ github.event.pull_request.head.sha }}"
+
+          echo "Simulating merge of PR branch '$PR_BRANCH' ($PR_SHA) into target branch '${{ steps.get-target-branch.outputs.TARGET_BRANCH }}'"
+
+          git merge $PR_SHA --ff-only || {
+            echo "Cannot fast-forward merge. This could be because the PR branch is not up to date with the target branch."
+            echo "Please rebase your PR branch on the latest target branch."
+            exit 1
+          }
 
       - name: Apply monorepo patch
         if: ${{ matrix.package.apply-monorepo-patch }}
