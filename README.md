@@ -166,8 +166,8 @@ conda-type                                  # Run type checking in conda environ
 pixi-lock                                   # Update pixi lockfile
 
 [monorepo]
-monorepo_patch                              # Apply monorepo patch to convert project to monorepo structure
-monorepo_reverse                            # Reverse monorepo patch to revert to single package structure
+monorepo-patch                              # Apply monorepo patch to convert project to monorepo structure
+monorepo-reverse                            # Reverse monorepo patch to revert to single package structure
 
 [nix]
 ci                                          # Run CI checks locally with `om ci`
