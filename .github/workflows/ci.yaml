@@ -55,7 +55,7 @@ jobs:
         with:
           fetch-depth: 0 # fetch all history so multiple commits can be scanned
       - name: GitGuardian scan
-        uses: GitGuardian/ggshield-action@e8eef84fc3419d2a7e7beb15ab96c95b3ce2da24 # ratchet:GitGuardian/ggshield-action@v1.27.0
+        uses: GitGuardian/ggshield-action@455483042671cc73b40d0e753baddffef7309a1f # ratchet:GitGuardian/ggshield-action@v1.37.0
         env:
           GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
           GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
@@ -214,7 +214,7 @@ jobs:
             change-output: functional-package-changed
             apply-monorepo-patch: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           ref: ${{ needs.set-variables.outputs.checkout_ref }}
 
@@ -223,7 +223,7 @@ jobs:
         run: git apply scripts/monorepo_pyproject.patch
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # ratchet:actions/setup-node@v4
         with:
           node-version: "lts/*"
 
@@ -258,12 +258,12 @@ jobs:
       git-head: ${{ steps.semanticrelease.outputs.git-head }}
       git-tag: ${{ steps.semanticrelease.outputs.git-tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # ratchet:astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
           enable-cache: true
@@ -272,7 +272,7 @@ jobs:
 
       - name: Run semantic-release
         id: semanticrelease
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # ratchet:cycjimmy/semantic-release-action@v4
         with:
           semantic_version: 24
           extra_plugins: |
