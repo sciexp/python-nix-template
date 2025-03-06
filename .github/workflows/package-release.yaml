@@ -20,6 +20,16 @@ on:
         required: false
         type: boolean
         default: false
+      run-if-changed-only:
+        description: "Run only if this package has changed"
+        required: false
+        type: boolean
+        default: false
+      change-detected:
+        description: "Whether changes were detected for this package"
+        required: false
+        type: boolean
+        default: true
 
   workflow_call:
     inputs:
@@ -40,11 +50,27 @@ on:
         required: false
         type: string
         default: "false"
+      run-if-changed-only:
+        description: "Run only if this package has changed"
+        required: false
+        type: string
+        default: "false"
+      change-detected:
+        description: "Whether changes were detected for this package"
+        required: false
+        type: string
+        default: "true"
 
     outputs:
       artifact-name:
         description: "Name of the uploaded artifact"
         value: ${{ jobs.release.outputs.artifact-name }}
+      version:
+        description: "Released version"
+        value: ${{ jobs.release.outputs.version }}
+      released:
+        description: "Whether a new release was published"
+        value: ${{ jobs.release.outputs.released }}
 
 jobs:
   release:
@@ -55,10 +81,13 @@ jobs:
     environment:
       name: release
       url: https://github.com/sciexp/python-nix-template/releases/tag/v${{ inputs.version }}
+    if: ${{ inputs.run-if-changed-only != 'true' || inputs.change-detected == 'true' }}
     outputs:
       artifact-name: ${{ steps.set-outputs.outputs.artifact-name }}
+      version: ${{ steps.semantic-release.outputs.new_release_version || inputs.version }}
+      released: ${{ steps.semantic-release.outputs.new_release_published || 'false' }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false # Important for protected branches
@@ -67,12 +96,12 @@ jobs:
         if: ${{ inputs.apply-monorepo-patch == 'true' }}
         run: git apply scripts/monorepo_pyproject.patch
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pip"
-          python-version-file: "pyproject.toml"
+      #   - name: Set up Python
+      #     uses: actions/setup-python@v5
+      #     with:
+      #       python-version: "3.12"
+      #       cache: "pip"
+      #       python-version-file: "pyproject.toml"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -82,17 +111,17 @@ jobs:
           cache-dependency-glob: "uv.lock"
           version: "0.6.4"
 
-      - name: Install semantic-release dependencies
-        run: |
-          cd ${{ inputs.package-path }}
-          npm install
+      #   - name: Install semantic-release dependencies
+      #     run: |
+      #       cd ${{ inputs.package-path }}
+      #       npm install
 
       - name: Run semantic-release
         id: semantic-release
         uses: cycjimmy/semantic-release-action@v4
         with:
           working_directory: ${{ inputs.package-path }}
-          semantic_version: 21
+          semantic_version: 24
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
@@ -105,6 +134,13 @@ jobs:
         run: |
           ARTIFACT_NAME="${{ inputs.package-name }}-${{ github.run_id }}"
           echo "artifact-name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+
+          # Log release information
+          if [ "${{ steps.semantic-release.outputs.new_release_published }}" == "true" ]; then
+            echo "📦 Package ${{ inputs.package-name }} released version ${{ steps.semantic-release.outputs.new_release_version }}"
+          else
+            echo "ℹ️ No release needed for ${{ inputs.package-name }}"
+          fi
 
       - name: Build package
         if: ${{ steps.semantic-release.outputs.new_release_published == 'true' }}
