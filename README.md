@@ -35,8 +35,8 @@ make bootstrap
 
 only the very first time you are setting up one of these templates. This will
 verify you have the [nix package manager](https://nix.dev) and
-[direnv](https://direnv.net/) installed. Registration of the repository contents requires
-creating a git repository, for example with
+[direnv](https://direnv.net/) installed. Registration of the repository contents
+requires creating a git repository, for example with
 
 ```sh
 git init && git commit --allow-empty -m "initial commit (empty)" && git add .
@@ -57,6 +57,11 @@ development commands.
 
 You should now be able to run `pytest` or `just test` to confirm the package
 tests pass in the devshell environment.
+
+If you choose to retain the monorepo leaf package in
+[packages/pnt-functional](./packages/pnt-functional) then you will need to run
+`just monorepo-patch uv-lock` to update the [pyproject.toml](./pyproject.toml)
+and [uv.lock](./uv.lock) to include it and its tests in the workspace.
 
 #### python virtualenv
 
