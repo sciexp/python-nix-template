@@ -200,6 +200,8 @@ jobs:
   test-release:
     runs-on: ubuntu-latest
     needs: [set-variables, detect-changes, test-unirepo, test-monorepo]
+    permissions:
+      contents: write
     if: |
       github.event_name == 'pull_request' && 
       needs.set-variables.outputs.dry_run_release == 'true'
@@ -239,6 +241,7 @@ jobs:
       - name: Test semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           unset GITHUB_ACTIONS
           yarn workspace ${{ matrix.package.name }} test-release -b ${{ needs.set-variables.outputs.checkout_ref }}
