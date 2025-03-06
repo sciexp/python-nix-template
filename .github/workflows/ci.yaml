@@ -291,6 +291,7 @@ jobs:
     if: ${{ needs.release.outputs.released == 'true' }}
     permissions:
       contents: write
+      id-token: write
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: "."
@@ -306,6 +307,7 @@ jobs:
     if: ${{ needs.release.outputs.released == 'true' }}
     permissions:
       contents: write
+      id-token: write
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: "packages/pnt-functional"
