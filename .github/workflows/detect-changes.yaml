@@ -1,0 +1,43 @@
+name: Detect Changes
+
+on:
+  workflow_call:
+    outputs:
+      main-package-changed:
+        description: "Whether the main package changed"
+        value: ${{ jobs.detect.outputs.main-package-changed }}
+      functional-package-changed:
+        description: "Whether the pnt-functional package changed"
+        value: ${{ jobs.detect.outputs.functional-package-changed }}
+      any-package-changed:
+        description: "Whether any package changed"
+        value: ${{ jobs.detect.outputs.any-package-changed }}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      main-package-changed: ${{ steps.filter.outputs.main-package }}
+      functional-package-changed: ${{ steps.filter.outputs.functional-package }}
+      any-package-changed: ${{ steps.filter.outputs.any-package == 'true' || steps.filter.outputs.functional-package == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            main-package:
+              - 'src/python_nix_template/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - 'nix/modules/**'
+              - '.github/workflows/package-release.yaml'
+              - '.github/workflows/python-release.yaml'
+            functional-package:
+              - 'packages/pnt-functional/**'
+              - 'packages/pnt-functional/pyproject.toml'
+              - 'scripts/monorepo_pyproject.patch'
+              - '.github/workflows/package-release.yaml'
+              - '.github/workflows/python-release.yaml'
