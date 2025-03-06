@@ -287,7 +287,7 @@ jobs:
         if: always()
 
   build-and-release-main-package:
-    needs: [release]
+    needs: [release, detect-changes]
     if: ${{ needs.release.outputs.released == 'true' }}
     uses: ./.github/workflows/package-release.yaml
     with:
@@ -295,10 +295,12 @@ jobs:
       package-name: "python-nix-template"
       version: ${{ needs.release.outputs.version }}
       apply-monorepo-patch: false
+      run-if-changed-only: true
+      change-detected: ${{ needs.detect-changes.outputs.main-package-changed }}
     secrets: inherit
 
   build-and-release-functional-package:
-    needs: [release]
+    needs: [release, detect-changes]
     if: ${{ needs.release.outputs.released == 'true' }}
     uses: ./.github/workflows/package-release.yaml
     with:
@@ -306,6 +308,8 @@ jobs:
       package-name: "pnt-functional"
       version: ${{ needs.release.outputs.version }}
       apply-monorepo-patch: true
+      run-if-changed-only: true
+      change-detected: ${{ needs.detect-changes.outputs.functional-package-changed }}
     secrets: inherit
 
   publish-main-package:
