@@ -36,6 +36,7 @@
             pixi
             teller
             uv
+            yarn-berry
             virtualenv
             config.packages.set-git-env
           ];
