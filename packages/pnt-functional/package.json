@@ -17,7 +17,15 @@
     "packageManager": "yarn@4.6.0",
     "private": true,
     "release": {
-        "extends": "../../package.json",
+        "branches": [
+            {
+                "name": "main"
+            },
+            {
+                "name": "beta",
+                "prerelease": true
+            }
+        ],
         "npmPublish": false,
         "plugins": [
             [
@@ -29,17 +37,7 @@
                             "BREAKING-CHANGE"
                         ]
                     },
-                    "preset": "conventionalcommits",
-                    "releaseRules": [
-                        {
-                            "release": "patch",
-                            "scope": "pnt-functional"
-                        },
-                        {
-                            "release": "patch",
-                            "scope": "functional"
-                        }
-                    ]
+                    "preset": "conventionalcommits"
                 }
             ],
             [
@@ -66,16 +64,6 @@
                 "@semantic-release/github",
                 {
                     "addReleases": "bottom",
-                    "assets": [
-                        {
-                            "label": "Source Distribution (tar.gz)",
-                            "path": "dist/*.tar.gz"
-                        },
-                        {
-                            "label": "Python Wheel",
-                            "path": "dist/*.whl"
-                        }
-                    ],
                     "failComment": false,
                     "successComment": false
                 }
@@ -93,9 +81,6 @@
                 "@semantic-release/git",
                 {
                     "assets": [
-                        "pyproject.toml",
-                        "uv.lock",
-                        "src/pnt_functional/__init__.py",
                         "CHANGELOG.md"
                     ],
                     "message": "chore(release): pnt-functional ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
@@ -109,11 +94,7 @@
     },
     "scripts": {
         "semantic-release": "semantic-release",
-        "test-package-release": "cd $PACKAGE_PATH && semantic-release --dry-run --no-ci",
-        "test-release": "semantic-release --dry-run --no-ci",
-        "test-release:current": "semantic-release --dry-run --no-ci --branches $(git branch --show-current)",
-        "test-release:direct": "semantic-release --dry-run --no-ci --branches release",
-        "test-release:main": "cross-env GITHUB_REF=refs/heads/main semantic-release --dry-run --no-ci"
+        "test-release": "semantic-release --dry-run --no-ci"
     },
     "version": "0.0.0-development"
 }
