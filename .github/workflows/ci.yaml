@@ -216,7 +216,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ needs.set-variables.outputs.checkout_ref }}
 
       - name: Apply monorepo patch
         if: ${{ matrix.package.apply-monorepo-patch }}
