@@ -170,7 +170,7 @@ jobs:
           nix run github:srid/nixci -- build
 
   test-python:
-    needs: [set-variables, detect-changes]
+    needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }}
     strategy:
       fail-fast: false
