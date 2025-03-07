@@ -30,6 +30,11 @@ on:
         required: false
         type: boolean
         default: true
+      release-dry-run:
+        description: "Whether to run the release in dry-run mode"
+        required: false
+        type: boolean
+        default: false
 
   workflow_call:
     inputs:
@@ -60,6 +65,11 @@ on:
         required: false
         type: string
         default: "true"
+      release-dry-run:
+        description: "Whether to run the release in dry-run mode"
+        required: false
+        type: string
+        default: "false"
 
     outputs:
       artifact-name:
@@ -109,7 +119,7 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         with:
           working_directory: ${{ inputs.package-path }}
-          dry_run: true
+          dry_run: ${{ inputs.release-dry-run == 'true' }}
           semantic_version: 24
           extra_plugins: |
             @semantic-release/changelog
