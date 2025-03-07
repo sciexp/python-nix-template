@@ -169,177 +169,107 @@ jobs:
         run: |
           nix run github:srid/nixci -- build
 
-  test-unirepo:
-    needs: [set-variables]
+  test-python:
+    needs: [set-variables, detect-changes]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        config:
+          - python-version: "3.11"
+            package-name: "python-nix-template"
+            monorepo: "false"
+            change-output: main-package-changed
+          - python-version: "3.12"
+            package-name: "python-nix-template"
+            monorepo: "false"
+            change-output: main-package-changed
+          - python-version: "3.11"
+            package-name: "pnt-functional"
+            monorepo: "true"
+            change-output: functional-package-changed
+          - python-version: "3.12"
+            package-name: "pnt-functional"
+            monorepo: "true"
+            change-output: functional-package-changed
     uses: ./.github/workflows/python-test.yaml
     with:
-      python-version: ${{ matrix.python-version }}
+      python-version: ${{ matrix.config.python-version }}
+      package-name: ${{ matrix.config.package-name }}
       debug_enabled: ${{ needs.set-variables.outputs.debug }}
-      monorepo: "false"
+      monorepo: ${{ matrix.config.monorepo }}
       checkout_ref: ${{ needs.set-variables.outputs.checkout_ref }}
 
-  test-monorepo:
-    needs: [set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }}
+  test-release-packages:
+    needs: [set-variables, detect-changes, test-python]
+    if: ${{ github.event_name == 'pull_request' && needs.set-variables.outputs.dry_run_release == 'true' }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
-    uses: ./.github/workflows/python-test.yaml
-    with:
-      python-version: ${{ matrix.python-version }}
-      debug_enabled: ${{ needs.set-variables.outputs.debug }}
-      monorepo: "true"
-      checkout_ref: ${{ needs.set-variables.outputs.checkout_ref }}
-
-  # test-release:
-  #   runs-on: ubuntu-latest
-  #   needs: [set-variables, detect-changes, test-unirepo, test-monorepo]
-  #   permissions:
-  #     contents: write
-  #   if: |
-  #     github.event_name == 'pull_request' &&
-  #     needs.set-variables.outputs.dry_run_release == 'true'
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       package:
-  #         - name: python-nix-template
-  #           path: "."
-  #           change-output: main-package-changed
-  #           apply-monorepo-patch: false
-  #         - name: pnt-functional
-  #           path: packages/pnt-functional
-  #           change-output: functional-package-changed
-  #           apply-monorepo-patch: true
-  #   steps:
-  #     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #         ref: ${{ needs.set-variables.outputs.checkout_ref }}
-
-  #     - name: Apply monorepo patch
-  #       if: ${{ matrix.package.apply-monorepo-patch }}
-  #       run: git apply scripts/monorepo_pyproject.patch
-
-  #     - name: Setup Yarn
-  #       uses: threeal/setup-yarn-action@v2.0.0
-  #       with:
-  #         version: "4.6.0"
-  #         cache: true
-
-  #     - name: Install dependencies
-  #       run: |
-  #         yarn workspace ${{ matrix.package.name }} install
-  #         git log --oneline --branches --tags
-
-  #     - name: Test semantic-release
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: |
-  #         unset GITHUB_ACTIONS
-  #         yarn workspace ${{ matrix.package.name }} test-release -b ${{ needs.set-variables.outputs.checkout_ref }}
-
-  # release:
-  #   runs-on: ubuntu-latest
-  #   needs: [nixci, test-unirepo, test-monorepo, detect-changes]
-  #   if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
-  #   environment:
-  #     name: release
-  #     url: https://github.com/sciexp/python-nix-template/releases/tag/${{ steps.semanticrelease.outputs.git-tag }}
-  #   permissions:
-  #     contents: write
-  #   outputs:
-  #     version: ${{ steps.semanticrelease.outputs.version }}
-  #     released: ${{ steps.semanticrelease.outputs.released }}
-  #     git-head: ${{ steps.semanticrelease.outputs.git-head }}
-  #     git-tag: ${{ steps.semanticrelease.outputs.git-tag }}
-  #   steps:
-  #     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-
-  #     - name: Install uv
-  #       uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # ratchet:astral-sh/setup-uv@v5
-  #       with:
-  #         python-version: "3.12"
-  #         enable-cache: true
-  #         cache-dependency-glob: "uv.lock"
-  #         version: "0.6.4"
-
-  #     - name: Run semantic-release
-  #       id: semanticrelease
-  #       uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # ratchet:cycjimmy/semantic-release-action@v4
-  #       with:
-  #         semantic_version: 24
-  #         extra_plugins: |
-  #           @semantic-release/changelog
-  #           @semantic-release/git
-  #           semantic-release-major-tag
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Minimize uv cache
-  #       run: uv cache prune --ci
-  #       if: always()
-
-  build-and-release-main-package:
-    needs: [release, detect-changes]
-    if: ${{ needs.release.outputs.released == 'true' }}
-    permissions:
-      contents: write
-      id-token: write
+        package:
+          - name: python-nix-template
+            path: "."
+            change-output: main-package-changed
+            apply-monorepo-patch: false
+          - name: pnt-functional
+            path: packages/pnt-functional
+            change-output: functional-package-changed
+            apply-monorepo-patch: true
     uses: ./.github/workflows/package-release.yaml
     with:
-      package-path: "."
-      package-name: "python-nix-template"
-      version: ${{ needs.release.outputs.version }}
-      apply-monorepo-patch: false
+      package-path: ${{ matrix.package.path }}
+      package-name: ${{ matrix.package.name }}
+      version: "0.0.0-test"
+      apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
       run-if-changed-only: true
-      change-detected: ${{ needs.detect-changes.outputs.main-package-changed }}
-      release-dry-run: false
+      change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
+      release-dry-run: true
+      branches: |
+        [
+          'main',
+          {
+            name: 'beta',
+            prerelease: true
+          },
+          {
+            name: '{{ needs.set-variables.outputs.checkout_ref }}',
+            prerelease: true
+          }
+        ]
     secrets: inherit
 
-  build-and-release-functional-package:
-    needs: [release, detect-changes]
-    if: ${{ needs.release.outputs.released == 'true' }}
-    permissions:
-      contents: write
-      id-token: write
+  release-packages:
+    needs: [nixci, test-python, detect-changes]
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
+    strategy:
+      matrix:
+        package:
+          - name: python-nix-template
+            path: "."
+            change-output: main-package-changed
+            apply-monorepo-patch: false
+          - name: pnt-functional
+            path: packages/pnt-functional
+            change-output: functional-package-changed
+            apply-monorepo-patch: true
     uses: ./.github/workflows/package-release.yaml
     with:
-      package-path: "packages/pnt-functional"
-      package-name: "pnt-functional"
-      version: ${{ needs.release.outputs.version }}
-      apply-monorepo-patch: true
+      package-path: ${{ matrix.package.path }}
+      package-name: ${{ matrix.package.name }}
+      version: "0.0.0"
+      apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
       run-if-changed-only: true
-      change-detected: ${{ needs.detect-changes.outputs.functional-package-changed }}
+      change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: false
+      branches: |
+        [
+          'main',
+          {
+            name: 'beta',
+            prerelease: true
+          }
+        ]
     secrets: inherit
-
-  # publish-main-package:
-  #   needs: [release, build-and-release-main-package]
-  #   if: ${{ needs.release.outputs.released == 'true' && needs.build-and-release-main-package.outputs.released == 'true' }}
-  #   uses: ./.github/workflows/python-release.yaml
-  #   with:
-  #     package-name: "python-nix-template"
-  #     artifact-name: ${{ needs.build-and-release-main-package.outputs.artifact-name }}
-  #     version: ${{ needs.release.outputs.version }}
-
-  # publish-functional-package:
-  #   needs: [release, build-and-release-functional-package]
-  #   if: ${{ needs.release.outputs.released == 'true' && needs.build-and-release-functional-package.outputs.released == 'true' }}
-  #   uses: ./.github/workflows/python-release.yaml
-  #   with:
-  #     package-name: "pnt-functional"
-  #     artifact-name: ${{ needs.build-and-release-functional-package.outputs.artifact-name }}
-  #     version: ${{ needs.release.outputs.version }}
 
   build-pr-images:
     needs: [set-variables]
@@ -358,16 +288,16 @@ jobs:
     secrets: inherit
 
   publish-release-images:
-    needs: [set-variables, release]
-    if: ${{ needs.release.outputs.released == 'true' }}
+    needs: [set-variables, release-packages]
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     uses: ./.github/workflows/build-nix-images.yaml
     concurrency:
       group: pri-${{ github.workflow }}-${{ github.ref_name }}-${{ github.sha }}
       cancel-in-progress: true
     with:
       debug_enabled: ${{ needs.set-variables.outputs.debug }}
-      version: ${{ needs.release.outputs.version }}
+      version: ${{ needs.release-packages.outputs.version }}
       images: '["python-nix-template", "python-nix-template-dev"]'
       branch: ${{ needs.set-variables.outputs.checkout_ref }}
-      revision: ${{ needs.release.outputs.git-head }}
+      revision: ${{ github.sha }}
     secrets: inherit
