@@ -39,18 +39,6 @@ on:
         required: false
         type: boolean
         default: false
-      branches:
-        description: "Branches to release"
-        required: false
-        type: string
-        default: |
-          [
-            'main',
-            {
-              name: 'beta',
-              prerelease: true
-            }
-          ]
 
   workflow_call:
     inputs:
@@ -90,18 +78,6 @@ on:
         required: false
         type: string
         default: "false"
-      branches:
-        description: "Branches to release"
-        required: false
-        type: string
-        default: |
-          [
-            'main',
-            {
-              name: 'beta',
-              prerelease: true
-            }
-          ]
 
     outputs:
       artifact-name:
@@ -148,13 +124,31 @@ jobs:
           cache-dependency-glob: "uv.lock"
           version: "0.6.4"
 
+      - name: Setup Yarn
+        uses: threeal/setup-yarn-action@v2.0.0
+        with:
+          version: "4.6.0"
+          cache: true
+
+      - name: Install npm dependencies
+        run: |
+          yarn workspace ${{ inputs.package-name }} install
+          git log --oneline --branches --tags
+
+      - name: Test semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          unset GITHUB_ACTIONS
+          yarn workspace ${{ inputs.package-name }} test-release -b ${{ inputs.checkout-ref }}
+
       - name: Run semantic-release
         id: semantic-release
         uses: cycjimmy/semantic-release-action@v4
         with:
           working_directory: ${{ inputs.package-path }}
           dry_run: ${{ inputs.release-dry-run == 'true' }}
-          branches: ${{ inputs.branches }}
           semantic_version: 24
           extra_plugins: |
             @semantic-release/changelog
