@@ -81,7 +81,11 @@
                 "@semantic-release/git",
                 {
                     "assets": [
-                        "CHANGELOG.md"
+                        "CHANGELOG.md",
+                        "package.json",
+                        "yarn.lock",
+                        "pyproject.toml",
+                        "uv.lock"
                     ],
                     "message": "chore(release): pnt-functional ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
                 }
