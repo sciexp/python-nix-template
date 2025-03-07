@@ -131,11 +131,13 @@ jobs:
           cache: true
 
       - name: Install npm dependencies
+        if: ${{ inputs.release-dry-run == 'true' }}
         run: |
           yarn workspace ${{ inputs.package-name }} install
           git log --oneline --branches --tags
 
       - name: Test semantic-release
+        if: ${{ inputs.release-dry-run == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
