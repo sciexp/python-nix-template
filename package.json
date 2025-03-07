@@ -97,6 +97,7 @@
         }
       ]
     ],
-    "npmPublish": false
+    "npmPublish": false,
+    "tagFormat": "python-nix-template-v${version}"
   }
 }
