@@ -228,18 +228,6 @@ jobs:
       change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: true
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
-      branches: |
-        [
-          'main',
-          {
-            name: 'beta',
-            prerelease: true
-          },
-          {
-            name: '${{ needs.set-variables.outputs.checkout_ref }}',
-            prerelease: true
-          }
-        ]
     secrets: inherit
 
   release-packages:
@@ -269,14 +257,6 @@ jobs:
       change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: false
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
-      branches: |
-        [
-          'main',
-          {
-            name: 'beta',
-            prerelease: true
-          }
-        ]
     secrets: inherit
 
   build-pr-images:
