@@ -15,6 +15,10 @@ on:
         description: "Version to release"
         required: true
         type: string
+      checkout-ref:
+        description: "Git ref to checkout"
+        required: true
+        type: string
       apply-monorepo-patch:
         description: "Apply monorepo patch before releasing"
         required: false
@@ -60,6 +64,10 @@ on:
         type: string
       version:
         description: "Version to release"
+        required: true
+        type: string
+      checkout-ref:
+        description: "Git ref to checkout"
         required: true
         type: string
       apply-monorepo-patch:
@@ -125,7 +133,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false # Important for protected branches
+          ref: ${{ inputs.checkout-ref }}
+          persist-credentials: false
 
       - name: Apply monorepo patch
         if: ${{ inputs.apply-monorepo-patch == 'true' }}
