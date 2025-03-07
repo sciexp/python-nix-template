@@ -203,6 +203,9 @@ jobs:
   test-release-packages:
     needs: [set-variables, detect-changes, test-python]
     if: ${{ github.event_name == 'pull_request' && needs.set-variables.outputs.dry_run_release == 'true' }}
+    permissions:
+      contents: write
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -241,6 +244,9 @@ jobs:
   release-packages:
     needs: [nixci, test-python, detect-changes]
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
+    permissions:
+      contents: write
+      id-token: write
     strategy:
       matrix:
         package:
