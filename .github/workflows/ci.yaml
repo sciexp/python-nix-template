@@ -303,6 +303,7 @@ jobs:
       apply-monorepo-patch: false
       run-if-changed-only: true
       change-detected: ${{ needs.detect-changes.outputs.main-package-changed }}
+      release-dry-run: false
     secrets: inherit
 
   build-and-release-functional-package:
@@ -319,6 +320,7 @@ jobs:
       apply-monorepo-patch: true
       run-if-changed-only: true
       change-detected: ${{ needs.detect-changes.outputs.functional-package-changed }}
+      release-dry-run: false
     secrets: inherit
 
   publish-main-package:
