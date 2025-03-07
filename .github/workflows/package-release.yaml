@@ -154,6 +154,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTIONS: ${{ inputs.release-dry-run == 'false' }}
 
       - name: Set outputs
         id: set-outputs
