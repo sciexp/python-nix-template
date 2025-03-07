@@ -86,7 +86,8 @@
                     "message": "chore(release): pnt-functional ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
                 }
             ]
-        ]
+        ],
+        "tagFormat": "pnt-functional-v${version}"
     },
     "repository": {
         "type": "git",
