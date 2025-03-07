@@ -227,6 +227,7 @@ jobs:
       run-if-changed-only: true
       change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: true
+      checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
       branches: |
         [
           'main',
@@ -235,7 +236,7 @@ jobs:
             prerelease: true
           },
           {
-            name: '{{ needs.set-variables.outputs.checkout_ref }}',
+            name: '${{ needs.set-variables.outputs.checkout_ref }}',
             prerelease: true
           }
         ]
@@ -267,6 +268,7 @@ jobs:
       run-if-changed-only: true
       change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: false
+      checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
       branches: |
         [
           'main',
