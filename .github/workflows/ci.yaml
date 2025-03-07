@@ -231,7 +231,7 @@ jobs:
     secrets: inherit
 
   release-packages:
-    needs: [nixci, test-python, detect-changes]
+    needs: [test-python, detect-changes]
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     permissions:
       contents: write
