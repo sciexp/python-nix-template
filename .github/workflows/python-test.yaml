@@ -8,6 +8,11 @@ on:
         required: true
         type: string
         default: "3.12"
+      package-name:
+        description: "Name of the package to test"
+        required: false
+        type: string
+        default: ""
       debug_enabled:
         description: "Run with tmate.io debugging enabled"
         required: false
@@ -18,6 +23,11 @@ on:
         required: false
         type: boolean
         default: false
+      checkout_ref:
+        description: "Git ref to checkout"
+        required: false
+        type: string
+        default: ""
 
   workflow_call:
     inputs:
@@ -25,6 +35,11 @@ on:
         description: "Python version to use"
         required: true
         type: string
+      package-name:
+        description: "Name of the package to test"
+        required: false
+        type: string
+        default: ""
       debug_enabled:
         description: "Run with tmate.io debugging enabled"
         required: false
@@ -68,6 +83,7 @@ jobs:
       - name: Run tests
         run: |
           uv sync --all-extras --dev
+          echo "Testing package: ${{ inputs.package-name || 'all packages' }}"
           uv run pytest
 
       - name: Minimize uv cache
