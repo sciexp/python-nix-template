@@ -151,6 +151,7 @@ jobs:
             @semantic-release/changelog
             @semantic-release/git
             semantic-release-major-tag
+          ci: ${{ inputs.release-dry-run == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
