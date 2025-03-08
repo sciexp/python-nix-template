@@ -59,49 +59,49 @@ pre-commit:
 
 # Package commands (conda)
 [group('conda package')]
-conda-build:
-    pixi build
+conda-build package="python-nix-template":
+    pixi build --manifest-path=packages/{{package}}/pyproject.toml
 
 # Create and sync conda environment with pixi
 [group('conda package')]
-conda-env:
-    pixi install
+conda-env package="python-nix-template":
+    pixi install --manifest-path=packages/{{package}}/pyproject.toml
     @echo "Conda environment is ready. Activate it with 'pixi shell'"
 
 # Update pixi lockfile
 [group('conda package')]
-pixi-lock:
-    pixi list
-    pixi tree
+pixi-lock package="python-nix-template":
+    pixi list --manifest-path=packages/{{package}}/pyproject.toml
+    pixi tree --manifest-path=packages/{{package}}/pyproject.toml
 
 # Update conda environment
 [group('conda package')]
-conda-lock:
-    pixi project export conda-explicit-spec conda/ --ignore-pypi-errors
+conda-lock package="python-nix-template":
+    pixi project export conda-explicit-spec packages/{{package}}/conda/ --manifest-path=packages/{{package}}/pyproject.toml --ignore-pypi-errors
 
 # Run tests in conda environment with pixi
 [group('conda package')]
-conda-test:
-    pixi run -e test pytest
+conda-test package="python-nix-template":
+    pixi run -e test --manifest-path=packages/{{package}}/pyproject.toml pytest
 
 # Run linting in conda environment with pixi
 [group('conda package')]
-conda-lint:
-    pixi run -e lint ruff check src/
+conda-lint package="python-nix-template":
+    pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml ruff check src/
 
 # Run linting and fix errors in conda environment with pixi
 [group('conda package')]
-conda-lint-fix:
-    pixi run -e lint ruff check --fix src/
+conda-lint-fix package="python-nix-template":
+    pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml ruff check --fix src/
 
 # Run type checking in conda environment with pixi
 [group('conda package')]
-conda-type:
-    pixi run -e types pyright src/
+conda-type package="python-nix-template":
+    pixi run -e types --manifest-path=packages/{{package}}/pyproject.toml pyright src/
 
 # Run all checks in conda environment (lint, type, test)
 [group('conda package')]
-conda-check: conda-lint conda-type conda-test
+conda-check package="python-nix-template": (conda-lint package) (conda-type package) (conda-test package)
     @printf "\n\033[92mAll conda checks passed!\033[0m\n"
 
 ## Monorepo
