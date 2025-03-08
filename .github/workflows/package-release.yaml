@@ -177,13 +177,13 @@ jobs:
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: ${{ steps.set-outputs.outputs.artifact-name }}
-          path: ${{ inputs.package-path }}/dist
+          path: dist
 
       - name: Publish to PyPI
         if: ${{ steps.semantic-release.outputs.new_release_published == 'true' && inputs.release-dry-run != 'true' }}
         uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # ratchet:pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: ${{ inputs.package-path }}/dist
+          packages-dir: dist
 
       - name: Minimize uv cache
         run: uv cache prune --ci
