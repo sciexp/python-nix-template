@@ -17,6 +17,39 @@ init github:sciexp/python-nix-template -o new-python-project
 
 [^omnix]: If you have omnix installed you just need `om init ...` and not `nix run ... -- init`
 
+tl;dr
+
+<details><summary>one command to copy and paste</summary>
+
+```sh
+rm -fr pnt-new && \
+nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template/main -o pnt-new --non-interactive --params '{
+  "package-name-kebab-case": "pnt-new",
+  "package-name-snake-case": "pnt_new",
+  "include-functional-package": false,
+  "git-org": "pnt-new",
+  "author": "PntNew",
+  "author-email": "new@pnt.org",
+  "include-vscode": true,
+  "include-github-ci": true,
+  "include-flake-template": false
+}' && \
+cd pnt-new && \
+git init && \
+git commit --allow-empty -m "initial commit (empty)" && \
+git add . && \
+nix run .#fix-template-names -- python-nix-template && \
+uv lock && \
+direnv allow
+```
+
+</details>
+
+except you should update the git ref/rev from
+`github:sciexp/python-nix-template/main` to
+`github:sciexp/python-nix-template/3289dla` or
+`github:sciexp/python-nix-template/devbranch`.
+
 ### Quick start
 
 #### nix-managed environment
