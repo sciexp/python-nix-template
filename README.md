@@ -64,7 +64,7 @@ tests pass in the devshell environment.
 
 If you choose to retain the monorepo leaf package in
 [packages/pnt-functional](./packages/pnt-functional) then you will need to run
-`just monorepo-patch uv-lock` to update the [pyproject.toml](./pyproject.toml)
+`just uv-lock` to update the [pyproject.toml](./pyproject.toml)
 and [uv.lock](./uv.lock) to include it and its tests in the workspace.
 
 #### python virtualenv
@@ -164,10 +164,6 @@ conda-lock                                  # Update conda environment
 conda-test                                  # Run tests in conda environment with pixi
 conda-type                                  # Run type checking in conda environment with pixi
 pixi-lock                                   # Update pixi lockfile
-
-[monorepo]
-monorepo-patch                              # Apply monorepo patch to convert project to monorepo structure
-monorepo-reverse                            # Reverse monorepo patch to revert to single package structure
 
 [nix]
 ci                                          # Run CI checks locally with `om ci`
