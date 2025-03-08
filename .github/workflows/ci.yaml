@@ -173,22 +173,17 @@ jobs:
         config:
           - python-version: "3.11"
             package-name: "python-nix-template"
-            monorepo: "false"
           - python-version: "3.12"
             package-name: "python-nix-template"
-            monorepo: "false"
           - python-version: "3.11"
             package-name: "pnt-functional"
-            monorepo: "false"
           - python-version: "3.12"
             package-name: "pnt-functional"
-            monorepo: "false"
     uses: ./.github/workflows/python-test.yaml
     with:
       python-version: ${{ matrix.config.python-version }}
       package-name: ${{ matrix.config.package-name }}
       debug_enabled: ${{ needs.set-variables.outputs.debug }}
-      monorepo: ${{ matrix.config.monorepo }}
       checkout_ref: ${{ needs.set-variables.outputs.checkout_ref }}
 
   test-release-packages:
