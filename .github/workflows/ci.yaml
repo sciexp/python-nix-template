@@ -214,17 +214,17 @@ jobs:
           - name: python-nix-template
             path: "packages/python-nix-template"
             change-output: main-package-changed
-            apply-monorepo-patch: false
+            # apply-monorepo-patch: false
           - name: pnt-functional
             path: packages/pnt-functional
             change-output: functional-package-changed
-            apply-monorepo-patch: false
+            # apply-monorepo-patch: false
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: ${{ matrix.package.path }}
       package-name: ${{ matrix.package.name }}
       version: "0.0.0-test"
-      apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
+      # apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
       # run-if-changed-only: true
       # change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: true
@@ -245,17 +245,17 @@ jobs:
           - name: python-nix-template
             path: "packages/python-nix-template"
             change-output: main-package-changed
-            apply-monorepo-patch: false
+            # apply-monorepo-patch: false
           - name: pnt-functional
             path: packages/pnt-functional
             change-output: functional-package-changed
-            apply-monorepo-patch: false
+            # apply-monorepo-patch: false
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: ${{ matrix.package.path }}
       package-name: ${{ matrix.package.name }}
       version: "0.0.0"
-      apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
+      # apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
       # run-if-changed-only: true
       # change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: false
