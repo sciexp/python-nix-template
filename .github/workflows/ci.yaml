@@ -216,7 +216,7 @@ jobs:
     secrets: inherit
 
   release-packages:
-    needs: [test-python]
+    needs: [nixci, test-python]
     if: ${{ github.repository_owner == 'sciexp' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     concurrency:
       group: release-${{ matrix.package.name }}-${{ github.workflow }}-${{ github.ref_name }}
@@ -224,14 +224,19 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      packages: write
     strategy:
       max-parallel: 1
       matrix:
         package:
           - name: python-nix-template
             path: "packages/python-nix-template"
+            build-images: true
+            images: '["python-nix-template", "python-nix-template-dev"]'
           - name: pnt-functional
             path: packages/pnt-functional
+            build-images: false
+            images: "[]"
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: ${{ matrix.package.path }}
@@ -239,6 +244,8 @@ jobs:
       version: "0.0.0"
       release-dry-run: false
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
+      build-images: ${{ matrix.package.build-images }}
+      images-to-build: ${{ matrix.package.images }}
     secrets: inherit
 
   build-pr-images:
@@ -254,20 +261,4 @@ jobs:
       images: '["python-nix-template", "python-nix-template-dev"]'
       branch: ${{ needs.set-variables.outputs.checkout_ref }}
       revision: ${{ needs.set-variables.outputs.checkout_rev }}
-      mode: "dev"
-    secrets: inherit
-
-  publish-release-images:
-    needs: [set-variables, release-packages]
-    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
-    uses: ./.github/workflows/build-nix-images.yaml
-    concurrency:
-      group: pri-${{ github.workflow }}-${{ github.ref_name }}-${{ github.sha }}
-      cancel-in-progress: true
-    with:
-      debug_enabled: ${{ needs.set-variables.outputs.debug }}
-      version: ${{ needs.release-packages.outputs.version }}
-      images: '["python-nix-template", "python-nix-template-dev"]'
-      branch: ${{ needs.set-variables.outputs.checkout_ref }}
-      revision: ${{ github.sha }}
     secrets: inherit
