@@ -165,7 +165,7 @@ jobs:
           nix run github:srid/nixci -- build
 
   test-omnix-template:
-    needs: [set-variables, nixci]
+    needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
     runs-on: ubuntu-latest
     concurrency:
