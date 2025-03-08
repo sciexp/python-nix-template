@@ -20,15 +20,6 @@ on:
         description: "Branch to checkout"
         required: true
         type: string
-      revision:
-        description: "Git revision to checkout"
-        required: false
-        type: string
-      mode:
-        description: "Build mode"
-        required: false
-        type: string
-        default: "prod"
 
   workflow_call:
     inputs:
@@ -48,15 +39,6 @@ on:
         description: "Branch to checkout"
         required: true
         type: string
-      revision:
-        description: "Git revision to checkout"
-        required: false
-        type: string
-      mode:
-        description: "Build mode"
-        required: false
-        type: string
-        default: "prod"
 
 jobs:
   build-images:

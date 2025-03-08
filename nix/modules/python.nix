@@ -61,16 +61,23 @@
           lib.composeManyExtensions [
             (makeEditableOverlay baseWorkspace)
             (final: prev: {
+              # python-nix-template = prev.python-nix-template.overrideAttrs (old: {
+              #   src = lib.fileset.toSource {
+              #     root = old.src;
+              #     fileset = lib.fileset.unions [
+              #       (old.src + "packages/python-nix-template/pyproject.toml")
+              #       (old.src + "packages/python-nix-template/README.md")
+              #       (old.src + "packages/python-nix-template/src/python_nix_template/__init__.py")
+              #     ];
+              #   };
+              #   nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem { editables = [ ]; };
+              # });
               python-nix-template = prev.python-nix-template.overrideAttrs (old: {
-                src = lib.fileset.toSource {
-                  root = old.src;
-                  fileset = lib.fileset.unions [
-                    (old.src + "/pyproject.toml")
-                    (old.src + "/README.md")
-                    (old.src + "/src/python_nix_template/__init__.py")
-                  ];
-                };
-                nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem { editables = [ ]; };
+                nativeBuildInputs =
+                  old.nativeBuildInputs
+                  ++ final.resolveBuildSystem {
+                    editables = [ ];
+                  };
               });
               pnt-functional = prev.pnt-functional.overrideAttrs (old: {
                 nativeBuildInputs =

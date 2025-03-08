@@ -18,11 +18,6 @@ on:
         required: false
         type: boolean
         default: false
-      monorepo:
-        description: "Test in monorepo mode"
-        required: false
-        type: boolean
-        default: false
       checkout_ref:
         description: "Git ref to checkout"
         required: false
@@ -45,11 +40,6 @@ on:
         required: false
         type: string
         default: "false"
-      monorepo:
-        description: "Test in monorepo mode"
-        required: false
-        type: string
-        default: "false"
       checkout_ref:
         description: "Git ref to checkout"
         required: false
@@ -68,10 +58,6 @@ jobs:
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
         if: ${{ inputs.debug_enabled == 'true' }}
 
-      - name: Apply monorepo patch
-        if: ${{ inputs.monorepo == 'true' }}
-        run: git apply scripts/monorepo_pyproject.patch
-
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -84,6 +70,7 @@ jobs:
         run: |
           uv sync --all-extras --dev
           echo "Testing package: ${{ inputs.package-name || 'all packages' }}"
+          cd packages/${{ inputs.package-name || '..' }}
           uv run pytest
 
       - name: Minimize uv cache

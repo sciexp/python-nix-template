@@ -19,26 +19,31 @@ on:
         description: "Git ref to checkout"
         required: true
         type: string
-      apply-monorepo-patch:
-        description: "Apply monorepo patch before releasing"
-        required: false
-        type: boolean
-        default: false
       run-if-changed-only:
         description: "Run only if this package has changed"
         required: false
         type: boolean
         default: false
-      change-detected:
-        description: "Whether changes were detected for this package"
-        required: false
-        type: boolean
-        default: true
       release-dry-run:
         description: "Whether to run the release in dry-run mode"
         required: false
         type: boolean
         default: false
+      debug-enabled:
+        description: "Enable tmate debug session"
+        required: false
+        type: boolean
+        default: false
+      build-images:
+        description: "Whether to build container images after release"
+        required: false
+        type: boolean
+        default: false
+      images-to-build:
+        description: "JSON array of images to build"
+        required: false
+        type: string
+        default: "[]"
 
   workflow_call:
     inputs:
@@ -58,26 +63,31 @@ on:
         description: "Git ref to checkout"
         required: true
         type: string
-      apply-monorepo-patch:
-        description: "Apply monorepo patch before releasing"
-        required: false
-        type: string
-        default: "false"
       run-if-changed-only:
         description: "Run only if this package has changed"
         required: false
         type: string
         default: "false"
-      change-detected:
-        description: "Whether changes were detected for this package"
-        required: false
-        type: string
-        default: "true"
       release-dry-run:
         description: "Whether to run the release in dry-run mode"
         required: false
         type: string
         default: "false"
+      debug-enabled:
+        description: "Enable tmate debug session"
+        required: false
+        type: boolean
+        default: false
+      build-images:
+        description: "Whether to build container images after release"
+        required: false
+        type: string
+        default: "false"
+      images-to-build:
+        description: "JSON array of images to build"
+        required: false
+        type: string
+        default: "[]"
 
     outputs:
       artifact-name:
@@ -99,25 +109,20 @@ jobs:
     permissions:
       contents: write
       id-token: write
-    if: ${{ inputs.run-if-changed-only != 'true' || inputs.change-detected == 'true' }}
     outputs:
       artifact-name: ${{ steps.set-outputs.outputs.artifact-name }}
       version: ${{ steps.semantic-release.outputs.new_release_version || inputs.version }}
       released: ${{ steps.semantic-release.outputs.new_release_published || 'false' }}
       tag: ${{ steps.semantic-release.outputs.new_release_git_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ inputs.checkout-ref }}
           persist-credentials: false
 
-      - name: Apply monorepo patch
-        if: ${{ inputs.apply-monorepo-patch == 'true' }}
-        run: git apply scripts/monorepo_pyproject.patch
-
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # ratchet:astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
           enable-cache: true
@@ -125,7 +130,7 @@ jobs:
           version: "0.6.4"
 
       - name: Setup Yarn
-        uses: threeal/setup-yarn-action@v2.0.0
+        uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # ratchet:threeal/setup-yarn-action@v2.0.0
         with:
           version: "4.6.0"
           cache: true
@@ -147,7 +152,7 @@ jobs:
 
       - name: Run semantic-release
         id: semantic-release
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # ratchet:cycjimmy/semantic-release-action@v4
         with:
           working_directory: ${{ inputs.package-path }}
           dry_run: ${{ inputs.release-dry-run == 'true' }}
@@ -180,22 +185,36 @@ jobs:
       - name: Build package
         if: ${{ steps.semantic-release.outputs.new_release_published == 'true' || inputs.release-dry-run == 'true' }}
         run: |
-          cd ${{ inputs.package-path }}
-          uv build
+          uv build --package ${{ inputs.package-name }}
+
+      - name: Setup tmate debug session
+        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
+        if: ${{ inputs.debug-enabled }}
 
       - name: Upload artifacts
         if: ${{ steps.semantic-release.outputs.new_release_published == 'true' || inputs.release-dry-run == 'true' }}
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: ${{ steps.set-outputs.outputs.artifact-name }}
-          path: ${{ inputs.package-path }}/dist/*.{whl,tar.gz}
+          path: dist
 
       - name: Publish to PyPI
         if: ${{ steps.semantic-release.outputs.new_release_published == 'true' && inputs.release-dry-run != 'true' }}
         uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # ratchet:pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: ${{ inputs.package-path }}/dist
+          packages-dir: dist
 
       - name: Minimize uv cache
         run: uv cache prune --ci
         if: always()
+
+  build-images:
+    needs: [release]
+    if: ${{ inputs.build-images == 'true' && needs.release.outputs.released == 'true' && inputs.release-dry-run != 'true' }}
+    uses: ./.github/workflows/build-nix-images.yaml
+    with:
+      debug_enabled: ${{ inputs.debug-enabled }}
+      version: ${{ needs.release.outputs.version }}
+      images: ${{ inputs.images-to-build }}
+      branch: ${{ needs.release.outputs.tag }}
+    secrets: inherit
