@@ -131,7 +131,7 @@ jobs:
     needs: set-variables
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
     concurrency:
-      group: nixci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+      group: nixci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
       cancel-in-progress: true
     steps:
       - name: Install dependencies
@@ -167,6 +167,9 @@ jobs:
   test-python:
     needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }}
+    concurrency:
+      group: test-python-${{ matrix.config.python-version }}-${{ matrix.config.package-name }}-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
@@ -189,6 +192,9 @@ jobs:
   test-release-packages:
     needs: [set-variables, test-python]
     if: ${{ github.event_name == 'pull_request' && needs.set-variables.outputs.dry_run_release == 'true' }}
+    concurrency:
+      group: test-release-${{ matrix.package.name }}-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
+      cancel-in-progress: true
     permissions:
       contents: write
       id-token: write
@@ -212,6 +218,9 @@ jobs:
   release-packages:
     needs: [test-python]
     if: ${{ github.repository_owner == 'sciexp' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
+    concurrency:
+      group: release-${{ matrix.package.name }}-${{ github.workflow }}-${{ github.ref_name }}
+      cancel-in-progress: true
     permissions:
       contents: write
       id-token: write
