@@ -95,14 +95,14 @@ jobs:
       released: ${{ steps.semantic-release.outputs.new_release_published || 'false' }}
       tag: ${{ steps.semantic-release.outputs.new_release_git_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ inputs.checkout-ref }}
           persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # ratchet:astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
           enable-cache: true
@@ -110,7 +110,7 @@ jobs:
           version: "0.6.4"
 
       - name: Setup Yarn
-        uses: threeal/setup-yarn-action@v2.0.0
+        uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # ratchet:threeal/setup-yarn-action@v2.0.0
         with:
           version: "4.6.0"
           cache: true
@@ -132,7 +132,7 @@ jobs:
 
       - name: Run semantic-release
         id: semantic-release
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # ratchet:cycjimmy/semantic-release-action@v4
         with:
           working_directory: ${{ inputs.package-path }}
           dry_run: ${{ inputs.release-dry-run == 'true' }}
