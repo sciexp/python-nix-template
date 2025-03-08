@@ -188,7 +188,7 @@ jobs:
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: ${{ steps.set-outputs.outputs.artifact-name }}
-          path: ${{ inputs.package-path }}/dist/*.{whl,tar.gz}
+          path: ${{ inputs.package-path }}/dist
 
       - name: Publish to PyPI
         if: ${{ steps.semantic-release.outputs.new_release_published == 'true' && inputs.release-dry-run != 'true' }}
