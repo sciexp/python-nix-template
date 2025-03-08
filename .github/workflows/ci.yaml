@@ -231,9 +231,9 @@ jobs:
 
           # Fix template names and set up environment
           nix run .#fix-template-names -- python-nix-template
-          uv lock
 
           # Test that the project tests pass
+          nix develop -c uv lock
           nix develop -c pytest
 
   test-python:
