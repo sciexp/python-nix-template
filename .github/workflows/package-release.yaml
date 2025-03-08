@@ -19,11 +19,11 @@ on:
         description: "Git ref to checkout"
         required: true
         type: string
-      apply-monorepo-patch:
-        description: "Apply monorepo patch before releasing"
-        required: false
-        type: boolean
-        default: false
+      # apply-monorepo-patch:
+      #   description: "Apply monorepo patch before releasing"
+      #   required: false
+      #   type: boolean
+      #   default: false
       run-if-changed-only:
         description: "Run only if this package has changed"
         required: false
@@ -58,11 +58,11 @@ on:
         description: "Git ref to checkout"
         required: true
         type: string
-      apply-monorepo-patch:
-        description: "Apply monorepo patch before releasing"
-        required: false
-        type: string
-        default: "false"
+      # apply-monorepo-patch:
+      #   description: "Apply monorepo patch before releasing"
+      #   required: false
+      #   type: string
+      #   default: "false"
       run-if-changed-only:
         description: "Run only if this package has changed"
         required: false
@@ -112,9 +112,9 @@ jobs:
           ref: ${{ inputs.checkout-ref }}
           persist-credentials: false
 
-      - name: Apply monorepo patch
-        if: ${{ inputs.apply-monorepo-patch == 'true' }}
-        run: git apply scripts/monorepo_pyproject.patch
+      # - name: Apply monorepo patch
+      #   if: ${{ inputs.apply-monorepo-patch == 'true' }}
+      #   run: git apply scripts/monorepo_pyproject.patch
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
