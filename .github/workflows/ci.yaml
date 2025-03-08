@@ -231,9 +231,11 @@ jobs:
 
           # Fix template names and set up environment
           nix run .#fix-template-names -- python-nix-template
+          git add .
 
           # Test that the project tests pass
           nix develop -c uv lock
+          git add .
           nix develop -c pytest
 
   test-python:
