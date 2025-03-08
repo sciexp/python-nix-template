@@ -120,10 +120,10 @@ jobs:
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> $GITHUB_OUTPUT
           echo "CHECKOUT_REV=$CHECKOUT_REV" >> $GITHUB_OUTPUT
 
-  detect-changes:
-    needs: set-variables
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
-    uses: ./.github/workflows/detect-changes.yaml
+  # detect-changes:
+  #   needs: set-variables
+  #   if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
+  #   uses: ./.github/workflows/detect-changes.yaml
 
   nixci:
     runs-on: ${{ matrix.os }}
@@ -201,7 +201,8 @@ jobs:
       checkout_ref: ${{ needs.set-variables.outputs.checkout_ref }}
 
   test-release-packages:
-    needs: [set-variables, detect-changes, test-python]
+    # needs: [set-variables, detect-changes, test-python]
+    needs: [set-variables, test-python]
     if: ${{ github.event_name == 'pull_request' && needs.set-variables.outputs.dry_run_release == 'true' }}
     permissions:
       contents: write
@@ -224,14 +225,15 @@ jobs:
       package-name: ${{ matrix.package.name }}
       version: "0.0.0-test"
       apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
-      run-if-changed-only: true
-      change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
+      # run-if-changed-only: true
+      # change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: true
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
     secrets: inherit
 
   release-packages:
-    needs: [test-python, detect-changes]
+    # needs: [test-python, detect-changes]
+    needs: [test-python]
     if: ${{ github.repository_owner == 'sciexp' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     permissions:
       contents: write
@@ -254,8 +256,8 @@ jobs:
       package-name: ${{ matrix.package.name }}
       version: "0.0.0"
       apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
-      run-if-changed-only: true
-      change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
+      # run-if-changed-only: true
+      # change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: false
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
     secrets: inherit
