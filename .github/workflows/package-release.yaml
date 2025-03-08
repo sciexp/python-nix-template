@@ -29,11 +29,11 @@ on:
         required: false
         type: boolean
         default: false
-      change-detected:
-        description: "Whether changes were detected for this package"
-        required: false
-        type: boolean
-        default: true
+      # change-detected:
+      #   description: "Whether changes were detected for this package"
+      #   required: false
+      #   type: boolean
+      #   default: true
       release-dry-run:
         description: "Whether to run the release in dry-run mode"
         required: false
@@ -68,11 +68,11 @@ on:
         required: false
         type: string
         default: "false"
-      change-detected:
-        description: "Whether changes were detected for this package"
-        required: false
-        type: string
-        default: "true"
+      # change-detected:
+      #   description: "Whether changes were detected for this package"
+      #   required: false
+      #   type: string
+      #   default: "true"
       release-dry-run:
         description: "Whether to run the release in dry-run mode"
         required: false
@@ -99,7 +99,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
-    if: ${{ inputs.run-if-changed-only != 'true' || inputs.change-detected == 'true' }}
+    # if: ${{ inputs.run-if-changed-only != 'true' || inputs.change-detected == 'true' }}
     outputs:
       artifact-name: ${{ steps.set-outputs.outputs.artifact-name }}
       version: ${{ steps.semantic-release.outputs.new_release_version || inputs.version }}
