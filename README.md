@@ -39,7 +39,7 @@ git init && \
 git commit --allow-empty -m "initial commit (empty)" && \
 git add . && \
 nix run .#fix-template-names -- python-nix-template && \
-uv lock && \
+nix run nixpkgs#uv -- lock && \
 direnv allow
 ```
 
