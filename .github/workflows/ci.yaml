@@ -260,5 +260,4 @@ jobs:
       version: ""
       images: '["python-nix-template", "python-nix-template-dev"]'
       branch: ${{ needs.set-variables.outputs.checkout_ref }}
-      revision: ${{ needs.set-variables.outputs.checkout_rev }}
     secrets: inherit

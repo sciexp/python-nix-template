@@ -217,5 +217,4 @@ jobs:
       version: ${{ needs.release.outputs.version }}
       images: ${{ inputs.images-to-build }}
       branch: ${{ needs.release.outputs.tag }}
-      revision: ""
     secrets: inherit
