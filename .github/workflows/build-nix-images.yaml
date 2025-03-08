@@ -20,10 +20,6 @@ on:
         description: "Branch to checkout"
         required: true
         type: string
-      revision:
-        description: "Git revision to checkout"
-        required: false
-        type: string
 
   workflow_call:
     inputs:
@@ -42,10 +38,6 @@ on:
       branch:
         description: "Branch to checkout"
         required: true
-        type: string
-      revision:
-        description: "Git revision to checkout"
-        required: false
         type: string
 
 jobs:
