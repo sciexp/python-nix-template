@@ -94,6 +94,11 @@ testpaths = [
   "src/python_nix_template/tests",
 ]
 
+[tool.coverage.run]
+omit = [
+  "src/python_nix_template/tests/*",
+]
+
 [tool.ruff]
 line-length    = 88
 src            = ["src"]
