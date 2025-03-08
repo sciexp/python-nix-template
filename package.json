@@ -22,12 +22,14 @@
     "conventional-changelog-conventionalcommits": "^8.0.0",
     "cross-env": "^7.0.3",
     "semantic-release": "^24.2.3",
-    "semantic-release-major-tag": "^0.3.2"
+    "semantic-release-major-tag": "^0.3.2",
+    "semantic-release-monorepo": "^8.0.2"
   },
   "scripts": {
     "test-release": "semantic-release --dry-run --no-ci"
   },
   "release": {
+    "extends": "semantic-release-monorepo",
     "branches": [
       {
         "name": "main"
@@ -93,15 +95,12 @@
           "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
           "assets": [
             "CHANGELOG.md",
-            "package.json",
-            "yarn.lock",
             "pyproject.toml",
             "uv.lock"
           ]
         }
       ]
     ],
-    "npmPublish": false,
-    "tagFormat": "python-nix-template-v${version}"
+    "npmPublish": false
   }
 }
