@@ -3633,9 +3633,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"python-nix-template@workspace:.":
+"python-nix-template-template@workspace:.":
   version: 0.0.0-use.local
-  resolution: "python-nix-template@workspace:."
+  resolution: "python-nix-template-template@workspace:."
+  dependencies:
+    "@semantic-release/changelog": "npm:^6.0.3"
+    "@semantic-release/git": "npm:^10.0.1"
+    "@semantic-release/github": "npm:^11.0.1"
+    conventional-changelog-conventionalcommits: "npm:^8.0.0"
+    cross-env: "npm:^7.0.3"
+    semantic-release: "npm:^24.2.3"
+    semantic-release-major-tag: "npm:^0.3.2"
+    semantic-release-monorepo: "npm:^8.0.2"
+  languageName: unknown
+  linkType: soft
+
+"python-nix-template@workspace:packages/python-nix-template":
+  version: 0.0.0-use.local
+  resolution: "python-nix-template@workspace:packages/python-nix-template"
   dependencies:
     "@semantic-release/changelog": "npm:^6.0.3"
     "@semantic-release/git": "npm:^10.0.1"
