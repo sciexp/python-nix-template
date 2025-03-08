@@ -122,6 +122,11 @@ testpaths = [
   "src/pnt_functional/tests",
 ]
 
+[tool.coverage.run]
+omit = [
+  "src/pnt_functional/tests/*",
+]
+
 [tool.ruff]
 line-length    = 88
 src            = ["src"]
