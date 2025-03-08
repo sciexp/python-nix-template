@@ -104,18 +104,6 @@ conda-type package="python-nix-template":
 conda-check package="python-nix-template": (conda-lint package) (conda-type package) (conda-test package)
     @printf "\n\033[92mAll conda checks passed!\033[0m\n"
 
-## Monorepo
-
-# Apply monorepo patch to configure project for monorepo structure
-[group('monorepo')]
-monorepo-patch:
-    git apply scripts/monorepo_pyproject.patch
-
-# Reverse monorepo patch to revert to single root package
-[group('monorepo')]
-monorepo-reverse:
-    git apply --reverse scripts/monorepo_pyproject.patch
-
 ## Nix
 
 # Enter the Nix development shell
