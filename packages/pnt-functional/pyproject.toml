@@ -18,7 +18,7 @@ description = "A Python package template using Nix and uv"
 license = { text = "Apache-2.0" }
 name = "pnt-functional"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 version = "0.1.0"
 
 [project.scripts]
@@ -56,13 +56,13 @@ types = [
 [tool.uv]
 default-groups = ["lint", "test", "types"]
 
-[tool.pixi.workspace]
+[tool.pixi.project]
 channels  = ["conda-forge"]
 platforms = ["linux-64", "osx-arm64"]
 preview   = ["pixi-build"]
 
 [tool.pixi.dependencies]
-beartype   = ">=0.19.0"
+beartype   = ">=0.19.0,<0.20.0"
 expression = ">=5.5.0"
 python     = ">=3.11"
 
@@ -92,7 +92,7 @@ name    = "pnt-functional"
 version = "0.1.0"
 
 [tool.pixi.package.run-dependencies]
-beartype   = ">=0.19.0"
+beartype   = ">=0.19.0,<0.20.0"
 expression = ">=5.5.0"
 
 [tool.pixi.package.host-dependencies]
