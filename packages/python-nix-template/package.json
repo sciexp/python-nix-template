@@ -1,20 +1,5 @@
 {
-  "name": "python-nix-template-template",
-  "version": "0.0.0-development",
-  "private": true,
   "description": "Python Nix Template with uv2nix integration",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/sciexp/python-nix-template.git"
-  },
-  "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
-  "workspaces": [
-    "packages/*"
-  ],
-  "packageManager": "yarn@4.6.0",
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
@@ -25,11 +10,14 @@
     "semantic-release-major-tag": "^0.3.2",
     "semantic-release-monorepo": "^8.0.2"
   },
-  "scripts": {
-    "test-release": "semantic-release --dry-run --no-ci"
+  "engines": {
+    "node": ">=18"
   },
+  "license": "MIT",
+  "name": "python-nix-template",
+  "packageManager": "yarn@4.6.0",
+  "private": true,
   "release": {
-    "extends": "semantic-release-monorepo",
     "branches": [
       {
         "name": "main"
@@ -39,23 +27,24 @@
         "prerelease": true
       }
     ],
+    "extends": "semantic-release-monorepo",
+    "npmPublish": false,
     "plugins": [
       [
         "@semantic-release/commit-analyzer",
         {
-          "preset": "conventionalcommits",
           "parserOpts": {
             "noteKeywords": [
               "BREAKING CHANGE",
               "BREAKING-CHANGE"
             ]
-          }
+          },
+          "preset": "conventionalcommits"
         }
       ],
       [
         "@semantic-release/release-notes-generator",
         {
-          "preset": "conventionalcommits",
           "parserOpts": {
             "noteKeywords": [
               "BREAKING CHANGE",
@@ -63,7 +52,8 @@
               "NOTABLE CHANGE",
               "NOTABLE-CHANGE"
             ]
-          }
+          },
+          "preset": "conventionalcommits"
         }
       ],
       [
@@ -75,9 +65,9 @@
       [
         "@semantic-release/github",
         {
+          "addReleases": "bottom",
           "failComment": false,
-          "successComment": false,
-          "addReleases": "bottom"
+          "successComment": false
         }
       ],
       [
@@ -92,15 +82,22 @@
       [
         "@semantic-release/git",
         {
-          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
           "assets": [
             "CHANGELOG.md",
             "pyproject.toml",
-            "uv.lock"
-          ]
+            "../../uv.lock"
+          ],
+          "message": "chore(release): python-nix-template ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
         }
       ]
-    ],
-    "npmPublish": false
-  }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sciexp/python-nix-template.git"
+  },
+  "scripts": {
+    "test-release": "semantic-release --dry-run --no-ci"
+  },
+  "version": "0.0.0-development"
 }
