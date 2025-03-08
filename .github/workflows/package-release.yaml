@@ -34,6 +34,16 @@ on:
         required: false
         type: boolean
         default: false
+      build-images:
+        description: "Whether to build container images after release"
+        required: false
+        type: boolean
+        default: false
+      images-to-build:
+        description: "JSON array of images to build"
+        required: false
+        type: string
+        default: "[]"
 
   workflow_call:
     inputs:
@@ -68,6 +78,16 @@ on:
         required: false
         type: boolean
         default: false
+      build-images:
+        description: "Whether to build container images after release"
+        required: false
+        type: string
+        default: "false"
+      images-to-build:
+        description: "JSON array of images to build"
+        required: false
+        type: string
+        default: "[]"
 
     outputs:
       artifact-name:
@@ -187,3 +207,15 @@ jobs:
       - name: Minimize uv cache
         run: uv cache prune --ci
         if: always()
+
+  build-images:
+    needs: [release]
+    if: ${{ inputs.build-images == 'true' && needs.release.outputs.released == 'true' && inputs.release-dry-run != 'true' }}
+    uses: ./.github/workflows/build-nix-images.yaml
+    with:
+      debug_enabled: ${{ inputs.debug-enabled }}
+      version: ${{ needs.release.outputs.version }}
+      images: ${{ inputs.images-to-build }}
+      branch: ${{ needs.release.outputs.tag }}
+      revision: ""
+    secrets: inherit
