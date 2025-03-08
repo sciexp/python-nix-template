@@ -196,19 +196,25 @@ jobs:
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
         if: ${{ needs.set-variables.outputs.debug == 'true' }}
 
-      - name: Install omnix
-        run: nix --accept-flake-config profile install "github:juspay/omnix"
+      # - name: Install omnix
+      #   run: nix --accept-flake-config profile install "github:juspay/omnix"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # ratchet:astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          version: "0.6.4"
 
       - name: Test template initialization
+        # This script executes the tl;dr one-liner from the README
         run: |
-          # Determine the correct repository reference
           REPO_REF="github:sciexp/python-nix-template/${{ needs.set-variables.outputs.checkout_rev }}"
           echo "Using repository reference: $REPO_REF"
 
-          # Clean any existing test directory
           rm -fr pnt-new
 
-          # Initialize the template
           nix --accept-flake-config run github:juspay/omnix -- init "$REPO_REF" -o pnt-new --non-interactive --params '{
             "package-name-kebab-case": "pnt-new",
             "package-name-snake-case": "pnt_new",
@@ -221,7 +227,6 @@ jobs:
             "include-flake-template": false
           }'
 
-          # Set up the new project
           cd pnt-new
           git init
           git config --local user.email "test@example.com"
@@ -229,13 +234,13 @@ jobs:
           git commit --allow-empty -m "initial commit (empty)"
           git add .
 
-          # Fix template names and set up environment
+          # TODO: remove on resolution of https://github.com/juspay/omnix/issues/425
           nix run .#fix-template-names -- python-nix-template
+          # This needs to use the system uv (astral-sh/setup-uv) before entering
+          # the devshell
+          uv lock
           git add .
 
-          # Test that the project tests pass
-          nix develop -c uv lock
-          git add .
           nix develop -c pytest
 
   test-python:
