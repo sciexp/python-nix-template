@@ -216,7 +216,7 @@ jobs:
     secrets: inherit
 
   release-packages:
-    needs: [nixci, test-python]
+    needs: [test-python]
     if: ${{ github.repository_owner == 'sciexp' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     concurrency:
       group: release-${{ matrix.package.name }}-${{ github.workflow }}-${{ github.ref_name }}
