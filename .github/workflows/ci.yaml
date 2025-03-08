@@ -120,11 +120,6 @@ jobs:
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> $GITHUB_OUTPUT
           echo "CHECKOUT_REV=$CHECKOUT_REV" >> $GITHUB_OUTPUT
 
-  # detect-changes:
-  #   needs: set-variables
-  #   if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
-  #   uses: ./.github/workflows/detect-changes.yaml
-
   nixci:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -179,19 +174,15 @@ jobs:
           - python-version: "3.11"
             package-name: "python-nix-template"
             monorepo: "false"
-            # change-output: main-package-changed
           - python-version: "3.12"
             package-name: "python-nix-template"
             monorepo: "false"
-            # change-output: main-package-changed
           - python-version: "3.11"
             package-name: "pnt-functional"
             monorepo: "false"
-            # change-output: functional-package-changed
           - python-version: "3.12"
             package-name: "pnt-functional"
             monorepo: "false"
-            # change-output: functional-package-changed
     uses: ./.github/workflows/python-test.yaml
     with:
       python-version: ${{ matrix.config.python-version }}
@@ -201,7 +192,6 @@ jobs:
       checkout_ref: ${{ needs.set-variables.outputs.checkout_ref }}
 
   test-release-packages:
-    # needs: [set-variables, detect-changes, test-python]
     needs: [set-variables, test-python]
     if: ${{ github.event_name == 'pull_request' && needs.set-variables.outputs.dry_run_release == 'true' }}
     permissions:
@@ -213,26 +203,18 @@ jobs:
         package:
           - name: python-nix-template
             path: "packages/python-nix-template"
-            # change-output: main-package-changed
-            # apply-monorepo-patch: false
           - name: pnt-functional
             path: packages/pnt-functional
-            # change-output: functional-package-changed
-            # apply-monorepo-patch: false
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: ${{ matrix.package.path }}
       package-name: ${{ matrix.package.name }}
       version: "0.0.0-test"
-      # apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
-      # run-if-changed-only: true
-      # change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: true
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
     secrets: inherit
 
   release-packages:
-    # needs: [test-python, detect-changes]
     needs: [test-python]
     if: ${{ github.repository_owner == 'sciexp' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     permissions:
@@ -244,20 +226,13 @@ jobs:
         package:
           - name: python-nix-template
             path: "packages/python-nix-template"
-            # change-output: main-package-changed
-            # apply-monorepo-patch: false
           - name: pnt-functional
             path: packages/pnt-functional
-            # change-output: functional-package-changed
-            # apply-monorepo-patch: false
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: ${{ matrix.package.path }}
       package-name: ${{ matrix.package.name }}
       version: "0.0.0"
-      # apply-monorepo-patch: ${{ matrix.package.apply-monorepo-patch }}
-      # run-if-changed-only: true
-      # change-detected: ${{ needs.detect-changes.outputs[matrix.package.change-output] }}
       release-dry-run: false
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
     secrets: inherit
