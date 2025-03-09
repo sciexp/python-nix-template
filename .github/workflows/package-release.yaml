@@ -220,5 +220,5 @@ jobs:
       debug_enabled: ${{ inputs.debug-enabled }}
       version: ${{ needs.release.outputs.version }}
       images: ${{ inputs.images-to-build }}
-      branch: ${{ needs.release.outputs.tag }}
+      branch: ${{ inputs.checkout-ref }}
     secrets: inherit
