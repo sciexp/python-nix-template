@@ -317,5 +317,5 @@ test-release-direct:
 
 # Test package release
 [group('release')]
-test-package-release PACKAGE_PATH="." PACKAGE_NAME="python-nix-template":
-    PACKAGE_PATH={{PACKAGE_PATH}} yarn test-package-release
+test-package-release package-name="python-nix-template" branch="main":
+    yarn workspace {{package-name}} test-release -b {{branch}}
