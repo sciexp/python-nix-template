@@ -92,13 +92,14 @@ You should now be able to run `pytest` or `just test` to confirm the package
 tests pass in the devshell environment.
 
 > [!WARNING]  
-> The root-only layout works with both uv and pixi. The workspace monorepo layout
-> works with uv but breaks pixi. See [#22](https://github.com/sciexp/python-nix-template/issues/22).
+> uv recognizes all the packages in the workspace monorepo layout but pixi
+> treats each package separately. See [#22](https://github.com/sciexp/python-nix-template/issues/22).
 
-If you choose to retain the monorepo leaf package in
+If you choose to modify the monorepo packages such as
 [packages/pnt-functional](./packages/pnt-functional) then you will need to run
-`just uv-lock` to update the [pyproject.toml](./pyproject.toml)
-and [uv.lock](./uv.lock) to include it and its tests in the workspace.
+`just uv-lock` to update the [pyproject.toml](./pyproject.toml) and
+[uv.lock](./uv.lock) files to include the package and its tests in the
+workspace.
 
 #### python virtualenv
 
