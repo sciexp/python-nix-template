@@ -8,3 +8,4 @@ providers:
           CACHIX_AUTH_TOKEN: ==
           FAST_FORWARD_PAT: ==
           GITGUARDIAN_API_KEY: ==
+          UV_PUBLISH_TOKEN: ==
