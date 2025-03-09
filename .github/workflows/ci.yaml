@@ -298,7 +298,8 @@ jobs:
       id-token: write
       packages: write
     strategy:
-      max-parallel: 1
+      # NOTE: this is only necessary if releases commit to the repository
+      # max-parallel: 1
       matrix:
         package:
           - name: python-nix-template
