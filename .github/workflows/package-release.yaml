@@ -161,6 +161,7 @@ jobs:
             @semantic-release/changelog
             @semantic-release/git
             semantic-release-major-tag
+            semantic-release-monorepo
             conventional-changelog-conventionalcommits
           ci: ${{ inputs.release-dry-run == 'false' }}
         env:
