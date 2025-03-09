@@ -63,20 +63,20 @@ runs:
         if [ "${{ inputs.triggerEventName }}" == "pull_request" ]; then
           echo "GIT_SHA=$CI_GITHUB_EVENT_PULL_REQUEST_HEAD_SHA" >> $GITHUB_ENV
           echo "GIT_SHA_SHORT=$CI_GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT" >> $GITHUB_ENV
-        elif [ -n "${{ inputs.releaseVersion }}" ]; then
-          tag_base="${{ inputs.releaseVersion }}"
-          echo "tag_base=$tag_base"
-          if [[ $tag_base =~ ^[0-9] ]]; then
-            tag="v$tag_base"
-          else
-            tag="$tag_base"
-          fi
+        # elif [ -n "${{ inputs.releaseVersion }}" ]; then
+        #   tag_base="${{ inputs.releaseVersion }}"
+        #   echo "tag_base=$tag_base"
+        #   if [[ $tag_base =~ ^[0-9] ]]; then
+        #     tag="v$tag_base"
+        #   else
+        #     tag="$tag_base"
+        #   fi
 
-          sha=$(git rev-parse "$tag")
-          short_sha=$(git rev-parse --short "$tag")
+        #   sha=$(git rev-parse "$tag")
+        #   short_sha=$(git rev-parse --short "$tag")
 
-          echo "GIT_SHA=$sha" >> $GITHUB_ENV
-          echo "GIT_SHA_SHORT=$short_sha" >> $GITHUB_ENV
+        #   echo "GIT_SHA=$sha" >> $GITHUB_ENV
+        #   echo "GIT_SHA_SHORT=$short_sha" >> $GITHUB_ENV
         else
           echo "GIT_SHA=$CI_GITHUB_SHA" >> $GITHUB_ENV
           echo "GIT_SHA_SHORT=$CI_GITHUB_SHA_SHORT" >> $GITHUB_ENV
