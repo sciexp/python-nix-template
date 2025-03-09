@@ -201,9 +201,12 @@ jobs:
 
       - name: Publish to PyPI
         if: ${{ steps.semantic-release.outputs.new_release_published == 'true' && inputs.release-dry-run != 'true' }}
-        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # ratchet:pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist
+        # uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # ratchet:pypa/gh-action-pypi-publish@release/v1
+        run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.UV_PUBLISH_TOKEN }}
+        # with:
+        #   packages-dir: dist
 
       - name: Minimize uv cache
         run: uv cache prune --ci
