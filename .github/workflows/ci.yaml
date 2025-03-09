@@ -289,7 +289,7 @@ jobs:
 
   release-packages:
     needs: [test-python]
-    if: ${{ github.repository_owner == 'sciexp' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
+    if: ${{ github.repository_owner == 'sciexp' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     concurrency:
       group: release-${{ matrix.package.name }}-${{ github.workflow }}-${{ github.ref_name }}
       cancel-in-progress: true
