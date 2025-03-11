@@ -97,7 +97,10 @@
         {
           name = "nix-template";
           description = "Keep the flake template in the project";
-          paths = [ "**/template.nix" ];
+          paths = [
+            "**/template.nix"
+            ".github/workflows/template.yaml"
+          ];
           value = false;
         }
       ];
