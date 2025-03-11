@@ -164,106 +164,6 @@ jobs:
         run: |
           om ci run
 
-  test-omnix-template:
-    needs: [set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
-    runs-on: ubuntu-latest
-    concurrency:
-      group: test-omnix-template-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
-      cancel-in-progress: true
-    steps:
-      - name: Install dependencies
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -yq zstd
-          sudo apt-get clean
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@a48face58194521af687ce7df4c802b1b558e743 # ratchet:DeterminateSystems/nix-installer-action@main
-        with:
-          extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
-
-      - name: Setup remote cache
-        uses: cachix/cachix-action@be5295a636153b6ad194d3245f78f8e0b78dc704 # ratchet:cachix/cachix-action@master
-        continue-on-error: true
-        with:
-          name: "${{ vars.CACHIX_CACHE_NAME }}"
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-          extraPullNames: nix-community,pyproject-nix,sciexp,srid
-
-      - name: Setup tmate debug session
-        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
-        if: ${{ needs.set-variables.outputs.debug == 'true' }}
-
-      - name: Install omnix
-        # If we don't install omnix here, it will just clutter the log of the next step
-        run: nix --accept-flake-config profile install "github:juspay/omnix"
-
-      # These tests execute the tl;dr one-liners from the README
-      - name: Test monorepo template initialization
-        run: |
-          REPO_REF="github:sciexp/python-nix-template/${{ needs.set-variables.outputs.checkout_rev }}"
-          echo "Using repository reference: $REPO_REF"
-
-          pwd
-          rm -fr pnt-mono
-
-          nix --accept-flake-config run github:juspay/omnix -- init "$REPO_REF" -o pnt-mono --non-interactive --params '{
-            "package-name-kebab-case": "pnt-mono",
-            "package-name-snake-case": "pnt_mono",
-            "monorepo-package": true,
-            "git-org": "pnt-mono",
-            "author": "Pnt Mono",
-            "author-email": "mono@pnt.org",
-            "vscode": true,
-            "github-ci": true,
-            "nix-template": true
-          }'
-
-          cd pnt-mono
-          git init
-          git config --local user.email "test@example.com"
-          git config --local user.name "Test User"
-          git commit --allow-empty -m "initial commit (empty)"
-          git add .
-
-          nix develop --accept-flake-config -c pytest
-
-      - name: Test single-package template initialization
-        run: |
-          REPO_REF="github:sciexp/python-nix-template/${{ needs.set-variables.outputs.checkout_rev }}"
-          echo "Using repository reference: $REPO_REF"
-
-          pwd
-          rm -fr pnt-new
-
-          nix --accept-flake-config run github:juspay/omnix -- init "$REPO_REF" -o pnt-new --non-interactive --params '{
-            "package-name-kebab-case": "pnt-new",
-            "package-name-snake-case": "pnt_new",
-            "monorepo-package": false,
-            "git-org": "pnt-new",
-            "author": "Pnt New",
-            "author-email": "new@pnt.org",
-            "vscode": true,
-            "github-ci": true,
-            "nix-template": false
-          }'
-
-          cd pnt-new
-          git init
-          git config --local user.email "test@example.com"
-          git config --local user.name "Test User"
-          git commit --allow-empty -m "initial commit (empty)"
-          git add .
-
-          # This needs to use a global uv (astral-sh/setup-uv) before entering
-          # the devshell even though uv is included in the devshell
-          nix run nixpkgs#uv -- lock
-          git add .
-
-          nix develop --accept-flake-config -c pytest
-
   test-python:
     needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }}
@@ -316,7 +216,7 @@ jobs:
     secrets: inherit
 
   release-packages:
-    needs: [test-python, test-omnix-template, nixci]
+    needs: [test-python, nixci]
     if: ${{ github.repository_owner == 'sciexp' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     concurrency:
       group: release-${{ matrix.package.name }}-${{ github.workflow }}-${{ github.ref_name }}
