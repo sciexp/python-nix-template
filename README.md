@@ -19,36 +19,64 @@ init github:sciexp/python-nix-template -o new-python-project
 
 tl;dr
 
-<details><summary>one command to copy and paste</summary>
+<details><summary>instantiate a monorepo variant of the template</summary>
 
 ```sh
-rm -fr pnt-new && \
+nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template -o pnt-mono --non-interactive --params '{
+  "package-name-kebab-case": "pnt-mono",
+  "package-name-snake-case": "pnt_mono",
+  "monorepo-package": true,
+  "git-org": "pnt-mono",
+  "author": "Pnt Mono",
+  "author-email": "mono@pnt.org",
+  "vscode": true,
+  "github-ci": true,
+  "nix-template": false
+}' && \
+cd pnt-mono && \
+git init && \
+git commit --allow-empty -m "initial commit (empty)" && \
+git add . && \
+nix develop --accept-flake-config -c pytest
+```
+
+</details>
+
+You can run `direnv allow` to enter the shell environment that contains
+development dependencies or `nix develop --accept-flake-config` to enter (or add
+`-c command` to execute individual commands within) the development shell.
+
+<details><summary>instantiate a single-package variant of the template</summary>
+
+```sh
 nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template/main -o pnt-new --non-interactive --params '{
   "package-name-kebab-case": "pnt-new",
   "package-name-snake-case": "pnt_new",
-  "include-functional-package": false,
+  "monorepo-package": false,
   "git-org": "pnt-new",
-  "author": "PntNew",
+  "author": "Pnt New",
   "author-email": "new@pnt.org",
-  "include-vscode": true,
-  "include-github-ci": true,
-  "include-flake-template": false
+  "vscode": true,
+  "github-ci": true,
+  "nix-template": false
 }' && \
 cd pnt-new && \
 git init && \
 git commit --allow-empty -m "initial commit (empty)" && \
 git add . && \
-nix run .#fix-template-names -- python-nix-template && \
 nix run nixpkgs#uv -- lock && \
-direnv allow
+nix develop --accept-flake-config -c pytest
 ```
 
 </details>
 
-except you should update the git ref/rev from
-`github:sciexp/python-nix-template/main` to
-`github:sciexp/python-nix-template/3289dla` or
-`github:sciexp/python-nix-template/devbranch`.
+except you may want to update the git ref/rev of the template if you need to pin to a
+particular version:
+
+- `github:sciexp/python-nix-template/main`
+- `github:sciexp/python-nix-template/v0.1.0`
+- `github:sciexp/python-nix-template/3289dla`
+- `github:sciexp/python-nix-template/devbranch`.
 
 ### Quick start
 
