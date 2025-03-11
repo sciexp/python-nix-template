@@ -200,24 +200,54 @@ jobs:
         # If we don't install omnix here, it will just clutter the log of the next step
         run: nix --accept-flake-config profile install "github:juspay/omnix"
 
-      - name: Test template initialization
-        # This script executes the tl;dr one-liner from the README
+      # These tests execute the tl;dr one-liners from the README
+      - name: Test monorepo template initialization
         run: |
           REPO_REF="github:sciexp/python-nix-template/${{ needs.set-variables.outputs.checkout_rev }}"
           echo "Using repository reference: $REPO_REF"
 
+          pwd
+          rm -fr pnt-mono
+
+          nix --accept-flake-config run github:juspay/omnix -- init "$REPO_REF" -o pnt-mono --non-interactive --params '{
+            "package-name-kebab-case": "pnt-mono",
+            "package-name-snake-case": "pnt_mono",
+            "monorepo-package": true,
+            "git-org": "pnt-mono",
+            "author": "Pnt Mono",
+            "author-email": "mono@pnt.org",
+            "vscode": true,
+            "github-ci": true,
+            "nix-template": true
+          }'
+
+          cd pnt-mono
+          git init
+          git config --local user.email "test@example.com"
+          git config --local user.name "Test User"
+          git commit --allow-empty -m "initial commit (empty)"
+          git add .
+
+          nix develop --accept-flake-config -c pytest
+
+      - name: Test single-package template initialization
+        run: |
+          REPO_REF="github:sciexp/python-nix-template/${{ needs.set-variables.outputs.checkout_rev }}"
+          echo "Using repository reference: $REPO_REF"
+
+          pwd
           rm -fr pnt-new
 
           nix --accept-flake-config run github:juspay/omnix -- init "$REPO_REF" -o pnt-new --non-interactive --params '{
             "package-name-kebab-case": "pnt-new",
             "package-name-snake-case": "pnt_new",
-            "include-functional-package": false,
+            "monorepo-package": false,
             "git-org": "pnt-new",
             "author": "Pnt New",
             "author-email": "new@pnt.org",
-            "include-vscode": true,
-            "include-github-ci": true,
-            "include-flake-template": false
+            "vscode": true,
+            "github-ci": true,
+            "nix-template": false
           }'
 
           cd pnt-new
@@ -227,14 +257,12 @@ jobs:
           git commit --allow-empty -m "initial commit (empty)"
           git add .
 
-          # TODO: remove on resolution of https://github.com/juspay/omnix/issues/425
-          nix run .#fix-template-names -- python-nix-template
           # This needs to use a global uv (astral-sh/setup-uv) before entering
           # the devshell even though uv is included in the devshell
           nix run nixpkgs#uv -- lock
           git add .
 
-          nix develop -c pytest
+          nix develop --accept-flake-config -c pytest
 
   test-python:
     needs: [set-variables]
