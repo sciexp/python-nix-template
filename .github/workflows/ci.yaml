@@ -162,7 +162,7 @@ jobs:
         run: om show .
       - name: Run flake CI
         run: |
-          nix run github:srid/nixci -- build
+          om ci run
 
   test-omnix-template:
     needs: [set-variables]
