@@ -127,7 +127,7 @@ jobs:
           python-version: "3.12"
           enable-cache: true
           cache-dependency-glob: "uv.lock"
-          version: "0.6.4"
+          version: "0.6.8"
 
       - name: Setup Yarn
         uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # ratchet:threeal/setup-yarn-action@v2.0.0

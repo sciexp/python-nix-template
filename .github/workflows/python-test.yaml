@@ -64,7 +64,7 @@ jobs:
           python-version: ${{ inputs.python-version }}
           enable-cache: true
           cache-dependency-glob: "uv.lock"
-          version: "0.6.4"
+          version: "0.6.8"
 
       - name: Install dependencies
         run: |
