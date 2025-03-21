@@ -11,7 +11,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-  "beartype>=0.19.0,<0.20.0",
+  "beartype>=0.20.1,<0.21.0",
   "expression>=5.5.0",
 ]
 description = "A Python package template using Nix and uv"
