@@ -42,6 +42,7 @@ ghsecrets repo="sciexp/python-nix-template":
   @echo
   eval "$(teller sh)" && \
   gh secret set CACHIX_AUTH_TOKEN --repo={{ repo }} --body="$CACHIX_AUTH_TOKEN" && \
+  gh secret set CODECOV_TOKEN --repo={{ repo }} --body="$CODECOV_TOKEN" && \
   gh secret set FAST_FORWARD_PAT --repo={{ repo }} --body="$FAST_FORWARD_PAT" && \
   gh secret set GITGUARDIAN_API_KEY --repo={{ repo }} --body="$GITGUARDIAN_API_KEY" && \
   gh secret set UV_PUBLISH_TOKEN --repo={{ repo }} --body="$UV_PUBLISH_TOKEN"
