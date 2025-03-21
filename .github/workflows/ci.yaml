@@ -188,6 +188,7 @@ jobs:
       package-name: ${{ matrix.config.package-name }}
       debug_enabled: ${{ needs.set-variables.outputs.debug }}
       checkout_ref: ${{ needs.set-variables.outputs.checkout_ref }}
+    secrets: inherit
 
   test-release-packages:
     needs: [set-variables, test-python]
