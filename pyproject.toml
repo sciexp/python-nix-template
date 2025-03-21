@@ -8,6 +8,7 @@ addopts = """
 --disable-warnings
 --cov=packages/
 --cov-report=term-missing
+--cov-report=xml
 --durations=0
 """
 log_level = "INFO"
