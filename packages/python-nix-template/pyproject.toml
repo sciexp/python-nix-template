@@ -87,6 +87,7 @@ addopts = """
 --disable-warnings
 --cov=src/python_nix_template/
 --cov-report=term-missing
+--cov-report=xml
 --durations=0
 """
 log_level = "INFO"
