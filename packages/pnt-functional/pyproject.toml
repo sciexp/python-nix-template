@@ -115,6 +115,7 @@ addopts = """
 --disable-warnings
 --cov=src/pnt_functional/
 --cov-report=term-missing
+--cov-report=xml
 --durations=0
 """
 log_level = "INFO"
