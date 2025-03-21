@@ -6,6 +6,7 @@ providers:
         path: projects/{{ get_env(name="GCP_PROJECT_ID", default="default") }}
         keys:
           CACHIX_AUTH_TOKEN: ==
+          CODECOV_TOKEN: ==
           FAST_FORWARD_PAT: ==
           GITGUARDIAN_API_KEY: ==
           UV_PUBLISH_TOKEN: ==
