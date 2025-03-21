@@ -191,7 +191,7 @@ jobs:
 
   test-release-packages:
     needs: [set-variables, test-python]
-    if: ${{ github.event_name == 'pull_request' && needs.set-variables.outputs.dry_run_release == 'true' }}
+    if: ${{ github.event_name == 'pull_request' }}
     concurrency:
       group: test-release-${{ matrix.package.name }}-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
       cancel-in-progress: true
