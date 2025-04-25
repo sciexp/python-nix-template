@@ -8,7 +8,11 @@
       welcomeText = ''
         Welcome to the python-nix-template!
 
-        Don't forget to `cd` into your new project directory.
+        NOTE: If you're reusing a preexisting directory for PROJECT_DIRECTORY you
+        may need to run `direnv revoke $PROJECT_DIRECTORY` to unload the environment
+        before proceeding.
+
+        Otherwise, don't forget to `cd` into your new project directory.
 
         If you do not have nix and direnv installed, check
 
@@ -21,6 +25,8 @@
 
         In order to recognize the `flake.nix` and associated files, create a git 
         repository, stage the files, and run `direnv allow` to load the environment.
+        You might need to run `direnv revoke` first if you're reusing a directory
+        where you have previously run `direnv allow`.
 
         You can copy and paste
 
