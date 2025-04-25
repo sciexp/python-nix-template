@@ -22,9 +22,12 @@ tl;dr
 <details><summary>instantiate a monorepo variant of the template</summary>
 
 ```sh
-nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template -o pnt-mono --non-interactive --params '{
-  "package-name-kebab-case": "pnt-mono",
-  "package-name-snake-case": "pnt_mono",
+PROJECT_DIRECTORY=pnt-mono && \
+PROJECT_SNAKE_CASE=$(echo "$PROJECT_DIRECTORY" | tr '-' '_') && \
+PARAMS=$(cat <<EOF
+{
+  "package-name-kebab-case": "$PROJECT_DIRECTORY",
+  "package-name-snake-case": "$PROJECT_SNAKE_CASE",
   "monorepo-package": true,
   "git-org": "pnt-mono",
   "author": "Pnt Mono",
@@ -32,11 +35,16 @@ nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-n
   "vscode": true,
   "github-ci": true,
   "nix-template": false
-}' && \
-cd pnt-mono && \
+}
+EOF
+) && \
+nix --accept-flake-config run github:juspay/omnix/1.0.3 -- init github:sciexp/python-nix-template/main -o "$PROJECT_DIRECTORY" --non-interactive --params "$PARAMS" && \
+(command -v direnv >/dev/null 2>&1 && direnv revoke "./$PROJECT_DIRECTORY/" || true) && \
+cd "$PROJECT_DIRECTORY" && \
 git init && \
 git commit --allow-empty -m "initial commit (empty)" && \
 git add . && \
+nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock && \
 nix develop --accept-flake-config -c pytest
 ```
 
@@ -49,9 +57,12 @@ development dependencies or `nix develop --accept-flake-config` to enter (or add
 <details><summary>instantiate a single-package variant of the template</summary>
 
 ```sh
-nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template/main -o pnt-new --non-interactive --params '{
-  "package-name-kebab-case": "pnt-new",
-  "package-name-snake-case": "pnt_new",
+PROJECT_DIRECTORY=pnt-new && \
+PROJECT_SNAKE_CASE=$(echo "$PROJECT_DIRECTORY" | tr '-' '_') && \
+PARAMS=$(cat <<EOF
+{
+  "package-name-kebab-case": "$PROJECT_DIRECTORY",
+  "package-name-snake-case": "$PROJECT_SNAKE_CASE",
   "monorepo-package": false,
   "git-org": "pnt-new",
   "author": "Pnt New",
@@ -59,12 +70,16 @@ nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-n
   "vscode": true,
   "github-ci": true,
   "nix-template": false
-}' && \
-cd pnt-new && \
+}
+EOF
+) && \
+nix --accept-flake-config run github:juspay/omnix/1.0.3 -- init github:sciexp/python-nix-template/main -o "$PROJECT_DIRECTORY" --non-interactive --params "$PARAMS" && \
+(command -v direnv >/dev/null 2>&1 && direnv revoke "./$PROJECT_DIRECTORY/" || true) && \
+cd "$PROJECT_DIRECTORY" && \
 git init && \
 git commit --allow-empty -m "initial commit (empty)" && \
+nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock && \
 git add . && \
-nix run nixpkgs#uv -- lock && \
 nix develop --accept-flake-config -c pytest
 ```
 
