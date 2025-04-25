@@ -182,6 +182,10 @@ jobs:
           git config --local user.email "test@example.com"
           git config --local user.name "Test User"
           git commit --allow-empty -m "initial commit (empty)"
+
+          # This needs to use a global uv (astral-sh/setup-uv) before entering
+          # the devshell even though uv is included in the devshell
+          nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock
           git add .
 
           nix develop --accept-flake-config -c pytest
@@ -211,11 +215,10 @@ jobs:
           git config --local user.email "test@example.com"
           git config --local user.name "Test User"
           git commit --allow-empty -m "initial commit (empty)"
-          git add .
 
           # This needs to use a global uv (astral-sh/setup-uv) before entering
           # the devshell even though uv is included in the devshell
-          nix run nixpkgs#uv -- lock
+          nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock
           git add .
 
           nix develop --accept-flake-config -c pytest
