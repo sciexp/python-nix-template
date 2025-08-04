@@ -45,7 +45,7 @@ runs:
           extra-platforms = aarch64-linux
 
     - name: Setup Remote Nix Cache
-      uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # ratchet:cachix/cachix-action@v15
+      uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
       with:
         name: "${{ inputs.cachixCacheName }}"
         authToken: "${{ inputs.cachixAuthToken }}"
