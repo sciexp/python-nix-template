@@ -1,0 +1,48 @@
+---
+title: "Installation"
+description: "How to install {{package-name-kebab-case}}"
+---
+
+# Installation
+
+This guide covers different ways to install {{package-name-kebab-case}}.
+
+## Using UV (Recommended)
+
+The fastest way to get started is with UV:
+
+```bash
+uv pip install {{package-name-kebab-case}}
+```
+
+## Using Pip
+
+You can also install with standard pip:
+
+```bash
+pip install {{package-name-kebab-case}}
+```
+
+## Development Installation
+
+For development, clone the repository and set up the environment:
+
+```bash
+git clone https://github.com/{{git-org}}/{{package-name-kebab-case}}.git
+cd {{package-name-kebab-case}}
+
+# With Nix (recommended)
+nix develop
+
+# Or with UV
+uv sync
+```
+
+## Verification
+
+Verify your installation by running:
+
+```python
+import {{package-name-kebab-case}}
+print({{package-name-kebab-case}}.__version__)
+```

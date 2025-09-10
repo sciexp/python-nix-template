@@ -1,0 +1,16 @@
+---
+title: Testing Framework and Reference
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+bibliography: ../../references.bib
+csl: ../../bibstyle.csl
+---
+
+# Introduction {#sec-introduction}
+
+## Purpose of this Document {#sec-purpose}
+
+This document describes the testing approach and infrastructure for the {{package-name-kebab-case}} library.

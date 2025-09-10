@@ -1,0 +1,27 @@
+---
+title: "Context Specification"
+format:
+  html:
+    mermaid-format: js
+    mermaid:
+      theme: dark
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+bibliography: ../../references.bib
+csl: ../../bibstyle.csl
+---
+
+# Introduction {#sec-introduction}
+
+## Purpose of this Document {#sec-purpose}
+
+This document outlines the context for the {{package-name-kebab-case}} project.
+
+| Topic | Reference |
+|-------|-----------|
+| Context Specification | [Context Specification](context.qmd) |
+
+When the context document is sharded into distinct files per subsection, the above table
+may serve as a reference to the different context specification documents.

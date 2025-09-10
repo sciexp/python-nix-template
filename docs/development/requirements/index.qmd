@@ -1,0 +1,27 @@
+---
+title: "Requirements Specification"
+format:
+  html:
+    mermaid-format: js
+    mermaid:
+      theme: dark
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+bibliography: ../../references.bib
+csl: ../../bibstyle.csl
+---
+
+# Introduction {#sec-introduction}
+
+## Purpose of this Document {#sec-purpose}
+
+This document will outline the requirements for the {{package-name-kebab-case}} project.
+
+| Topic | Reference |
+|-------|-----------|
+| Requirements Specification | [Requirements Specification](requirements.qmd) |
+
+When the requirements document is sharded into distinct files per subsection, the above table
+may serve as a reference to the different requirements specification documents.

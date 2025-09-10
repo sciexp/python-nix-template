@@ -1,0 +1,27 @@
+---
+title: "System Architecture and Design Specification"
+format:
+  html:
+    mermaid-format: js
+    mermaid:
+      theme: dark
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+bibliography: ../../references.bib
+csl: ../../bibstyle.csl
+---
+
+# Introduction {#sec-introduction}
+
+## Purpose of this Document {#sec-purpose}
+
+This system specification outlines the system architecture and design for the {{package-name-kebab-case}} project.
+
+| Topic | Reference |
+|-------|-----------|
+| System Architecture and Design Specification | [System Architecture and Design Specification](architecture.qmd) |
+
+When the architecture document is sharded into distinct files per subsection, the above table
+may serve as a reference to the different architecture specification documents.

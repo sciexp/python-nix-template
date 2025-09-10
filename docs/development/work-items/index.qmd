@@ -1,0 +1,21 @@
+---
+title: Work items
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    mermaid-format: js
+    mermaid:
+      theme: dark
+bibliography: ../../references.bib
+csl: ../../bibstyle.csl
+---
+
+# Introduction {#sec-introduction}
+
+## Purpose of this Document {#sec-purpose}
+
+This document provides an overview of the work items for the {{package-name-kebab-case}} project.
+In the Agile methodology, these might correspond to stories from epics, but they will generally 
+be associated with GitHub issues and pull requests.

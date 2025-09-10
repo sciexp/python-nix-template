@@ -1,0 +1,23 @@
+---
+title: Development Overview
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    mermaid-format: js
+    mermaid:
+      theme: dark
+bibliography: ../references.bib
+csl: ../bibstyle.csl
+---
+
+# Introduction {#sec-introduction}
+
+This section provides comprehensive technical documentation for developers working on {{package-name-kebab-case}}. It follows the AMDiRE (Artefact-based Model for Domain-independent Requirements Engineering) framework to ensure a structured, traceable approach to development documentation [@Mendez-Fernandez2015-xj;@Chuprina2021-xx].
+
+## Artifact-based requirements framework {#sec-amdire}
+
+::: {.callout-note collapse="true" title="Relationships to international standards"}
+Note that the Requirements Specification is related to the [software requirements specification](https://en.wikipedia.org/wiki/Software_requirements_specification) associated to the [IEEE/ISO/IEC 29148-2018](https://standards.ieee.org/ieee/29148/6937/) [@Unknown2018-jr] and the System Specification is related to the [software design description](https://en.wikipedia.org/wiki/Software_design_description) associated to the [IEEE 1016-2009](https://standards.ieee.org/ieee/1016/4502/) [@Unknown2009-wv].
+:::

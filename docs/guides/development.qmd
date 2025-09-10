@@ -1,0 +1,74 @@
+---
+title: "Development"
+description: "Development guide for {{package-name-kebab-case}}"
+---
+
+# Development Guide
+
+This guide covers development workflows for {{package-name-kebab-case}}.
+
+## Development Environment
+
+### Nix Development Shell
+
+For the most reproducible development experience:
+
+```bash
+nix develop
+```
+
+### UV Virtual Environment
+
+For Python-only development:
+
+```bash
+uv sync
+source .venv/bin/activate
+```
+
+### Conda Environment
+
+Using pixi for conda compatibility:
+
+```bash
+pixi shell
+```
+
+## Common Tasks
+
+### Running Tests
+
+```bash
+just test
+```
+
+### Linting and Type Checking
+
+```bash
+just lint
+just type
+```
+
+### Running All Checks
+
+```bash
+just check
+```
+
+## Documentation
+
+### Building Documentation
+
+```bash
+just docs-build
+```
+
+### Live Preview
+
+```bash
+just docs-dev
+```
+
+## Contributing
+
+Please see our [contribution guidelines](../about/contributing.qmd) for more information.

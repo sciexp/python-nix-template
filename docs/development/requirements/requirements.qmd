@@ -1,0 +1,20 @@
+---
+title: "Requirements Specification"
+format:
+  html:
+    mermaid-format: js
+    mermaid:
+      theme: dark
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+bibliography: ../../references.bib
+csl: ../../bibstyle.csl
+---
+
+# Introduction {#sec-introduction}
+
+## Purpose of this Document {#sec-purpose}
+
+This requirements specification document defines what {{package-name-kebab-case}} should do from an external (black-box) perspective without specifying how it will be implemented internally.
