@@ -89,6 +89,11 @@
           placeholder = "your.email@example.com";
         }
         {
+          name = "project-description";
+          description = "Project description for documentation";
+          placeholder = "A Python project template for Nix using uv2nix and flake-parts";
+        }
+        {
           name = "vscode";
           description = "Include the VSCode settings folder (./.vscode)";
           paths = [ ".vscode" ];
