@@ -1,0 +1,131 @@
+project:
+  type: website
+  output-dir: _site
+  preview:
+    port: 7779
+
+format:
+  html:
+    highlight-style: gruvbox
+    theme:
+      dark: [darkly, cdark.scss]
+      light: [cosmo, clight.scss]
+    include-in-header: include.html
+    css: styles.css
+    grid:
+      sidebar-width: 300px
+      body-width: 900px
+      margin-width: 300px
+      gutter-width: 1.5rem
+    toc: true
+
+execute:
+  warning: false
+  error: false
+
+filters:
+  - interlinks
+
+interlinks:
+  fast: true
+  sources:
+    python:
+      url: https://docs.python.org/3/
+    beartype:
+      url: https://beartype.readthedocs.io/en/latest/
+    matplotlib:
+      url: https://matplotlib.org/stable/
+    numpy:
+      url: https://numpy.org/doc/stable/
+
+website:
+  title: "{{package-name-kebab-case}}"
+  description: "{{project-description}}"
+  site-url: "https://{{git-org}}.github.io/{{package-name-kebab-case}}"
+  back-to-top-navigation: false
+  page-navigation: true
+
+  page-footer:
+    border: false
+    left: ""
+    right:
+      - icon: github
+        href: https://github.com/{{git-org}}/{{package-name-kebab-case}}
+
+  search:
+    type: overlay
+
+  navbar:
+    background: primary
+    tools:
+      - icon: github
+        href: https://github.com/{{git-org}}/{{package-name-kebab-case}}
+    left:
+      - sidebar:tutorials
+      - sidebar:guides
+      - sidebar:concepts
+      - href: reference
+        text: Reference
+      - sidebar:development
+      - sidebar:about
+
+  sidebar:
+    - id: ""
+    - id: tutorials
+      title: "Tutorials"
+      style: "floating"
+      contents:
+        - tutorials/getting-started.qmd
+    - id: guides
+      title: "Guides"
+      style: "floating"
+      contents:
+        - guides/installation.qmd
+        - guides/development.qmd
+    - id: concepts
+      title: "Concepts"
+      style: "floating"
+      contents:
+        - concepts/index.qmd
+    - id: development
+      title: "Development"
+      style: "floating"
+      contents:
+        - text: "Overview"
+          href: development/index.qmd
+        - text: "Context"
+          href: development/context/index.qmd
+        - text: "Requirements"
+          href: development/requirements/index.qmd
+        - text: "Architecture"
+          href: development/architecture/index.qmd
+        - text: "Traceability"
+          href: development/traceability/index.qmd
+        - text: "Work Items"
+          href: development/work-items/index.qmd
+    - id: about
+      title: "About"
+      style: "floating"
+      contents:
+        - text: "Overview"
+          href: about/index.qmd
+        - text: "Contributing"
+          href: about/contributing.qmd
+
+quartodoc:
+  dir: reference
+  parser: google
+  package: python_nix_template
+  title: Reference
+  sidebar: reference/_sidbar.yml
+  render_interlinks: true
+  options:
+    signature_name: full
+  sections:
+    - title: API Reference
+      desc: |
+        API reference for {{package-name-kebab-case}}.
+      contents:
+        - name: main
+          children: embedded
+          dynamic: true
