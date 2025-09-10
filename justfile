@@ -339,9 +339,9 @@ docs-reference:
 docs-build: docs-reference
     quarto render docs
 
-# Preview development docs
+# Preview docs locally
 [group('docs')]
-docs-preview:
+docs-local:
     quarto preview docs --no-browser --port 7780
 
 # Check docs
@@ -352,9 +352,14 @@ docs-check:
 # Run local docs deployment
 [group('docs')]
 docs-dev: docs-build
-  yarn dlx wrangler pages dev docs/_site
+  yarn dlx wrangler dev
 
 # Deploy docs
 [group('docs')]
 docs-deploy: docs-build
-  yarn dlx wrangler pages deploy docs/_site
+  yarn dlx wrangler deploy
+
+# Preview docs on remote
+[group('docs')]
+docs-preview: docs-build
+  yarn dlx wrangler versions upload --preview-alias b-$(git branch --show-current)
