@@ -320,3 +320,41 @@ test-release-direct:
 [group('release')]
 test-package-release package-name="python-nix-template" branch="main":
     yarn workspace {{package-name}} test-release -b {{branch}}
+
+## Documentation
+
+# Add quartodoc extension
+[group('docs')]
+docs-extensions:
+    (cd docs && quarto add machow/quartodoc)
+
+# Build quartodoc API reference
+[group('docs')]
+docs-reference:
+    quartodoc build --verbose --config docs/_quarto.yml
+    (cd docs && quartodoc interlinks)
+
+# Build docs
+[group('docs')]
+docs-build: docs-reference
+    quarto render docs
+
+# Preview development docs
+[group('docs')]
+docs-preview:
+    quarto preview docs --no-browser --port 7780
+
+# Check docs
+[group('docs')]
+docs-check:
+    quarto check docs
+
+# Run local docs deployment
+[group('docs')]
+docs-dev: docs-build
+  yarn dlx wrangler pages dev docs/_site
+
+# Deploy docs
+[group('docs')]
+docs-deploy: docs-build
+  yarn dlx wrangler pages deploy docs/_site
