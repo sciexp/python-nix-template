@@ -1,0 +1,14 @@
+{
+    "name": "python-nix-template",
+    "compatibility_date": "2025-09-09",
+    "assets": {
+        "directory": "docs/_site"
+    },
+    "preview_urls": true,
+    "routes": [
+        {
+            "pattern": "python-nix-template.scientistexperience.net",
+            "custom_domain": true
+        }
+    ]
+}
