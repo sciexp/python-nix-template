@@ -1,0 +1,28 @@
+body {
+  font-family: "Latin Modern Sans", sans-serif;
+}
+.navbar {
+  border-bottom: 1px solid #000000;
+}
+.quarto-color-scheme-toggle .bi::before {
+  height: 1.6rem;
+  width: 1.5rem;
+  background-size: 1.5rem 1.5rem;
+}
+.quarto-navigation-tool {
+  font-size: 1.7rem;
+  margin: 0.4rem;
+}
+@media (max-width: 435px) {
+  /* #quarto-search {
+    display: none;
+  } */
+  .quarto-navigation-tool {
+    display: none;
+  }
+}
+@media (min-width: 435px) {
+  /* #quarto-search {
+    display: block;
+  } */
+}
