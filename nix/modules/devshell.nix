@@ -34,6 +34,7 @@
           packages = with pkgs; [
             just
             pixi
+            quarto
             teller
             uv
             yarn-berry
