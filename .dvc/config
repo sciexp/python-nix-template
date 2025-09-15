@@ -1,7 +1,11 @@
 [core]
-    remote = drive
+    remote = gcs
+    analytics = false
+['remote "gcs"']
+    url = gs://sciexp/projects/python-nix-template/cas
+    credentialpath = ../.dvc-sa.json
 ['remote "drive"']
     url = gdrive://1yS1zpTqR4w2WFjXQuV8HypMrQqJvcM-x/dvcstore
     gdrive_acknowledge_abuse = true
     gdrive_use_service_account = true
-    gdrive_service_account_json_file_path = ../.dvc-gdrive-sa.json
+    gdrive_service_account_json_file_path = ../.dvc-sa.json
