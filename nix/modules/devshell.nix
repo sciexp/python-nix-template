@@ -39,6 +39,9 @@
             uv
             yarn-berry
             virtualenv
+            age
+            sops
+            ssh-to-age
             config.packages.set-git-env
           ];
 
