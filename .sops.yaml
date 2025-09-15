@@ -1,0 +1,8 @@
+keys:
+  - &dev age1dn8w7y4t4h23fmeenr3dghfz5qh53jcjq9qfv26km3mnv8l44g0sghptu3
+
+creation_rules:
+  - path_regex: vars/.*\.yaml$
+    key_groups:
+      - age:
+          - *dev
