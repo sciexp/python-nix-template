@@ -1,0 +1,6 @@
+outs:
+- md5: 481f00b14626c9c558a990f58cc704f7.dir
+  size: 9160
+  nfiles: 2
+  hash: md5
+  path: _freeze
