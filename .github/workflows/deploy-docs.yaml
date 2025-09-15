@@ -100,7 +100,7 @@ jobs:
           name: docs-site
           path: |
             docs/_site
-            wrangler.toml
+            wrangler.jsonc
 
   deploy-docs:
     needs: build-docs
