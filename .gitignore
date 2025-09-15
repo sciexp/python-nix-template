@@ -91,3 +91,8 @@ result-*
 !.yarn/versions
 .pnp.*
 node_modules/
+
+# DVC
+.dvc/cache
+.dvc/tmp
+*-sa.json
