@@ -6,3 +6,7 @@ creation_rules:
     key_groups:
       - age:
           - *dev
+  - path_regex: vars/.*\.json$
+    key_groups:
+      - age:
+          - *dev
