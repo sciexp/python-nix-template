@@ -333,32 +333,41 @@ gcp-enable-drive-api:
   @echo "Verifying..."
   @sops exec-env vars/shared.yaml 'gcloud services list --enabled --project="$GCP_PROJECT_ID" | grep drive || echo "⚠️  Drive API not found in enabled services"'
 
-# Create GCP service account for DVC-GDrive access (run once)
+# Create GCP service account for DVC access (run once)
 [group('secrets')]
 gcp-sa-create:
-  @echo "Creating GCP service account for DVC-GDrive..."
-  @sops exec-env vars/shared.yaml 'gcloud iam service-accounts create dvc-gdrive \
-    --display-name="DVC GDrive Service Account" \
+  @echo "Creating GCP service account for DVC..."
+  @sops exec-env vars/shared.yaml 'gcloud iam service-accounts create dvc-sa \
+    --display-name="DVC Service Account" \
     --project="$GCP_PROJECT_ID"'
-  @echo "✅ Service account created: dvc-gdrive@$GCP_PROJECT_ID.iam.gserviceaccount.com"
+  @echo "✅ Service account created: dvc-sa@$GCP_PROJECT_ID.iam.gserviceaccount.com"
+
+# Grant Storage Object User role for GCS access
+[group('secrets')]
+gcp-sa-storage-user:
+  @echo "Granting Storage Object User role for GCS access..."
+  @sops exec-env vars/shared.yaml 'gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+    --member="serviceAccount:dvc-sa@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/storage.objectUser"'
+  @echo "✅ Storage Object User role granted"
   @echo ""
-  @echo "⚠️  IMPORTANT: Add this email as an editor to your GDrive folder"
+  @echo "⚠️  IMPORTANT: Add dvc-sa@$GCP_PROJECT_ID.iam.gserviceaccount.com as an editor to your relevant folder or bucket."
 
 # Download service account key (for key rotation)
 [group('secrets')]
 gcp-sa-key-download:
   @echo "Downloading service account key..."
-  @sops exec-env vars/shared.yaml 'gcloud iam service-accounts keys create vars/dvc-gdrive.tmp.json \
-      --iam-account=dvc-gdrive@"$GCP_PROJECT_ID".iam.gserviceaccount.com \
+  @sops exec-env vars/shared.yaml 'gcloud iam service-accounts keys create vars/dvc-sa.tmp.json \
+      --iam-account=dvc-sa@"$GCP_PROJECT_ID".iam.gserviceaccount.com \
       --project="$GCP_PROJECT_ID"'
 
 # Encrypt service account key with sops
 [group('secrets')]
 gcp-sa-key-encrypt:
   @echo "Encrypting service account key with sops..."
-  @sops -e vars/dvc-gdrive.tmp.json > vars/dvc-gdrive.json
-  @rm -f vars/dvc-gdrive.tmp.json
-  @echo "✅ Service account key encrypted and saved to vars/dvc-gdrive.json"
+  @sops -e vars/dvc-sa.tmp.json > vars/dvc-sa.json
+  @rm -f vars/dvc-sa.tmp.json
+  @echo "✅ Service account key encrypted and saved to vars/dvc-sa.json"
 
 # Setup DVC configuration with GDrive
 [group('secrets')]
@@ -374,7 +383,7 @@ dvc-setup gdrive_folder_id:
     echo '    url = gdrive://{{gdrive_folder_id}}/dvcstore'
     echo '    gdrive_acknowledge_abuse = true'
     echo '    gdrive_use_service_account = true'
-    echo '    gdrive_service_account_json_file_path = .dvc-gdrive-sa.json'
+    echo '    gdrive_service_account_json_file_path = .dvc-sa.json'
   } > .dvc/config
   echo "✅ DVC configuration created in .dvc/config"
 
@@ -383,15 +392,15 @@ dvc-setup gdrive_folder_id:
 dvc-run +command:
   #!/usr/bin/env bash
   set -euo pipefail
-  sops -d vars/dvc-gdrive.json > .dvc-gdrive-sa.json
-  trap 'rm -f .dvc-gdrive-sa.json' EXIT
-  uvx --with dvc-gdrive dvc {{command}}
+  sops -d vars/dvc-sa.json > .dvc-sa.json
+  trap 'rm -f .dvc-sa.json' EXIT
+  uvx --with dvc-gdrive,dvc-gs dvc {{command}}
 
 # List existing service account keys (for auditing)
 [group('secrets')]
 gcp-sa-keys-list:
   @sops exec-env vars/shared.yaml 'gcloud iam service-accounts keys list \
-    --iam-account=dvc-gdrive@"$GCP_PROJECT_ID".iam.gserviceaccount.com \
+    --iam-account=dvc-sa@"$GCP_PROJECT_ID".iam.gserviceaccount.com \
     --project="$GCP_PROJECT_ID"'
 
 # Rotate service account key
@@ -411,7 +420,7 @@ gcp-sa-key-rotate:
 [group('secrets')]
 gcp-sa-key-delete key_id:
   @sops exec-env vars/shared.yaml 'gcloud iam service-accounts keys delete {{key_id}} \
-    --iam-account=dvc-gdrive@"$GCP_PROJECT_ID".iam.gserviceaccount.com \
+    --iam-account=dvc-sa@"$GCP_PROJECT_ID".iam.gserviceaccount.com \
     --project="$GCP_PROJECT_ID" --quiet'
   @echo "✅ Key {{key_id}} deleted"
 
@@ -491,24 +500,24 @@ data-sync:
   #!/usr/bin/env bash
   set -euo pipefail
   echo "Decrypting service account for DVC..."
-  sops -d vars/dvc-gdrive.json > .dvc-gdrive-sa.json
-  trap 'rm -f .dvc-gdrive-sa.json' EXIT
-  uvx --with dvc-gdrive dvc pull --force --allow-missing
-  echo "✅ Data synced from GDrive"
+  sops -d vars/dvc-sa.json > .dvc-sa.json
+  trap 'rm -f .dvc-sa.json' EXIT
+  uvx --with dvc-gdrive,dvc-gs dvc pull --force --allow-missing
+  echo "✅ DVC data synced"
 
 # docs-sync: docs-build
-# Sync docs freeze data to GDrive
+# Sync docs freeze data to DVC remote
 [group('docs')]
 docs-sync:
   #!/usr/bin/env bash
   set -euo pipefail
   echo "Syncing docs freeze data to GDrive..."
-  sops -d vars/dvc-gdrive.json > .dvc-gdrive-sa.json
-  chmod 600 .dvc-gdrive-sa.json
-  trap 'rm -f .dvc-gdrive-sa.json' EXIT
-  uvx --with dvc-gdrive dvc status
-  uvx --with dvc-gdrive dvc add docs/_freeze -v
-  uvx --with dvc-gdrive dvc push
-  uvx --with dvc-gdrive dvc status
+  sops -d vars/dvc-sa.json > .dvc-sa.json
+  chmod 600 .dvc-sa.json
+  trap 'rm -f .dvc-sa.json' EXIT
+  uvx --with dvc-gdrive,dvc-gs dvc status
+  uvx --with dvc-gdrive,dvc-gs dvc add docs/_freeze -v
+  uvx --with dvc-gdrive,dvc-gs dvc push
+  uvx --with dvc-gdrive,dvc-gs dvc status
   git status
   printf "\n\033[92mCommit relevant updates to the docs/_freeze.dvc lock file to the git repo\033[0m\n"
