@@ -369,24 +369,6 @@ gcp-sa-key-encrypt:
   @rm -f vars/dvc-sa.tmp.json
   @echo "✅ Service account key encrypted and saved to vars/dvc-sa.json"
 
-# Setup DVC configuration with GDrive
-[group('secrets')]
-dvc-setup gdrive_folder_id:
-  #!/usr/bin/env bash
-  set -euo pipefail
-  echo "Setting up DVC configuration..."
-  mkdir -p .dvc
-  {
-    echo '[core]'
-    echo '    remote = drive'
-    echo "['remote \"drive\"']"
-    echo '    url = gdrive://{{gdrive_folder_id}}/dvcstore'
-    echo '    gdrive_acknowledge_abuse = true'
-    echo '    gdrive_use_service_account = true'
-    echo '    gdrive_service_account_json_file_path = .dvc-sa.json'
-  } > .dvc/config
-  echo "✅ DVC configuration created in .dvc/config"
-
 # Helper: Run any DVC command with decrypted service account
 [group('secrets')]
 dvc-run +command:
@@ -511,7 +493,7 @@ data-sync:
 docs-sync:
   #!/usr/bin/env bash
   set -euo pipefail
-  echo "Syncing docs freeze data to GDrive..."
+  echo "Syncing docs freeze data to DVC remote..."
   sops -d vars/dvc-sa.json > .dvc-sa.json
   chmod 600 .dvc-sa.json
   trap 'rm -f .dvc-sa.json' EXIT
