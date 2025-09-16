@@ -75,7 +75,6 @@ test-docs-build branch="main":
     -s CI_AGE_KEY -s CACHIX_AUTH_TOKEN \
     -s GITHUB_TOKEN="$(gh auth token)" \
     --var CACHIX_CACHE_NAME \
-    --artifact-server-path $PWD/.artifacts \
     --input debug_enabled=false \
     --input branch={{branch}}'
 
@@ -90,7 +89,6 @@ test-docs-deploy branch="main":
     -s CLOUDFLARE_API_TOKEN -s CLOUDFLARE_ACCOUNT_ID \
     -s GITHUB_TOKEN="$(gh auth token)" \
     --var CACHIX_CACHE_NAME \
-    --artifact-server-path $PWD/.artifacts \
     --input debug_enabled=false \
     --input branch={{branch}}'
 
