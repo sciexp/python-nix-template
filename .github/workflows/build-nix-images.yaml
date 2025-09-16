@@ -81,11 +81,14 @@ jobs:
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
         if: ${{ inputs.debug_enabled == 'true' }}
 
+      # - name: Install Nix
+      #   uses: DeterminateSystems/nix-installer-action@a48face58194521af687ce7df4c802b1b558e743 # ratchet:DeterminateSystems/nix-installer-action@main
+      #   with:
+      #     extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@a48face58194521af687ce7df4c802b1b558e743 # ratchet:DeterminateSystems/nix-installer-action@main
+        uses: nixbuild/nix-quick-install-action@v33
         with:
-          extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
-
+          nix_conf: "system-features = nixos-test benchmark big-parallel kvm"
       - name: Setup remote cache
         # TODO: disable continue-on-error https://www.github.com/cachix/cachix-action/issues/200
         uses: cachix/cachix-action@be5295a636153b6ad194d3245f78f8e0b78dc704 # ratchet:cachix/cachix-action@master
