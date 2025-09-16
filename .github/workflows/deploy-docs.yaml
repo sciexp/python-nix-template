@@ -106,7 +106,13 @@ jobs:
         id: deployment
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # ratchet:cloudflare/wrangler-action@v3
         with:
+          wranglerVersion: "4.37.0"
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: versions upload --preview-alias b-${{ inputs.branch }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wrangler output
+        env:
+          WRANGLER_OUTPUT: ${{ steps.deployment.outputs.command-output }}
+        run: echo $WRANGLER_OUTPUT
