@@ -352,7 +352,7 @@ rotate-secret secret_name:
 # Update keys for existing secrets files after adding new recipients
 [group('secrets')]
 updatekeys:
-  @for file in $(find vars -name "*.yaml"); do \
+  @for file in $(find vars -name "*.*"); do \
     echo "Updating keys for: $file"; \
     sops updatekeys "$file"; \
   done
