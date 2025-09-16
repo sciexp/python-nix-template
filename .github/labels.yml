@@ -79,3 +79,6 @@
 - name: release-dry-run
   description: Execute dry run release on PR
   color: "e99695"
+- name: docs-preview
+  description: Build and publish docs previews on PRs
+  color: fbca04
