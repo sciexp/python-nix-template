@@ -106,6 +106,15 @@
           value = true;
         }
         {
+          name = "docs";
+          description = "Include documentation site infrastructure (MkDocs + Cloudflare deployment)";
+          paths = [
+            "docs"
+            ".github/workflows/deploy-docs.yaml"
+          ];
+          value = true;
+        }
+        {
           name = "nix-template";
           description = "Keep the flake template in the project";
           paths = [
