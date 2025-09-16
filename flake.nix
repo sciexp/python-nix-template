@@ -31,7 +31,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixpod = {
-      url = "github:cameronraysmith/nixpod";
+      url = "github:cameronraysmith/nixpod/00-lock";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
       inputs.flocken.follows = "flocken";
