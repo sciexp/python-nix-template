@@ -290,6 +290,56 @@ sops-init:
     grep "public key:" ~/.config/sops/age/keys.txt; \
   fi
 
+# Add existing age key to local configuration
+[group('secrets')]
+sops-add-key:
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  # Ensure keys.txt exists and has proper permissions
+  mkdir -p ~/.config/sops/age
+  touch ~/.config/sops/age/keys.txt
+  chmod 600 ~/.config/sops/age/keys.txt
+
+  # Prompt for key description
+  printf "Enter age key description (e.g., 'project [dev|ci|admin]'): "
+  read -r key_description
+  [[ -z "${key_description}" ]] && { echo "❌ Description cannot be empty"; exit 1; }
+
+  # Prompt for public key
+  printf "Enter age public key (age1...): "
+  read -r public_key
+  if [[ ! "${public_key}" =~ ^age1[a-z0-9]{58}$ ]]; then
+    echo "❌ Invalid age public key format (must start with 'age1' and be 62 chars)"
+    exit 1
+  fi
+
+  # Prompt for private key (hidden input)
+  printf "Enter age private key (AGE-SECRET-KEY-...): "
+  read -rs private_key
+  echo  # New line after hidden input
+  if [[ ! "${private_key}" =~ ^AGE-SECRET-KEY-[A-Z0-9]{59}$ ]]; then
+    echo "❌ Invalid age private key format"
+    exit 1
+  fi
+
+  # Check if key already exists
+  if grep -q "${private_key}" ~/.config/sops/age/keys.txt 2>/dev/null; then
+    echo "⚠️  This private key already exists in keys.txt"
+    exit 1
+  fi
+
+  # Append to keys.txt with proper formatting
+  {
+    echo ""
+    echo "# ${key_description}"
+    echo "# public key: ${public_key}"
+    echo "${private_key}"
+  } >> ~/.config/sops/age/keys.txt
+
+  echo "✅ Age key added successfully for: ${key_description}"
+  echo "   Public key: ${public_key}"
+
 # Rotate a specific secret
 [group('secrets')]
 rotate-secret secret_name:
@@ -448,7 +498,7 @@ docs-reference:
 
 # Build docs
 [group('docs')]
-docs-build: docs-reference
+docs-build: data-sync docs-reference
     quarto render docs
 
 # Preview docs locally
@@ -473,7 +523,7 @@ docs-deploy: docs-build
 
 # Preview docs on remote
 [group('docs')]
-docs-preview: docs-build
+docs-preview-deploy: data-sync docs-build
   yarn dlx wrangler versions upload --preview-alias b-$(git branch --show-current)
 
 # Sync data from drive (using encrypted service account)
