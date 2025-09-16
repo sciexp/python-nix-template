@@ -32,13 +32,15 @@ PARAMS=$(cat <<EOF
   "git-org": "pnt-mono",
   "author": "Pnt Mono",
   "author-email": "mono@pnt.org",
+  "project-description": "A Python monorepo project using Nix and uv2nix",
   "vscode": true,
   "github-ci": true,
+  "docs": true,
   "nix-template": false
 }
 EOF
 ) && \
-nix --accept-flake-config run github:juspay/omnix/1.0.3 -- init github:sciexp/python-nix-template/main -o "$PROJECT_DIRECTORY" --non-interactive --params "$PARAMS" && \
+nix --accept-flake-config run github:juspay/omnix/v1.3.0 -- init github:sciexp/python-nix-template/main -o "$PROJECT_DIRECTORY" --non-interactive --params "$PARAMS" && \
 (command -v direnv >/dev/null 2>&1 && direnv revoke "./$PROJECT_DIRECTORY/" || true) && \
 cd "$PROJECT_DIRECTORY" && \
 git init && \
@@ -67,8 +69,10 @@ PARAMS=$(cat <<EOF
   "git-org": "pnt-new",
   "author": "Pnt New",
   "author-email": "new@pnt.org",
+  "project-description": "A Python project using Nix and uv2nix",
   "vscode": true,
   "github-ci": true,
+  "docs": true,
   "nix-template": false
 }
 EOF
