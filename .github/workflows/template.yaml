@@ -165,15 +165,17 @@ jobs:
           pwd
           rm -fr pnt-mono
 
-          nix --accept-flake-config run github:juspay/omnix -- init "$REPO_REF" -o pnt-mono --non-interactive --params '{
+          nix --accept-flake-config run github:juspay/omnix/v1.3.0 -- init "$REPO_REF" -o pnt-mono --non-interactive --params '{
             "package-name-kebab-case": "pnt-mono",
             "package-name-snake-case": "pnt_mono",
             "monorepo-package": true,
             "git-org": "pnt-mono",
             "author": "Pnt Mono",
             "author-email": "mono@pnt.org",
+            "project-description": "Test monorepo template project",
             "vscode": true,
             "github-ci": true,
+            "docs": true,
             "nix-template": true
           }'
 
@@ -198,15 +200,17 @@ jobs:
           pwd
           rm -fr pnt-new
 
-          nix --accept-flake-config run github:juspay/omnix -- init "$REPO_REF" -o pnt-new --non-interactive --params '{
+          nix --accept-flake-config run github:juspay/omnix/v1.3.0 -- init "$REPO_REF" -o pnt-new --non-interactive --params '{
             "package-name-kebab-case": "pnt-new",
             "package-name-snake-case": "pnt_new",
             "monorepo-package": false,
             "git-org": "pnt-new",
             "author": "Pnt New",
             "author-email": "new@pnt.org",
+            "project-description": "Test single-package template project",
             "vscode": true,
             "github-ci": true,
+            "docs": false,
             "nix-template": false
           }'
 
