@@ -13,6 +13,11 @@ on:
         required: false
         type: boolean
         default: false
+      run_docs_preview:
+        description: "Run docs-preview job"
+        required: false
+        type: boolean
+        default: false
   pull_request:
     types: [opened, labeled, reopened, synchronize]
     paths-ignore:
@@ -119,6 +124,21 @@ jobs:
           echo "DRY_RUN_RELEASE=$DRY_RUN_RELEASE" >> $GITHUB_OUTPUT
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> $GITHUB_OUTPUT
           echo "CHECKOUT_REV=$CHECKOUT_REV" >> $GITHUB_OUTPUT
+
+  preview-docs:
+    needs: set-variables
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'docs-preview') || (github.event_name == 'workflow_dispatch' && inputs.run_docs_preview) ) }}
+    uses: ./.github/workflows/deploy-docs.yaml
+    permissions:
+      contents: read
+      deployments: write
+    concurrency:
+      group: docs-preview-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}-${{ github.sha }}
+      cancel-in-progress: true
+    with:
+      debug_enabled: ${{ needs.set-variables.outputs.debug }}
+      branch: ${{ needs.set-variables.outputs.checkout_ref }}
+    secrets: inherit
 
   nixci:
     runs-on: ${{ matrix.os }}
@@ -248,6 +268,21 @@ jobs:
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
       build-images: ${{ matrix.package.build-images }}
       images-to-build: ${{ matrix.package.images }}
+    secrets: inherit
+
+  deploy-docs:
+    needs: [test-python, nixci]
+    if: ${{ github.repository_owner == 'sciexp' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
+    uses: ./.github/workflows/deploy-docs.yaml
+    permissions:
+      contents: read
+      deployments: write
+    concurrency:
+      group: deploy-docs-${{ github.workflow }}-${{ github.ref_name }}
+      cancel-in-progress: true
+    with:
+      debug_enabled: "false"
+      branch: ${{ github.ref_name }}
     secrets: inherit
 
   build-pr-images:
