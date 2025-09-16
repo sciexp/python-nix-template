@@ -79,7 +79,8 @@
           extraPkgs = containerSysPackages ++ extraPkgs ++ [ pythonPackageEnv ];
           extraContents = [
             inputs'.nixpod.legacyPackages.homeConfigurations.${containerUsername}.activationPackage
-          ] ++ extraContents;
+          ]
+          ++ extraContents;
 
           extraFakeRootCommands = ''
             chown -R ${containerUsername}:wheel /nix
@@ -108,11 +109,13 @@
             "NVIDIA_DRIVER_CAPABILITIES='compute,utility'"
             "NVIDIA_VISIBLE_DEVICES=all"
             "QUARTO_PYTHON=${pythonPackageEnv}/bin/python"
-          ] ++ extraEnv;
+          ]
+          ++ extraEnv;
 
           extraConfig = {
             ExposedPorts."8888/tcp" = { };
-          } // extraConfig;
+          }
+          // extraConfig;
         };
 
       gitHubOrg = "sciexp";
