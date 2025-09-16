@@ -352,7 +352,7 @@ rotate-secret secret_name:
   @echo "Rotating {{ secret_name }}..."
   @echo "Enter new value for {{ secret_name }}:"
   @read -s NEW_VALUE && \
-    sops vars/shared.yaml --set '["{{ secret_name }}"] "'$NEW_VALUE'"' && \
+    sops set vars/shared.yaml '["{{ secret_name }}"]' "\"$NEW_VALUE\"" && \
     echo "✅ {{ secret_name }} rotated successfully"
 
 # Update keys for existing secrets files after adding new recipients
