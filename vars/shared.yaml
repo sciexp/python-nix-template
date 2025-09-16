@@ -6,6 +6,7 @@ UV_PUBLISH_TOKEN: ENC[AES256_GCM,data:uy66hkmzLFd2zU3fl9INOia7C2UGmM8EDJVd7iPDix
 CLOUDFLARE_ACCOUNT_ID: ENC[AES256_GCM,data:mUopOTkj+si7smK9CBKZtmsaJH1s7i+83zd57DZk7Fo=,iv:lBk6IyAkIkvc9FDstngcKcouAwYKEJn0GH7unqmfyuw=,tag:cOG6RjDmTrAu/iDS6T8Cxg==,type:str]
 CLOUDFLARE_API_TOKEN: ENC[AES256_GCM,data:rq3zlXrJeN4l+gIgzDd/or0k2klDhaH6OeencpKRw/Li6Sm5SSNeAQ==,iv:cnZ8SLfgBfrFHaLlFi/YOBxWpk6IUsz+mKBthD/05Jk=,tag:lKQwOErOLhwpbOFeLDWYzw==,type:str]
 GCP_PROJECT_ID: ENC[AES256_GCM,data:ExS/h14P7v5RdeA6pw==,iv:W8Mtm1pc9ke5jZ53VFu2gOUADlqwd5+KD7Or+2MnPD8=,tag:TBdIZUUrD0afoO5zTtEkgw==,type:str]
+CI_AGE_KEY: ENC[AES256_GCM,data:w5kHbnmagYTFuDj/mu9em7i0CpL8QnDodLPH3PX3YAN1km9JnnWq9tUs6GlXEvDpAKNlb2t4a2QhjSI5l+8ObXR8cHIDK+EZeBI=,iv:n1zEIOTgvmZ8HVSP/h8Ixq1bj+uaGisHYi6FeKDGxNo=,tag:DmloDEUIQaqmO0getq4SlQ==,type:str]
 sops:
     age:
         - recipient: age1dn8w7y4t4h23fmeenr3dghfz5qh53jcjq9qfv26km3mnv8l44g0sghptu3
@@ -26,7 +27,7 @@ sops:
             SE8wcjcxc3BiYmVRSGhUdEZ6MWt1RTQKpxAMfbIB3Bt7d7Gw83UYNkweUljQO3S3
             VBaWiCQWuX6CDOdhnDqouBTs6GkZu6xuZdouoxYBAHxbjCWhrfTtgA==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2025-09-15T15:50:05Z"
-    mac: ENC[AES256_GCM,data:kSopMLH/DVFmT9fySseiycH8mn+h+j2D5LQEuz1KOEAHohOSTfW+03vLpcdSHCv+0ilzqeSgxZb4V0zVdv2wqgjEOopf0QruXsUCyahcHEYHMH6h6Y3bAeMykLJpMTCaeI38GkGO3bdu67m4LylGJ2JfmLtOyyomfDkcwe9NXC8=,iv:zxaYc6wHhAXwWaD2aEnK3Oc1fNlwZX/4YWqZx0d4jjg=,tag:JxmLi5Yzequpbi4/Fb5bPg==,type:str]
+    lastmodified: "2025-09-16T14:01:35Z"
+    mac: ENC[AES256_GCM,data:3HRXA72uqN8GwlwzgCBvFLNIKT8w6XqapONLBW72F0Y6Q9Dts3EIO+N3Nq7mAzfB3qCi+avZP7JHdyAx8QATEWKuT1q73QpiPONeMBJBOlWRLJ39mxKVUXzGFunmj1XT6szYWVQwhJGwKl82RquinQs6ANOeuPoHgowLHL7JZe8=,iv:7BPC6hF7ux65yoFhCKUy1xh2vr5rg6+QJC+W6CLCzX0=,tag:qqrVlmjTz78JHgeOBDxkTQ==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.10.2
