@@ -56,12 +56,14 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
-      # - name: Install Nix
-      #   uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # ratchet:DeterminateSystems/nix-installer-action@v16
-      - name: Install Nix
-        uses: nixbuild/nix-quick-install-action@v33
+      - name: Install nix
+        uses: DeterminateSystems/nix-installer-action@786fff0690178f1234e4e1fe9b536e94f5433196 # ratchet:DeterminateSystems/nix-installer-action@v20
         with:
-          nix_conf: "system-features = nixos-test benchmark big-parallel kvm"
+          extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
+      # - name: Install Nix
+      #   uses: nixbuild/nix-quick-install-action@v33
+      #   with:
+      #     nix_conf: "system-features = nixos-test benchmark big-parallel kvm"
       - name: Setup remote cache
         # TODO: disable continue-on-error https://www.github.com/cachix/cachix-action/issues/200
         uses: cachix/cachix-action@41f25c0d23388f1a854cc67abb62029877468386 # ratchet:cachix/cachix-action@master
@@ -97,28 +99,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download docs
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # ratchet:actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # ratchet:actions/download-artifact@v4
         with:
           name: docs-site
 
-      - name: Show file tree
+      - name: Site artifact tree
         run: |
-          tree --du -alh
+          if command -v tree &> /dev/null; then
+            tree --du -alh
+          else
+            echo "tree command not found, skipping file tree display"
+          fi
 
-      - name: Deploy to Cloudflare
+      - name: Deploy preview
         id: deployment
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # ratchet:cloudflare/wrangler-action@v3
         with:
-          wranglerVersion: "4.37.0"
+          wranglerVersion: "4.37.1"
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: versions upload --preview-alias b-${{ inputs.branch }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Wrangler output
+      - name: Preview rollout command
         env:
           WRANGLER_OUTPUT: ${{ steps.deployment.outputs.command-output }}
         run: |
-          echo $WRANGLER_OUTPUT
-          VERSION_ID=$(echo "$WRANGLER_OUTPUT" | grep -oP 'Version ID: \K[a-f0-9]+')
-          echo "version_id=$VERSION_ID"
+          WRANGLER_VERSION_ID=$(echo "$WRANGLER_OUTPUT" | grep -oP 'Version ID: \K[a-f0-9-]+')
+          echo "WRANGLER_VERSION_ID=$WRANGLER_VERSION_ID"
+          echo "pnpm --package=wrangler -c dlx wrangler versions deploy ${WRANGLER_VERSION_ID}@100 --yes --dry-run"
