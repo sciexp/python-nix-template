@@ -1,1 +1,2 @@
 --container-architecture linux/amd64
+-P ubuntu-latest=catthehacker/ubuntu:full-latest
