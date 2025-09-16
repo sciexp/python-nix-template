@@ -72,27 +72,14 @@ jobs:
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
         if: ${{ inputs.debug_enabled == 'true' }}
 
-      # - name: Enable gdrive
-      #   run: |
-      #     touch sciexp-sa.json
-      #     chmod 600 sciexp-sa.json
-      #     echo "$GCP_SERVICE_ACCOUNT" > sciexp-sa.json
-      #   shell: bash
-      #   env:
-      #     GCP_SERVICE_ACCOUNT: ${{secrets.GCP_SERVICE_ACCOUNT}}
-
       - name: Build docs
+        env:
+          SOPS_AGE_KEY: ${{ secrets.CI_AGE_KEY }}
         run: |
           df -h
           nix-channel --update
           nix develop --accept-flake-config -c just docs-build
           df -h
-
-      # - name: Clean up credentials
-      #   if: always() # Run even if previous steps fail
-      #   run: |
-      #     [ -f sciexp-sa.json ] && rm sciexp-sa.json
-      #   shell: bash
 
       - name: Upload docs
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # ratchet:actions/upload-artifact@v4
