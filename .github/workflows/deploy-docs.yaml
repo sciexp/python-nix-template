@@ -82,7 +82,6 @@ jobs:
           SOPS_AGE_KEY: ${{ secrets.CI_AGE_KEY }}
         run: |
           df -h
-          nix-channel --update
           nix develop --accept-flake-config -c just docs-build
           df -h
 
