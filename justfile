@@ -67,7 +67,7 @@ list-workflows:
 
 # Test build-docs job locally with act
 [group('CI/CD')]
-test-docs-build branch="main":
+test-docs-build branch=`git branch --show-current`:
   @echo "Testing docs build job locally (branch: {{branch}})..."
   @sops exec-env vars/shared.yaml 'act workflow_dispatch \
     -W .github/workflows/deploy-docs.yaml \
@@ -80,7 +80,7 @@ test-docs-build branch="main":
 
 # Test full deploy-docs workflow locally with act
 [group('CI/CD')]
-test-docs-deploy branch="main":
+test-docs-deploy branch=`git branch --show-current`:
   @echo "Testing full docs deployment workflow locally (branch: {{branch}})..."
   @echo "Note: Cloudflare deployment may not work in local environment"
   @sops exec-env vars/shared.yaml 'act workflow_dispatch \
@@ -91,6 +91,101 @@ test-docs-deploy branch="main":
     --var CACHIX_CACHE_NAME \
     --input debug_enabled=false \
     --input branch={{branch}}'
+
+# Trigger docs build job remotely on GitHub (requires workflow on main)
+[group('CI/CD')]
+gh-docs-build branch=`git branch --show-current` debug="false":
+  #!/usr/bin/env bash
+  echo "Triggering docs build workflow on GitHub (branch: {{branch}}, debug: {{debug}})..."
+  echo "Note: This requires deploy-docs.yaml to exist on the default branch"
+  gh workflow run deploy-docs.yaml \
+    --repo ${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)} \
+    --ref "{{branch}}" \
+    --field debug_enabled="{{debug}}" \
+    --field branch="{{branch}}"
+  echo "Check workflow status with: just gh-docs-status"
+
+# View recent workflow runs status
+[group('CI/CD')]
+gh-workflow-status workflow="deploy-docs.yaml" branch=`git branch --show-current` limit="5":
+  #!/usr/bin/env bash
+  echo "Recent docs workflow runs:"
+  gh run list \
+    --workflow={{workflow}} \
+    --branch={{branch}} \
+    --limit={{limit}} \
+    --repo ${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}
+
+# Watch a specific docs workflow run
+[group('CI/CD')]
+gh-docs-watch run_id="":
+  #!/usr/bin/env bash
+  if [ -z "{{run_id}}" ]; then
+    echo "Getting latest workflow run..."
+    RUN_ID=$(gh run list --workflow=deploy-docs.yaml --limit=1 --json databaseId -q '.[0].databaseId' \
+      --repo ${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)})
+    echo "Watching run: $RUN_ID"
+    gh run watch $RUN_ID --repo ${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}
+  else
+    gh run watch {{run_id}} --repo ${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}
+  fi
+
+# View logs for a specific docs workflow run
+[group('CI/CD')]
+gh-docs-logs run_id="" job="":
+  #!/usr/bin/env bash
+  REPO="${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}"
+  if [ -z "{{run_id}}" ]; then
+    echo "Getting latest workflow run..."
+    RUN_ID=$(gh run list --workflow=deploy-docs.yaml --limit=1 --json databaseId -q '.[0].databaseId' --repo $REPO)
+  else
+    RUN_ID="{{run_id}}"
+  fi
+
+  if [ -z "{{job}}" ]; then
+    echo "Available jobs in run $RUN_ID:"
+    gh run view $RUN_ID --repo $REPO --json jobs -q '.jobs[].name'
+    echo ""
+    echo "Viewing full run logs..."
+    gh run view $RUN_ID --log --repo $REPO
+  else
+    echo "Viewing logs for job '{{job}}' in run $RUN_ID..."
+    gh run view $RUN_ID --log --repo $REPO | grep -A 100 "{{job}}"
+  fi
+
+# Re-run a failed docs workflow
+[group('CI/CD')]
+gh-docs-rerun run_id="" failed_only="true":
+  #!/usr/bin/env bash
+  REPO="${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}"
+  if [ -z "{{run_id}}" ]; then
+    echo "Getting latest workflow run..."
+    RUN_ID=$(gh run list --workflow=deploy-docs.yaml --limit=1 --json databaseId -q '.[0].databaseId' --repo $REPO)
+  else
+    RUN_ID="{{run_id}}"
+  fi
+
+  if [ "{{failed_only}}" = "true" ]; then
+    echo "Re-running failed jobs in run $RUN_ID..."
+    gh run rerun --failed $RUN_ID --repo $REPO
+  else
+    echo "Re-running all jobs in run $RUN_ID..."
+    gh run rerun $RUN_ID --repo $REPO
+  fi
+
+# Cancel a running docs workflow
+[group('CI/CD')]
+gh-docs-cancel run_id="":
+  #!/usr/bin/env bash
+  REPO="${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}"
+  if [ -z "{{run_id}}" ]; then
+    echo "Getting latest workflow run..."
+    RUN_ID=$(gh run list --workflow=deploy-docs.yaml --limit=1 --json databaseId -q '.[0].databaseId' --repo $REPO)
+    echo "Canceling run: $RUN_ID"
+    gh run cancel $RUN_ID --repo $REPO
+  else
+    gh run cancel {{run_id}} --repo $REPO
+  fi
 
 ## Conda package
 
@@ -401,7 +496,7 @@ updatekeys:
 # Initialize new project from template
 [group('template')]
 template-init:
-    echo "Use: nix --accept-flake-config run github:juspay/omnix -- init github:sciexp/python-nix-template -o new-python-project"
+    echo "Use: nix --accept-flake-config run github:juspay/omnix/v1.3.0 -- init github:sciexp/python-nix-template -o new-python-project"
 
 # Verify template functionality by creating and checking a test project
 [group('template')]
