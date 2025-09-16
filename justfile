@@ -60,6 +60,40 @@ ghsecrets repo="sciexp/python-nix-template":
 pre-commit:
   pre-commit run --all-files
 
+# List available workflows and associated jobs using act
+[group('CI/CD')]
+list-workflows:
+  @act -l
+
+# Test build-docs job locally with act
+[group('CI/CD')]
+test-docs-build branch="main":
+  @echo "Testing docs build job locally (branch: {{branch}})..."
+  @sops exec-env vars/shared.yaml 'act workflow_dispatch \
+    -W .github/workflows/deploy-docs.yaml \
+    -j build-docs \
+    -s CI_AGE_KEY -s CACHIX_AUTH_TOKEN \
+    -s GITHUB_TOKEN="$(gh auth token)" \
+    --var CACHIX_CACHE_NAME \
+    --artifact-server-path $PWD/.artifacts \
+    --input debug_enabled=false \
+    --input branch={{branch}}'
+
+# Test full deploy-docs workflow locally with act
+[group('CI/CD')]
+test-docs-deploy branch="main":
+  @echo "Testing full docs deployment workflow locally (branch: {{branch}})..."
+  @echo "Note: Cloudflare deployment may not work in local environment"
+  @sops exec-env vars/shared.yaml 'act workflow_dispatch \
+    -W .github/workflows/deploy-docs.yaml \
+    -s CI_AGE_KEY -s CACHIX_AUTH_TOKEN \
+    -s CLOUDFLARE_API_TOKEN -s CLOUDFLARE_ACCOUNT_ID \
+    -s GITHUB_TOKEN="$(gh auth token)" \
+    --var CACHIX_CACHE_NAME \
+    --artifact-server-path $PWD/.artifacts \
+    --input debug_enabled=false \
+    --input branch={{branch}}'
+
 ## Conda package
 
 # Package commands (conda)
