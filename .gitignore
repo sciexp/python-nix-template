@@ -96,3 +96,6 @@ node_modules/
 .dvc/cache
 .dvc/tmp
 *-sa.json
+
+# act
+.artifacts/
