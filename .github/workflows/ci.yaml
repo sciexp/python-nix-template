@@ -78,8 +78,27 @@ jobs:
       dry_run_release: ${{ steps.set-variables.outputs.dry_run_release }}
       checkout_ref: ${{ steps.set-variables.outputs.checkout_ref }}
       checkout_rev: ${{ steps.set-variables.outputs.checkout_rev }}
+      has_docs: ${{ steps.check-docs.outputs.has_docs }}
 
     steps:
+      - name: Checkout for docs check
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docs
+          sparse-checkout-cone-mode: false
+
+      - name: Check if docs exist
+        id: check-docs
+        run: |
+          if [ -d "docs" ] && [ "$(ls -A docs 2>/dev/null)" ]; then
+            echo "has_docs=true" >> $GITHUB_OUTPUT
+            echo "Documentation directory exists and is not empty"
+          else
+            echo "has_docs=false" >> $GITHUB_OUTPUT
+            echo "Documentation directory does not exist or is empty"
+          fi
+
       - name: Set action variables
         id: set-variables
         run: |
@@ -127,7 +146,7 @@ jobs:
 
   preview-docs:
     needs: set-variables
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'docs-preview') || (github.event_name == 'workflow_dispatch' && inputs.run_docs_preview) ) }}
+    if: ${{ needs.set-variables.outputs.has_docs == 'true' && needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'docs-preview') || (github.event_name == 'workflow_dispatch' && inputs.run_docs_preview) ) }}
     uses: ./.github/workflows/deploy-docs.yaml
     permissions:
       contents: read
@@ -275,8 +294,8 @@ jobs:
     secrets: inherit
 
   deploy-docs:
-    needs: [test-python, nixci]
-    if: ${{ github.repository_owner == 'sciexp' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
+    needs: [set-variables, test-python, nixci]
+    if: ${{ needs.set-variables.outputs.has_docs == 'true' && github.repository_owner == 'sciexp' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     uses: ./.github/workflows/deploy-docs.yaml
     permissions:
       contents: read
