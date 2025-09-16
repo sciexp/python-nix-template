@@ -340,7 +340,13 @@ sops-add-key:
   echo "✅ Age key added successfully for: ${key_description}"
   echo "   Public key: ${public_key}"
 
-# Rotate a specific secret
+# Add or update a secret non-interactively
+[group('secrets')]
+set-secret secret_name secret_value:
+  @sops set vars/shared.yaml '["{{ secret_name }}"]' '"{{ secret_value }}"'
+  @echo "✅ {{ secret_name }} has been set/updated"
+
+# Rotate a specific secret interactively
 [group('secrets')]
 rotate-secret secret_name:
   @echo "Rotating {{ secret_name }}..."
