@@ -115,4 +115,7 @@ jobs:
       - name: Wrangler output
         env:
           WRANGLER_OUTPUT: ${{ steps.deployment.outputs.command-output }}
-        run: echo $WRANGLER_OUTPUT
+        run: |
+          echo $WRANGLER_OUTPUT
+          VERSION_ID=$(echo "$WRANGLER_OUTPUT" | grep -oP 'Version ID: \K[a-f0-9]+')
+          echo "version_id=$VERSION_ID"
