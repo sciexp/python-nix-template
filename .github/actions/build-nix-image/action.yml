@@ -27,7 +27,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup QEMU
-      uses: docker/setup-qemu-action@5927c834f5b4fdf503fca6f4c7eccda82949e1ee # v3
+      uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
       with:
         platforms: arm64
 
@@ -39,13 +39,13 @@ runs:
         sudo apt-get clean
 
     - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # ratchet:DeterminateSystems/nix-installer-action@v16
+      uses: DeterminateSystems/nix-installer-action@786fff0690178f1234e4e1fe9b536e94f5433196 # ratchet:DeterminateSystems/nix-installer-action@main
       with:
         extra-conf: |
           extra-platforms = aarch64-linux
 
     - name: Setup Remote Nix Cache
-      uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # ratchet:cachix/cachix-action@v15
+      uses: cachix/cachix-action@be5295a636153b6ad194d3245f78f8e0b78dc704 # ratchet:cachix/cachix-action@master
       with:
         name: "${{ inputs.cachixCacheName }}"
         authToken: "${{ inputs.cachixAuthToken }}"
