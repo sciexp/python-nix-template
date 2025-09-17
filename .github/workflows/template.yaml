@@ -136,7 +136,7 @@ jobs:
           sudo apt-get clean
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@786fff0690178f1234e4e1fe9b536e94f5433196 # ratchet:DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@45a18a69953f27af3c2bfad0a5e01c38ef2da462 # ratchet:DeterminateSystems/nix-installer-action@main
         with:
           extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
 
