@@ -15,7 +15,7 @@
     },
     "license": "MIT",
     "name": "pnt-functional",
-    "packageManager": "yarn@4.6.0",
+    "packageManager": "yarn@4.12.0",
     "private": true,
     "release": {
         "branches": [
