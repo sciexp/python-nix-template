@@ -3,3 +3,6 @@ flake.lock linguist-generated=true
 uv.lock linguist-generated=true
 pixi.lock linguist-generated=true
 yarn.lock linguist-generated=true
+
+# Use bd merge for beads JSONL files
+.beads/issues.jsonl merge=beads
