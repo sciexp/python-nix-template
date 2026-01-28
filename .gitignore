@@ -12,6 +12,7 @@
 *.pdb
 *.md
 !README.md
+!docs/**/*.md
 logs/
 
 ## Environments
