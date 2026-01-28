@@ -99,3 +99,6 @@ node_modules/
 
 # act
 .artifacts/
+
+# bv (beads viewer) local config and caches
+.bv/
