@@ -168,6 +168,11 @@ in {
 
 The `nix/modules/python.nix` composes all package overlays into the final Python set.
 
+Version-conflict invariant: all federated packages must resolve compatible versions for shared dependencies.
+Per-package uv2nix overlays are composed sequentially into a single package set via `lib.composeManyExtensions`.
+If two packages resolve different versions of the same dependency, the later overlay silently wins with no error.
+Enforce version alignment by running `uv lock --check` in each package directory after updating any shared dependency.
+
 ```nix
 # nix/modules/python.nix
 { inputs, ... }:
