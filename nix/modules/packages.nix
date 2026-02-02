@@ -16,12 +16,16 @@
       ...
     }:
     let
-      # Merge deps from all independent package workspaces
+      # Merge deps from all independent package workspaces, unioning extras lists
+      # for shared dependency names rather than silently dropping via //
       mergeWorkspaceDeps =
         selector:
         lib.foldlAttrs (
           acc: _: pkg:
-          acc // (selector pkg.workspace.deps)
+          lib.zipAttrsWith (_: values: lib.unique (lib.flatten values)) [
+            acc
+            (selector pkg.workspace.deps)
+          ]
         ) { } packageWorkspaces;
 
       defaultDeps = mergeWorkspaceDeps (deps: deps.default);
