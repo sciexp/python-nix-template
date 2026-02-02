@@ -11,7 +11,7 @@
       pkgs,
       lib,
       system,
-      baseWorkspace,
+      packageWorkspaces,
       pythonSets,
       editablePythonSets,
       pythonVersions,
@@ -24,8 +24,17 @@
       defaultPythonSet = pythonSets.${defaultPythonVersion};
       defaultEditablePythonSet = editablePythonSets.${defaultPythonVersion};
 
-      defaultPythonEnv = defaultPythonSet.mkVirtualEnv "python-nix-template-env" baseWorkspace.deps.default;
-      defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "python-nix-template-editable-env" baseWorkspace.deps.all;
+      defaultDeps = lib.foldlAttrs (
+        acc: _: pkg:
+        acc // pkg.workspace.deps.default
+      ) { } packageWorkspaces;
+      allDeps = lib.foldlAttrs (
+        acc: _: pkg:
+        acc // pkg.workspace.deps.all
+      ) { } packageWorkspaces;
+
+      defaultPythonEnv = defaultPythonSet.mkVirtualEnv "python-nix-template-env" defaultDeps;
+      defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "python-nix-template-editable-env" allDeps;
 
       buildMultiUserNixImage = import "${inputs.nixpod.outPath}/containers/nix.nix";
 
