@@ -9,24 +9,27 @@
       self',
       pkgs,
       lib,
-      baseWorkspace,
+      packageWorkspaces,
       editablePythonSets,
       pythonVersions,
       ...
     }:
     let
-      # Function to create development shell
+      # Merge deps from all independent package workspaces
+      allDeps = lib.foldlAttrs (
+        acc: _: pkg:
+        acc // pkg.workspace.deps.all
+      ) { } packageWorkspaces;
+
       mkDevShell =
         {
           name,
           pythonVersion,
         }:
         let
-          # Get the actual Python interpreter first
           python = pythonVersions.${pythonVersion};
-          # Then create the editable environment
           pythonEnv = editablePythonSets.${pythonVersion};
-          virtualenv = pythonEnv.mkVirtualEnv "${name}-dev-env" baseWorkspace.deps.all;
+          virtualenv = pythonEnv.mkVirtualEnv "${name}-dev-env" allDeps;
         in
         pkgs.mkShell {
           inherit name;
@@ -60,7 +63,6 @@
     in
     {
       devShells = rec {
-        # Create development shells for each Python version
         pythonNixTemplate311 = mkDevShell {
           name = "python-nix-template-3.11";
           pythonVersion = "py311";
@@ -71,7 +73,6 @@
           pythonVersion = "py312";
         };
 
-        # Default shell uses Python 3.12
         default = pythonNixTemplate312;
       };
     };
