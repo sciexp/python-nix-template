@@ -71,6 +71,16 @@ lint        = { features = ["lint"], solve-group = "default" }
 test        = { features = ["test"], solve-group = "default" }
 types       = { features = ["types"], solve-group = "default" }
 
+[tool.pixi.feature.test.tasks]
+test = "pytest"
+
+[tool.pixi.feature.lint.tasks]
+lint       = "ruff check --fix src/"
+lint-check = "ruff check src/"
+
+[tool.pixi.feature.types.tasks]
+types = "pyright src/"
+
 [tool.pixi.package]
 name    = "python-nix-template"
 version = "0.1.1"
