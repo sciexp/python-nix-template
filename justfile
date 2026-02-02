@@ -4,10 +4,10 @@ default:
 
 # Contents
 ## CI/CD
-## Conda package
+## Conda
 ## Docs
 ## Nix
-## Python package
+## Python
 ## Release
 ## Secrets
 ## Template
@@ -187,52 +187,52 @@ gh-docs-cancel run_id="":
     gh run cancel {{run_id}} --repo $REPO
   fi
 
-## Conda package
+## Conda
 
 # Package commands (conda)
-[group('conda package')]
+[group('conda')]
 conda-build package="python-nix-template":
     pixi build --manifest-path=packages/{{package}}/pyproject.toml
 
 # Create and sync conda environment with pixi
-[group('conda package')]
+[group('conda')]
 conda-env package="python-nix-template":
     pixi install --manifest-path=packages/{{package}}/pyproject.toml
     @echo "Conda environment is ready. Activate it with 'pixi shell'"
 
 # Update pixi lockfile
-[group('conda package')]
+[group('conda')]
 pixi-lock package="python-nix-template":
     pixi list --manifest-path=packages/{{package}}/pyproject.toml
     pixi tree --manifest-path=packages/{{package}}/pyproject.toml
 
 # Update conda environment
-[group('conda package')]
+[group('conda')]
 conda-lock package="python-nix-template":
     pixi project export conda-explicit-spec packages/{{package}}/conda/ --manifest-path=packages/{{package}}/pyproject.toml --ignore-pypi-errors
 
 # Run tests in conda environment with pixi
-[group('conda package')]
+[group('conda')]
 conda-test package="python-nix-template":
     pixi run -e test --manifest-path=packages/{{package}}/pyproject.toml test
 
 # Run linting in conda environment with pixi
-[group('conda package')]
+[group('conda')]
 conda-lint package="python-nix-template":
     pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml lint-check
 
 # Run linting and fix errors in conda environment with pixi
-[group('conda package')]
+[group('conda')]
 conda-lint-fix package="python-nix-template":
     pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml lint
 
 # Run type checking in conda environment with pixi
-[group('conda package')]
+[group('conda')]
 conda-type package="python-nix-template":
     pixi run -e types --manifest-path=packages/{{package}}/pyproject.toml types
 
 # Run all checks in conda environment (lint, type, test)
-[group('conda package')]
+[group('conda')]
 conda-check package="python-nix-template": (conda-lint package) (conda-type package) (conda-test package)
     @printf "\n\033[92mAll conda checks passed!\033[0m\n"
 
@@ -280,75 +280,68 @@ container-run:
     docker load < $(nix build .#containerImage --print-out-paths)
     docker run -it --rm -p 8888:8888 mypackage:latest
 
-## Python package
+## Python
 
 # Package commands
-[group('python package')]
+[group('python')]
 uv-build: _ensure-venv
     uv build
 
 # Sync and enter uv virtual environment
-[group('python package')]
+[group('python')]
 venv: _ensure-venv
     uv sync
     @echo "Virtual environment is ready. Activate it with 'source .venv/bin/activate'"
 
 # Update lockfile from pyproject.toml
-[group('python package')]
+[group('python')]
 uv-lock: _ensure-venv
     uv lock
 
 # Run tests
-[group('python package')]
+[group('python')]
 test:
     pytest
 
 # Run tests in uv virtual environment
-[group('python package')]
+[group('python')]
 uv-test: _ensure-venv
     uv run pytest
 
 # Run linting
-[group('python package')]
+[group('python')]
 lint:
     ruff check src/
 
 # Run linting in uv virtual environment
-[group('python package')]
+[group('python')]
 uv-lint: _ensure-venv
     uvx ruff check src/
 
 # Run linting and fix errors
-[group('python package')]
+[group('python')]
 lint-fix:
     ruff check --fix src/
 
 # Run linting and fix errors in uv virtual environment
-[group('python package')]
+[group('python')]
 uv-lint-fix: _ensure-venv
     uvx ruff check --fix src/
 
-# Run type checking in uv virtual environment
-[group('python package')]
+# Run type checking
+[group('python')]
 type:
     pyright src/
 
 # Run type checking in uv virtual environment
-[group('python package')]
+[group('python')]
 uv-type: _ensure-venv
     uv run pyright src/
 
 # Run all checks (lint, type, test)
-[group('python package')]
+[group('python')]
 check: lint type test
     @printf "\n\033[92mAll checks passed!\033[0m\n"
-
-# Helper recipes
-_ensure-venv:
-    #!/usr/bin/env bash
-    if [ ! -d ".venv" ]; then
-        uv venv
-    fi
 
 ## Secrets
 
@@ -505,7 +498,7 @@ template-verify:
     cd ./tmp-verify-template && nix flake check
     rm -rf ./tmp-verify-template
 
-## GCP Service Account for DVC
+# GCP service account for DVC
 
 # Enable Google Drive API in GCP project
 [group('secrets')]
@@ -616,7 +609,7 @@ test-release-direct:
 test-package-release package-name="python-nix-template" branch="main":
     yarn workspace {{package-name}} test-release -b {{branch}}
 
-## Documentation
+## Docs
 
 # Add quartodoc extension
 [group('docs')]
@@ -686,3 +679,11 @@ docs-sync:
   uvx --with dvc-gdrive,dvc-gs dvc status
   git status
   printf "\n\033[92mCommit relevant updates to the docs/_freeze.dvc lock file to the git repo\033[0m\n"
+
+# Helpers
+
+_ensure-venv:
+    #!/usr/bin/env bash
+    if [ ! -d ".venv" ]; then
+        uv venv
+    fi
