@@ -214,22 +214,22 @@ conda-lock package="python-nix-template":
 # Run tests in conda environment with pixi
 [group('conda package')]
 conda-test package="python-nix-template":
-    pixi run -e test --manifest-path=packages/{{package}}/pyproject.toml pytest
+    pixi run -e test --manifest-path=packages/{{package}}/pyproject.toml test
 
 # Run linting in conda environment with pixi
 [group('conda package')]
 conda-lint package="python-nix-template":
-    pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml ruff check src/
+    pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml lint-check
 
 # Run linting and fix errors in conda environment with pixi
 [group('conda package')]
 conda-lint-fix package="python-nix-template":
-    pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml ruff check --fix src/
+    pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml lint
 
 # Run type checking in conda environment with pixi
 [group('conda package')]
 conda-type package="python-nix-template":
-    pixi run -e types --manifest-path=packages/{{package}}/pyproject.toml pyright src/
+    pixi run -e types --manifest-path=packages/{{package}}/pyproject.toml types
 
 # Run all checks in conda environment (lint, type, test)
 [group('conda package')]
