@@ -24,13 +24,21 @@
       defaultPythonSet = pythonSets.${defaultPythonVersion};
       defaultEditablePythonSet = editablePythonSets.${defaultPythonVersion};
 
+      # Merge deps from all independent package workspaces, unioning extras lists
+      # for shared dependency names rather than silently dropping via //
       defaultDeps = lib.foldlAttrs (
         acc: _: pkg:
-        acc // pkg.workspace.deps.default
+        lib.zipAttrsWith (_: values: lib.unique (lib.flatten values)) [
+          acc
+          pkg.workspace.deps.default
+        ]
       ) { } packageWorkspaces;
       allDeps = lib.foldlAttrs (
         acc: _: pkg:
-        acc // pkg.workspace.deps.all
+        lib.zipAttrsWith (_: values: lib.unique (lib.flatten values)) [
+          acc
+          pkg.workspace.deps.all
+        ]
       ) { } packageWorkspaces;
 
       defaultPythonEnv = defaultPythonSet.mkVirtualEnv "python-nix-template-env" defaultDeps;
