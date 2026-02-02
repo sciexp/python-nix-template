@@ -87,12 +87,13 @@ version = "0.1.1"
 
 [tool.pixi.package.run-dependencies]
 
-[tool.pixi.package.build]
-backend = { name = "pixi-build-python", version = "0.1.*" }
+[tool.pixi.package.build.backend]
 channels = [
   "https://prefix.dev/conda-forge",
   "https://prefix.dev/pixi-build-backends",
 ]
+name = "pixi-build-python"
+version = "0.1.*"
 
 [tool.pixi.package.host-dependencies]
 hatchling = "*"
