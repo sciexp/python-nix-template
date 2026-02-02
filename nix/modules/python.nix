@@ -14,32 +14,37 @@
       ...
     }:
     let
-      # Define supported Python versions
       pythonVersions = {
         py311 = pkgs.python311;
         py312 = pkgs.python312;
       };
 
-      # Create workspace once - this is our pure functional core
-      baseWorkspace = inputs.uv2nix.lib.workspace.loadWorkspace {
-        workspaceRoot = ./../..;
+      # Load each Python package independently (no root workspace).
+      # Each package directory contains its own pyproject.toml and uv.lock,
+      # resolved independently following the LangChain federation model.
+      loadPackage =
+        name: path:
+        let
+          workspace = inputs.uv2nix.lib.workspace.loadWorkspace {
+            workspaceRoot = path;
+          };
+        in
+        {
+          inherit workspace;
+          overlay = workspace.mkPyprojectOverlay {
+            sourcePreference = "wheel";
+          };
+          editableOverlay = workspace.mkEditablePyprojectOverlay {
+            root = "$REPO_ROOT";
+          };
+        };
+
+      packageWorkspaces = {
+        pnt-functional = loadPackage "pnt-functional" ../../packages/pnt-functional;
+        python-nix-template = loadPackage "python-nix-template" ../../packages/python-nix-template;
       };
 
-      # Function to create overlay with fixed preferences
-      makeOverlay =
-        workspace:
-        workspace.mkPyprojectOverlay {
-          sourcePreference = "wheel";
-        };
-
-      # Function to create editable overlay
-      makeEditableOverlay =
-        workspace:
-        workspace.mkEditablePyprojectOverlay {
-          root = "$REPO_ROOT";
-        };
-
-      # Function to create Python package set
+      # Compose per-package uv2nix overlays with shared overrides
       mkPythonSet =
         python:
         (pkgs.callPackage inputs.pyproject-nix.build.packages {
@@ -48,30 +53,20 @@
           (
             lib.composeManyExtensions [
               inputs.pyproject-build-systems.overlays.default
-              (makeOverlay baseWorkspace)
+              packageWorkspaces.pnt-functional.overlay
+              packageWorkspaces.python-nix-template.overlay
               packageOverrides
               sdistOverrides
             ]
           );
 
-      # Function to create editable Python package set
       mkEditablePythonSet =
         python:
         (mkPythonSet python).overrideScope (
           lib.composeManyExtensions [
-            (makeEditableOverlay baseWorkspace)
+            packageWorkspaces.pnt-functional.editableOverlay
+            packageWorkspaces.python-nix-template.editableOverlay
             (final: prev: {
-              # python-nix-template = prev.python-nix-template.overrideAttrs (old: {
-              #   src = lib.fileset.toSource {
-              #     root = old.src;
-              #     fileset = lib.fileset.unions [
-              #       (old.src + "packages/python-nix-template/pyproject.toml")
-              #       (old.src + "packages/python-nix-template/README.md")
-              #       (old.src + "packages/python-nix-template/src/python_nix_template/__init__.py")
-              #     ];
-              #   };
-              #   nativeBuildInputs = old.nativeBuildInputs ++ final.resolveBuildSystem { editables = [ ]; };
-              # });
               python-nix-template = prev.python-nix-template.overrideAttrs (old: {
                 nativeBuildInputs =
                   old.nativeBuildInputs
@@ -90,15 +85,13 @@
           ]
         );
 
-      # Create package sets for each Python version
       pythonSets = lib.mapAttrs (_: mkPythonSet) pythonVersions;
       editablePythonSets = lib.mapAttrs (_: mkEditablePythonSet) pythonVersions;
     in
     {
-      # Expose constructed package sets for use in other modules
       _module.args = {
         inherit
-          baseWorkspace
+          packageWorkspaces
           pythonSets
           editablePythonSets
           pythonVersions
