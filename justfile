@@ -187,6 +187,40 @@ gh-docs-cancel run_id="":
     gh run cancel {{run_id}} --repo $REPO
   fi
 
+# Discover packages as JSON array for CI matrix
+[group('CI/CD')]
+list-packages-json:
+    @ls -d packages/*/pyproject.toml | while read f; do \
+      d=$(dirname "$f"); \
+      n=$(basename "$d"); \
+      printf '{"name":"%s","path":"%s"}\n' "$n" "$d"; \
+    done | jq -sc '.'
+
+# Sync dependencies for a package via uv
+[group('CI/CD')]
+ci-sync package:
+    cd packages/{{package}} && uv sync --all-extras --dev
+
+# Run linting for a package
+[group('CI/CD')]
+ci-lint package:
+    cd packages/{{package}} && uv run ruff check src/
+
+# Run tests for a package
+[group('CI/CD')]
+ci-test package:
+    cd packages/{{package}} && uv run pytest
+
+# Run type checking for a package
+[group('CI/CD')]
+ci-typecheck package:
+    cd packages/{{package}} && uv run pyright src/
+
+# Run all checks for a package (lint, typecheck, test)
+[group('CI/CD')]
+ci-check package: (ci-lint package) (ci-typecheck package) (ci-test package)
+    @printf "\nAll CI checks passed for {{package}}.\n"
+
 ## Conda
 
 # Package commands (conda)
