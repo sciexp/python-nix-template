@@ -63,21 +63,23 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "packages/*/uv.lock"
           version: "0.6.8"
 
       - name: Install dependencies
+        working-directory: packages/${{ inputs.package-name }}
         run: |
           uv sync --all-extras --dev
 
       - name: Lint
+        working-directory: packages/${{ inputs.package-name }}
         run: |
-          uv run ruff check packages/
+          uv run ruff check .
 
       - name: Test
+        working-directory: packages/${{ inputs.package-name }}
         run: |
-          echo "Testing package: ${{ inputs.package-name || 'all packages' }}"
-          cd packages/${{ inputs.package-name || '..' }}
+          echo "Testing package: ${{ inputs.package-name }}"
           uv run pytest
 
       - name: Upload coverage
