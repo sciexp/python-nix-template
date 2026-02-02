@@ -44,7 +44,15 @@
         python-nix-template = loadPackage "python-nix-template" ../../packages/python-nix-template;
       };
 
-      # Compose per-package uv2nix overlays with shared overrides
+      # Compose per-package uv2nix overlays with shared overrides.
+      #
+      # Invariant: all federated packages must resolve compatible versions for
+      # shared dependencies. Per-package uv2nix overlays are composed sequentially
+      # into a single package set — if two packages resolve different versions of
+      # the same dependency, the later overlay silently wins. Enforce version
+      # alignment across packages by running:
+      #   uv lock --check
+      # in each package directory after updating any shared dependency.
       mkPythonSet =
         python:
         (pkgs.callPackage inputs.pyproject-nix.build.packages {
