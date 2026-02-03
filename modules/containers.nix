@@ -16,16 +16,6 @@ let
       description = "pnt-cli with pyo3 native bindings";
     };
   };
-
-  # Dev container image attribute names for manifest generation
-  devContainerDefs = {
-    ${repoName} = {
-      imageAttr = "containerImage";
-    };
-    "${repoName}-dev" = {
-      imageAttr = "devcontainerImage";
-    };
-  };
 in
 {
   perSystem =
@@ -38,7 +28,6 @@ in
       system,
       packageWorkspaces,
       pythonSets,
-      editablePythonSets,
       pythonVersions,
       ...
     }:
@@ -49,7 +38,6 @@ in
 
       defaultPythonVersion = "py312";
       defaultPythonSet = pythonSets.${defaultPythonVersion};
-      defaultEditablePythonSet = editablePythonSets.${defaultPythonVersion};
 
       # Merge deps from all independent package workspaces, unioning extras lists
       # for shared dependency names rather than silently dropping via //
@@ -60,109 +48,8 @@ in
           pkg.workspace.deps.default
         ]
       ) { } packageWorkspaces;
-      allDeps = lib.foldlAttrs (
-        acc: _: pkg:
-        lib.zipAttrsWith (_: values: lib.unique (lib.flatten values)) [
-          acc
-          pkg.workspace.deps.all
-        ]
-      ) { } packageWorkspaces;
 
       defaultPythonEnv = defaultPythonSet.mkVirtualEnv "${repoName}-env" defaultDeps;
-      defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "${repoName}-editable-env" allDeps;
-
-      # --- Dev container infrastructure (nixpod/dockerTools, unchanged) ---
-
-      buildMultiUserNixImage = import "${inputs.nixpod.outPath}/containers/nix.nix";
-
-      containerUsername = "jovyan";
-      containerUserInfo = {
-        uid = 1000;
-        gid = 0;
-        uname = containerUsername;
-        gname = "wheel";
-      };
-
-      containerSysPackages = with pkgs; [
-        bashInteractive
-        cacert
-        coreutils
-        direnv
-        gnutar
-        gzip
-        less
-        nix
-        procps
-        sudo
-        zsh
-      ];
-
-      containerDevPackages = with pkgs; [
-        git
-        helix
-        lazygit
-        neovim
-        starship
-      ];
-
-      mkBaseContainer =
-        {
-          name,
-          tag ? "latest",
-          pythonPackageEnv,
-          extraContents ? [ ],
-          extraPkgs ? [ ],
-          extraEnv ? [ ],
-          extraConfig ? { },
-        }:
-        buildMultiUserNixImage {
-          inherit pkgs name tag;
-          storeOwner = containerUserInfo;
-          maxLayers = 121;
-          fromImage = inputs'.nixpod.packages.sudoImage;
-          compressor = "zstd";
-
-          extraPkgs = containerSysPackages ++ extraPkgs ++ [ pythonPackageEnv ];
-          extraContents = [
-            inputs'.nixpod.legacyPackages.homeConfigurations.${containerUsername}.activationPackage
-          ]
-          ++ extraContents;
-
-          extraFakeRootCommands = ''
-            chown -R ${containerUsername}:wheel /nix
-          '';
-
-          nixConf = {
-            allowed-users = [ "*" ];
-            experimental-features = [
-              "nix-command"
-              "flakes"
-            ];
-            max-jobs = [ "auto" ];
-            sandbox = "false";
-            trusted-users = [
-              "root"
-              "${containerUsername}"
-              "runner"
-            ];
-          };
-
-          extraEnv = [
-            "NB_USER=${containerUsername}"
-            "NB_UID=1000"
-            "NB_PREFIX=/"
-            "LD_LIBRARY_PATH=${pythonPackageEnv}/lib:/usr/local/nvidia/lib64"
-            "NVIDIA_DRIVER_CAPABILITIES='compute,utility'"
-            "NVIDIA_VISIBLE_DEVICES=all"
-            "QUARTO_PYTHON=${pythonPackageEnv}/bin/python"
-          ]
-          ++ extraEnv;
-
-          extraConfig = {
-            ExposedPorts."8888/tcp" = { };
-          }
-          // extraConfig;
-        };
 
       # --- Production container infrastructure (nix2container) ---
       # Built natively per-system. Cross-compilation via pkgsCross for the
@@ -284,72 +171,20 @@ in
         })
       ) productionContainerDefs;
 
-      # Dev manifests use docker-archive: transport (regular skopeo)
-      devManifestPackages = lib.mapAttrs' (
-        manifestName: def:
-        lib.nameValuePair "${manifestName}Manifest" (mkMultiArchManifest {
-          name = manifestName;
-          images = lib.listToAttrs (
-            map (sys: {
-              name = sys;
-              value = inputs.self.packages.${sys}.${def.imageAttr};
-            }) includedSystems
-          );
-          registry = {
-            name = "ghcr.io";
-            repo = "${gitHubOrg}/${manifestName}";
-            username = manifestUsername;
-            password = "$GITHUB_TOKEN";
-          };
-          version = manifestVersion;
-          tags = manifestTags;
-          branch = manifestBranch;
-          skopeo = pkgs.skopeo;
-          mkSourceUri = image: "docker-archive:${image}";
-        })
-      ) devContainerDefs;
-
     in
     {
-      packages = lib.optionalAttrs isLinux (
-        {
-          # Dev containers (nixpod/dockerTools, unchanged)
-          containerImage = mkBaseContainer {
-            name = repoName;
-            pythonPackageEnv = defaultPythonEnv;
-          };
-
-          devcontainerImage = mkBaseContainer {
-            name = "${repoName}-dev";
-            pythonPackageEnv = defaultEditablePythonEnv;
-            extraPkgs = containerDevPackages;
-          };
-        }
-        // productionContainerPackages
-        // productionManifestPackages
-        // devManifestPackages
-      );
+      packages = lib.optionalAttrs isLinux (productionContainerPackages // productionManifestPackages);
     };
 
   # CI matrix data (pure evaluation): nix eval .#containerMatrix --json
   flake.containerMatrix = {
-    build =
-      (lib.mapAttrsToList (containerName: _: {
-        package = "${containerName}ProductionImage";
-        type = "production";
-      }) productionContainerDefs)
-      ++ (lib.mapAttrsToList (_: def: {
-        package = def.imageAttr;
-        type = "dev";
-      }) devContainerDefs);
-    manifest =
-      (lib.mapAttrsToList (containerName: _: {
-        name = containerName;
-        type = "production";
-      }) productionContainerDefs)
-      ++ (lib.mapAttrsToList (manifestName: _: {
-        name = manifestName;
-        type = "dev";
-      }) devContainerDefs);
+    build = lib.mapAttrsToList (containerName: _: {
+      package = "${containerName}ProductionImage";
+      type = "production";
+    }) productionContainerDefs;
+    manifest = lib.mapAttrsToList (containerName: _: {
+      name = containerName;
+      type = "production";
+    }) productionContainerDefs;
   };
 }
