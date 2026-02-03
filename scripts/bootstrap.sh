@@ -18,8 +18,22 @@ if command -v nix >/dev/null 2>&1; then
     echo "Nix is already installed."
     nix --version
 else
-    echo "Installing Nix via Determinate Systems installer..."
-    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+    echo "Installing Nix via NixOS community installer..."
+    NIX_INSTALLER_VERSION="2.33.0"
+    case "$(uname -s)-$(uname -m)" in
+        Linux-x86_64)  PLATFORM="x86_64-linux" ;;
+        Linux-aarch64) PLATFORM="aarch64-linux" ;;
+        Darwin-x86_64) PLATFORM="x86_64-darwin" ;;
+        Darwin-arm64)  PLATFORM="aarch64-darwin" ;;
+        *) echo "Unsupported platform: $(uname -s)-$(uname -m)"; exit 1 ;;
+    esac
+    INSTALLER_URL="https://github.com/NixOS/nix-installer/releases/download/${NIX_INSTALLER_VERSION}/nix-installer-${PLATFORM}"
+    echo "Platform: ${PLATFORM}"
+    echo "Downloading from: ${INSTALLER_URL}"
+    curl --proto '=https' --tlsv1.2 -sSf -L --retry 3 --retry-delay 5 \
+        "${INSTALLER_URL}" -o /tmp/nix-installer && chmod +x /tmp/nix-installer
+    /tmp/nix-installer install --no-confirm \
+        --extra-conf "trusted-users = root @admin @wheel"
 fi
 echo
 
@@ -28,8 +42,8 @@ echo "Checking direnv installation..."
 if command -v direnv >/dev/null 2>&1; then
     echo "direnv is already installed."
 else
-    echo "Installing direnv..."
-    curl -sfL https://direnv.net/install.sh | bash
+    echo "Installing direnv via nix..."
+    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && nix profile install nixpkgs#direnv
 fi
 echo
 
