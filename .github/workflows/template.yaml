@@ -161,7 +161,12 @@ jobs:
           git config --local user.name "Test User"
           git commit --allow-empty -m "initial commit (empty)"
 
-          nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock
+          for pkg in packages/*/; do
+            if [ -f "$pkg/pyproject.toml" ]; then
+              echo "Locking $pkg"
+              (cd "$pkg" && nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock)
+            fi
+          done
           git add .
 
           nix flake check --accept-flake-config
@@ -196,7 +201,12 @@ jobs:
           git config --local user.name "Test User"
           git commit --allow-empty -m "initial commit (empty)"
 
-          nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock
+          for pkg in packages/*/; do
+            if [ -f "$pkg/pyproject.toml" ]; then
+              echo "Locking $pkg"
+              (cd "$pkg" && nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock)
+            fi
+          done
           git add .
 
           nix flake check --accept-flake-config
