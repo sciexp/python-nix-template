@@ -304,34 +304,6 @@ container-load-production CONTAINER="pnt-cli":
 container-push-production CONTAINER="pnt-cli" VERSION="0.0.0" +TAGS="":
     VERSION={{VERSION}} TAGS={{TAGS}} nix run --impure ".#{{CONTAINER}}Manifest" -L
 
-# Build dev container image
-[group('containers')]
-container-build-dev:
-    nix build .#devcontainerImage -L
-
-# Run dev container with port 8888 exposed
-[group('containers')]
-container-run-dev:
-    docker load < $(nix build .#devcontainerImage --no-link --print-out-paths)
-    docker run -it --rm -p 8888:8888 python-nix-template-dev:latest
-
-# Build production-deps container image
-[group('containers')]
-container-build:
-    nix build .#containerImage -L
-
-# Run production-deps container with port 8888 exposed
-[group('containers')]
-container-run:
-    docker load < $(nix build .#containerImage --no-link --print-out-paths)
-    docker run -it --rm -p 8888:8888 python-nix-template:latest
-
-# Push dev container manifests (requires registry auth)
-[group('containers')]
-container-push-dev VERSION="0.0.0" +TAGS="":
-    VERSION={{VERSION}} TAGS={{TAGS}} nix run --impure ".#python-nix-templateManifest" -L
-    VERSION={{VERSION}} TAGS={{TAGS}} nix run --impure ".#python-nix-template-devManifest" -L
-
 # Display container CI matrix
 [group('containers')]
 container-matrix:
