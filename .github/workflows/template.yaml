@@ -130,7 +130,7 @@ jobs:
 
       - name: Install omnix
         if: steps.cache.outputs.should-run == 'true'
-        run: nix --accept-flake-config profile install "github:juspay/omnix/v1.3.0"
+        run: nix --accept-flake-config profile install "github:juspay/omnix/v1.3.2"
 
       - name: Test monorepo template initialization
         if: steps.cache.outputs.should-run == 'true'
@@ -141,7 +141,7 @@ jobs:
           pwd
           rm -fr pnt-mono
 
-          nix --accept-flake-config run github:juspay/omnix/v1.3.0 -- init "$REPO_REF" -o pnt-mono --non-interactive --params '{
+          nix --accept-flake-config run github:juspay/omnix/v1.3.2 -- init "$REPO_REF" -o pnt-mono --non-interactive --params '{
             "package-name-kebab-case": "pnt-mono",
             "package-name-snake-case": "pnt_mono",
             "monorepo-package": true,
@@ -181,7 +181,7 @@ jobs:
           pwd
           rm -fr pnt-new
 
-          nix --accept-flake-config run github:juspay/omnix/v1.3.0 -- init "$REPO_REF" -o pnt-new --non-interactive --params '{
+          nix --accept-flake-config run github:juspay/omnix/v1.3.2 -- init "$REPO_REF" -o pnt-new --non-interactive --params '{
             "package-name-kebab-case": "pnt-new",
             "package-name-snake-case": "pnt_new",
             "monorepo-package": false,
