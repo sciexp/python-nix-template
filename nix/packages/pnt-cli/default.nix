@@ -36,16 +36,11 @@ in
 
       # Configure cargo to use crane's vendored dependencies (offline build)
       # and reuse crane's cargoArtifacts for incremental compilation.
+      # Crane's vendorCargoDeps output includes a config.toml with the correct
+      # source replacement directives.
       preBuild = ''
         mkdir -p .cargo
-        cat > .cargo/config.toml <<CARGO_CONFIG
-        [source.crates-io]
-        replace-with = "vendored-sources"
-
-        [source.vendored-sources]
-        directory = "${rustPkgs.cargoVendorDir}"
-        CARGO_CONFIG
-
+        cp ${rustPkgs.cargoVendorDir}/config.toml .cargo/config.toml
         export CARGO_TARGET_DIR="${rustPkgs.cargoArtifacts}/target"
       '';
 
