@@ -61,20 +61,16 @@ jobs:
           hash-sources: 'packages/${{ inputs.package-name }}/**/*.py packages/${{ inputs.package-name }}/pyproject.toml packages/${{ inputs.package-name }}/uv.lock justfile **/*.nix flake.lock'
           force-run: ${{ inputs.force_run || 'false' }}
 
-      - name: Install Nix
+      - name: Setup Nix
         if: steps.cache.outputs.should-run == 'true'
-        uses: DeterminateSystems/nix-installer-action@786fff0690178f1234e4e1fe9b536e94f5433196 # ratchet:DeterminateSystems/nix-installer-action@main
+        uses: ./.github/actions/setup-nix
         with:
+          system: x86_64-linux
           extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
-
-      - name: Setup remote cache
-        if: steps.cache.outputs.should-run == 'true'
-        uses: cachix/cachix-action@be5295a636153b6ad194d3245f78f8e0b78dc704 # ratchet:cachix/cachix-action@master
-        continue-on-error: true
-        with:
-          name: "${{ vars.CACHIX_CACHE_NAME }}"
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-          extraPullNames: nix-community,pyproject-nix,sciexp
+          enable-cachix: true
+          cachix-name: ${{ vars.CACHIX_CACHE_NAME }}
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          extra-pull-names: nix-community,pyproject-nix,sciexp
 
       - name: Setup tmate debug session
         if: steps.cache.outputs.should-run == 'true' && inputs.debug_enabled == 'true'
