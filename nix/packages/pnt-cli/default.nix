@@ -42,12 +42,6 @@ in
           maturin = [ ];
         };
 
-      buildInputs =
-        (old.buildInputs or [ ])
-        ++ lib.optionals pkgs.stdenv.isDarwin [
-          pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
-        ];
-
       env.PYO3_PYTHON = python.interpreter;
     });
   };
