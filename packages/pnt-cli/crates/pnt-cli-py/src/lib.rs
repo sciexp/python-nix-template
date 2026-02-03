@@ -13,7 +13,7 @@ fn add(a: u64, b: u64) -> u64 {
 }
 
 /// Native extension module for pnt-cli.
-#[pymodule]
+#[pymodule(name = "_native")]
 fn pnt_cli_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(greet, m)?)?;
     m.add_function(wrap_pyfunction!(add, m)?)?;
