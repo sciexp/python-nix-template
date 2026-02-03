@@ -37,6 +37,8 @@
       inputs.flocken.follows = "flocken";
     };
 
+    crane.url = "github:ipetkov/crane";
+
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.flake = false;
   };
