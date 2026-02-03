@@ -372,66 +372,61 @@ ci:
 
 ## Python
 
-# Package commands
+# Run tests for a package
 [group('python')]
-uv-build: _ensure-venv
-    uv build
+test package="python-nix-template":
+    cd packages/{{package}} && pytest
 
-# Sync and enter uv virtual environment
+# Run tests for all packages
 [group('python')]
-venv: _ensure-venv
-    uv sync
-    @echo "Virtual environment is ready. Activate it with 'source .venv/bin/activate'"
+test-all:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    for dir in packages/*/; do
+      pkg=$(basename "$dir")
+      echo "Testing $pkg..."
+      (cd "$dir" && pytest)
+    done
 
-# Update lockfile from pyproject.toml
+# Build a package with uv
 [group('python')]
-uv-lock: _ensure-venv
-    uv lock
+uv-build package="python-nix-template":
+    cd packages/{{package}} && uv build
 
-# Run tests
+# Sync a package environment with uv
 [group('python')]
-test:
-    pytest
+uv-sync package="python-nix-template":
+    cd packages/{{package}} && uv sync
 
-# Run tests in uv virtual environment
+# Update lockfile for a package
 [group('python')]
-uv-test: _ensure-venv
-    uv run pytest
+uv-lock package="python-nix-template":
+    cd packages/{{package}} && uv lock
 
-# Run linting
+# Run linting for a package
 [group('python')]
-lint:
-    ruff check src/
+lint package="python-nix-template":
+    cd packages/{{package}} && ruff check src/
 
-# Run linting in uv virtual environment
+# Run linting for all packages
 [group('python')]
-uv-lint: _ensure-venv
-    uvx ruff check src/
+lint-all:
+    ruff check packages/
 
-# Run linting and fix errors
+# Run linting and fix errors for a package
 [group('python')]
-lint-fix:
-    ruff check --fix src/
+lint-fix package="python-nix-template":
+    cd packages/{{package}} && ruff check --fix src/
 
-# Run linting and fix errors in uv virtual environment
+# Run type checking for a package
 [group('python')]
-uv-lint-fix: _ensure-venv
-    uvx ruff check --fix src/
+type package="python-nix-template":
+    cd packages/{{package}} && pyright src/
 
-# Run type checking
+# Run all checks for a package (lint, type, test)
 [group('python')]
-type:
-    pyright src/
-
-# Run type checking in uv virtual environment
-[group('python')]
-uv-type: _ensure-venv
-    uv run pyright src/
-
-# Run all checks (lint, type, test)
-[group('python')]
-check: lint type test
-    @printf "\n\033[92mAll checks passed!\033[0m\n"
+check package="python-nix-template": (lint package) (type package) (test package)
+    @printf "\nAll Python checks passed for {{package}}.\n"
 
 ## Rust
 
@@ -820,10 +815,4 @@ docs-sync:
   git status
   printf "\n\033[92mCommit relevant updates to the docs/_freeze.dvc lock file to the git repo\033[0m\n"
 
-# Helpers
 
-_ensure-venv:
-    #!/usr/bin/env bash
-    if [ ! -d ".venv" ]; then
-        uv venv
-    fi
