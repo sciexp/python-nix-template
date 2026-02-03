@@ -134,12 +134,12 @@ in {
   # Override for this package in the Python package set
   overlay = final: prev: {
     pnt-cli = prev.pnt-cli.overrideAttrs (old: {
-      # Inject pre-vendored Cargo deps (crane's vendoring, not rustPlatform's)
-      cargoVendorDir = rustPkgs.cargoVendorDir;
-
-      # Reuse crane's cargoArtifacts for incremental builds
+      # Configure cargo to use crane's vendored dependencies for offline builds.
+      # Crane's vendorCargoDeps output includes a config.toml with source
+      # replacement directives pointing to the vendored crate store paths.
       preBuild = ''
-        export CARGO_TARGET_DIR="${rustPkgs.cargoArtifacts}/target"
+        mkdir -p .cargo
+        cp ${rustPkgs.cargoVendorDir}/config.toml .cargo/config.toml
       '';
 
       nativeBuildInputs = old.nativeBuildInputs ++ [
@@ -382,6 +382,40 @@ The implementation follows the beads epic dependency chain:
    - Implements rust.nix and default.nix patterns
    - Validates full crane + uv2nix + maturin integration
 
+## Resolved decisions
+
+These decisions emerged during pnt-btz implementation and diverge from or refine the original design above.
+
+### Crane's config.toml reuse for vendored dependencies
+
+Maturin needs cargo configured for offline builds using crane's vendored crate store.
+Rather than hand-crafting a `.cargo/config.toml` with source replacement directives, the overlay copies crane's `vendorCargoDeps` output config.toml directly.
+This works because crane generates deterministic `nix-sources-<hash>` source names in its config.toml that correspond to the vendored store paths.
+The Pattern 2 overlay above reflects this approach.
+
+### No CARGO_TARGET_DIR sharing between crane checks and maturin wheel builds
+
+The original design proposed sharing crane's `cargoArtifacts` with the maturin wheel build via `CARGO_TARGET_DIR`.
+In practice the nix store is read-only, so `cargoArtifacts` cannot serve as a writable target directory for maturin's cargo invocation.
+
+The resolved architecture separates the two build paths:
+
+- Crane check derivations (`cargoClippy`, `cargoNextest`) inherit `cargoArtifacts` for fast cached feedback on Rust code quality.
+- The maturin wheel build within pyproject.nix compiles Rust from source using only `cargoVendorDir` for offline dependency resolution.
+
+This is a deliberate tradeoff: check caching provides fast CI feedback on the Rust side, while full wheel builds remain hermetic without depending on mutable build artifacts.
+
+### Editable overlay exclusion for maturin packages
+
+Maturin packages are incompatible with uv2nix's `pyprojectFixupEditableHook`, which expects `EDITABLE_ROOT` to be set during the build process.
+Maturin's build backend does not set this variable.
+
+The `mkEditablePythonSet` in `nix/modules/python.nix` composes editable overlays only for pure Python packages (`pnt-functional`, `python-nix-template`), excluding `pnt-cli`.
+The pnt-cli package is built as a regular wheel in the devshell.
+
+For iterative Rust development, the workflow is: enter the devshell via `nix develop`, then run `maturin develop --uv` in the package directory.
+This rebuilds the native extension in-place without a full Nix rebuild.
+
 ## Open questions
 
 ### Cross-package Rust dependencies
@@ -402,9 +436,9 @@ Initial recommendation: keep cargoArtifacts per-package for simplicity, optimize
 
 ### Editable development workflow
 
-For local development, developers want fast iteration without full Nix rebuilds.
-Recommend: use `uv sync` + `maturin develop` outside Nix for iteration, Nix for CI and reproducible builds.
-The Nix derivations serve as the source of truth; local development uses native tooling for speed.
+Resolved: maturin packages use `maturin develop --uv` within `nix develop` for iterative Rust compilation (see "Editable overlay exclusion" in resolved decisions above).
+Pure Python packages use uv2nix editable overlays as designed.
+Nix derivations remain the source of truth; local development uses native tooling for speed.
 
 ## References
 
