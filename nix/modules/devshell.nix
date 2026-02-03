@@ -50,6 +50,12 @@
             sops
             ssh-to-age
             config.packages.set-git-env
+            # Rust tooling for pnt-cli pyo3 extension
+            cargo
+            rustc
+            clippy
+            cargo-nextest
+            maturin
           ];
 
           env = {
