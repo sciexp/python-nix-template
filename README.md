@@ -40,7 +40,7 @@ PARAMS=$(cat <<EOF
 }
 EOF
 ) && \
-nix --accept-flake-config run github:juspay/omnix/v1.3.0 -- init github:sciexp/python-nix-template/main -o "$PROJECT_DIRECTORY" --non-interactive --params "$PARAMS" && \
+nix --accept-flake-config run github:juspay/omnix/v1.3.2 -- init github:sciexp/python-nix-template/main -o "$PROJECT_DIRECTORY" --non-interactive --params "$PARAMS" && \
 (command -v direnv >/dev/null 2>&1 && direnv revoke "./$PROJECT_DIRECTORY/" || true) && \
 cd "$PROJECT_DIRECTORY" && \
 git init && \
