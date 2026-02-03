@@ -58,19 +58,6 @@
   };
 
   outputs =
-    inputs@{
-      self,
-      flake-parts,
-      nixpkgs,
-      ...
-    }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      # https://github.com/NixOS/nixpkgs/blob/24.05/lib/systems/flake-systems.nix
-      # systems = nixpkgs.lib.systems.flakeExposed; # tiered list of feasible systems
-      # https://github.com/nix-systems/default # plausible systems
-      # systems = [ "aarch64-darwin" "aarch64-linux" "x86_64-darwin" "x86_64-linux" ];
-      systems = import inputs.systems;
-
-      imports = with builtins; map (fn: ./nix/modules/${fn}) (attrNames (readDir ./nix/modules));
-    };
+    inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 }
