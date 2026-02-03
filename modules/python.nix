@@ -35,7 +35,7 @@
             sourcePreference = "wheel";
           };
           editableOverlay = workspace.mkEditablePyprojectOverlay {
-            root = "$REPO_ROOT";
+            root = "$REPO_ROOT/packages/${name}";
           };
         };
 
