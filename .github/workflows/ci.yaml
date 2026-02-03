@@ -60,14 +60,13 @@ defaults:
 
 permissions:
   contents: read
-  packages: write
-  attestations: write
-  actions: write
-  id-token: write
 
 jobs:
-  scan:
-    name: gitguardian
+  # ---------------------------------------------------------------------------
+  # job 1: secrets-scan
+  # scans repository for secrets — security-critical, no caching
+  # ---------------------------------------------------------------------------
+  secrets-scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -75,37 +74,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check execution cache
-        id: cache
-        uses: ./.github/actions/cached-ci-job
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
         with:
-          force-run: ${{ inputs.force_run || 'false' }}
+          system: x86_64-linux
 
-      - name: GitGuardian scan
-        if: steps.cache.outputs.should-run == 'true'
-        uses: GitGuardian/ggshield-action@455483042671cc73b40d0e753baddffef7309a1f # ratchet:GitGuardian/ggshield-action@v1.37.0
-        env:
-          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
-          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
-          GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+      - name: Scan for secrets
+        run: nix run nixpkgs#gitleaks -- detect --verbose --redact
 
-      - name: Create job result marker
-        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
-        run: |
-          mkdir -p "${{ steps.cache.outputs.cache-path }}"
-          echo '{"success":true}' > "${{ steps.cache.outputs.cache-path }}/marker"
-
-      - name: Save execution cache
-        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
-        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # ratchet:actions/cache/save@v4
-        with:
-          path: ${{ steps.cache.outputs.cache-path }}
-          key: ${{ steps.cache.outputs.cache-key }}
-
+  # ---------------------------------------------------------------------------
+  # job 2: set-variables
+  # computes CI variables, discovers packages, determines routing
+  # ---------------------------------------------------------------------------
   set-variables:
-    needs: scan
+    needs: secrets-scan
     runs-on: ubuntu-latest
     outputs:
       debug: ${{ steps.set-variables.outputs.debug }}
@@ -116,6 +98,7 @@ jobs:
       checkout_rev: ${{ steps.set-variables.outputs.checkout_rev }}
       has_docs: ${{ steps.check-docs.outputs.has_docs }}
       packages: ${{ steps.discover-packages.outputs.packages }}
+      force_ci: ${{ steps.set-variables.outputs.force_ci }}
 
     steps:
       - name: Checkout for discovery
@@ -143,9 +126,13 @@ jobs:
           SKIP_CI="false"
           SKIP_TESTS="false"
           DRY_RUN_RELEASE="false"
+          FORCE_CI="false"
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             DEBUG="${{ inputs.debug_enabled }}"
+            if [[ "${{ inputs.force_run }}" == "true" ]]; then
+              FORCE_CI="true"
+            fi
           fi
 
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -161,6 +148,9 @@ jobs:
             if ${{ contains(github.event.pull_request.labels.*.name, 'release-dry-run') }}; then
               DRY_RUN_RELEASE="true"
             fi
+            if ${{ contains(github.event.pull_request.labels.*.name, 'force-ci') }}; then
+              FORCE_CI="true"
+            fi
             CHECKOUT_REF="${{ github.event.pull_request.head.ref }}"
             CHECKOUT_REV="${{ github.event.pull_request.head.sha }}"
           else
@@ -174,6 +164,7 @@ jobs:
           echo "dry_run_release=$DRY_RUN_RELEASE" >> $GITHUB_OUTPUT
           echo "checkout_ref=$CHECKOUT_REF" >> $GITHUB_OUTPUT
           echo "checkout_rev=$CHECKOUT_REV" >> $GITHUB_OUTPUT
+          echo "force_ci=$FORCE_CI" >> $GITHUB_OUTPUT
 
       - name: Discover packages
         id: discover-packages
@@ -186,67 +177,56 @@ jobs:
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
           echo "Discovered packages: $PACKAGES"
 
-  preview-docs:
-    needs: set-variables
-    if: ${{ needs.set-variables.outputs.has_docs == 'true' && needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'docs-preview') || (github.event_name == 'workflow_dispatch' && inputs.run_docs_preview) ) }}
-    uses: ./.github/workflows/deploy-docs.yaml
-    permissions:
-      contents: read
-      deployments: write
-    concurrency:
-      group: docs-preview-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}-${{ github.sha }}
-      cancel-in-progress: true
-    with:
-      debug_enabled: ${{ needs.set-variables.outputs.debug }}
-      branch: ${{ needs.set-variables.outputs.checkout_ref }}
-    secrets: inherit
-
-  nixci:
+  # ---------------------------------------------------------------------------
+  # job 3: flake-validation
+  # validates flake structure, justfile recipes, nix flake check
+  # ---------------------------------------------------------------------------
+  flake-validation:
+    needs: [secrets-scan, set-variables]
     runs-on: ubuntu-latest
-    needs: set-variables
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
-    concurrency:
-      group: nixci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
-      cancel-in-progress: true
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
 
       - name: Check execution cache
         id: cache
         uses: ./.github/actions/cached-ci-job
         with:
-          hash-sources: '**/*.nix flake.lock justfile packages/*/pyproject.toml packages/*/uv.lock packages/*/crates/Cargo.lock'
-          force-run: ${{ inputs.force_run || 'false' }}
-
-      - name: Install dependencies
-        if: steps.cache.outputs.should-run == 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -yq zstd
-          sudo apt-get clean
+          hash-sources: '**/*.nix flake.lock justfile'
+          force-run: ${{ needs.set-variables.outputs.force_ci }}
 
       - name: Setup Nix
         if: steps.cache.outputs.should-run == 'true'
         uses: ./.github/actions/setup-nix
         with:
           system: x86_64-linux
-          extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
           enable-cachix: true
           cachix-name: ${{ vars.CACHIX_CACHE_NAME }}
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          extra-pull-names: nix-community,pyproject-nix,sciexp,srid
 
-      - name: Setup tmate debug session
-        if: steps.cache.outputs.should-run == 'true' && needs.set-variables.outputs.debug == 'true'
-        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
-
-      - name: Install omnix
+      - name: Verify justfile recipes
         if: steps.cache.outputs.should-run == 'true'
-        run: nix --accept-flake-config profile install "github:juspay/omnix"
+        run: |
+          JUST_RECIPES=$(nix develop --accept-flake-config -c just --summary)
+          echo "Available recipes (summary):"
+          echo "$JUST_RECIPES" | tr ' ' '\n' | head -20
+          echo "... (and more)"
 
-      - name: Run flake CI
+          echo ""
+          echo "Verifying core recipes..."
+          for recipe in check lint; do
+            if echo "$JUST_RECIPES" | grep -qw "$recipe"; then
+              echo "  $recipe recipe found"
+            else
+              echo "  $recipe recipe not found"
+              exit 1
+            fi
+          done
+
+      - name: Validate flake
         if: steps.cache.outputs.should-run == 'true'
-        run: om ci run
+        run: nix develop --accept-flake-config -c just flake-check
 
       - name: Create job result marker
         if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
@@ -261,6 +241,149 @@ jobs:
           path: ${{ steps.cache.outputs.cache-path }}
           key: ${{ steps.cache.outputs.cache-key }}
 
+  # ---------------------------------------------------------------------------
+  # job 4: bootstrap-verification
+  # validates bootstrap.sh and Makefile workflow on clean ubuntu
+  # ---------------------------------------------------------------------------
+  bootstrap-verification:
+    needs: [secrets-scan, set-variables]
+    runs-on: ubuntu-latest
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+
+      - name: Check execution cache
+        id: cache
+        uses: ./.github/actions/cached-ci-job
+        with:
+          hash-sources: 'Makefile .envrc .github/actions/setup-nix/action.yml'
+          force-run: ${{ needs.set-variables.outputs.force_ci }}
+
+      - name: Run make bootstrap
+        if: steps.cache.outputs.should-run == 'true'
+        run: make bootstrap
+
+      - name: Verify nix installed
+        if: steps.cache.outputs.should-run == 'true'
+        run: |
+          if ! command -v nix &> /dev/null; then
+            echo "nix not found in PATH"
+            exit 1
+          fi
+          echo "nix found at: $(command -v nix)"
+          nix --version
+
+      - name: Verify direnv configured
+        if: steps.cache.outputs.should-run == 'true'
+        run: |
+          if ! command -v direnv &> /dev/null; then
+            echo "direnv not found in PATH"
+            exit 1
+          fi
+          echo "direnv found at: $(command -v direnv)"
+
+      - name: Run make verify
+        if: steps.cache.outputs.should-run == 'true'
+        run: make verify
+
+      - name: Run make setup-user
+        if: steps.cache.outputs.should-run == 'true'
+        run: make setup-user
+
+      - name: Verify age key exists
+        if: steps.cache.outputs.should-run == 'true'
+        run: |
+          if [ ! -f ~/.config/sops/age/keys.txt ]; then
+            echo "age key not generated"
+            exit 1
+          fi
+          echo "age key generated successfully"
+
+      - name: Create job result marker
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        run: |
+          mkdir -p "${{ steps.cache.outputs.cache-path }}"
+          echo '{"success":true}' > "${{ steps.cache.outputs.cache-path }}/marker"
+
+      - name: Save execution cache
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # ratchet:actions/cache/save@v4
+        with:
+          path: ${{ steps.cache.outputs.cache-path }}
+          key: ${{ steps.cache.outputs.cache-key }}
+
+  # ---------------------------------------------------------------------------
+  # job 5: nix
+  # category-based matrix build for flake outputs (packages, checks, devshells)
+  # ---------------------------------------------------------------------------
+  nix:
+    needs: [secrets-scan, set-variables]
+    runs-on: ${{ matrix.runner }}
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - system: x86_64-linux
+            runner: ubuntu-latest
+            category: packages
+          - system: x86_64-linux
+            runner: ubuntu-latest
+            category: checks
+          - system: x86_64-linux
+            runner: ubuntu-latest
+            category: devshells
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+
+      - name: Check execution cache
+        id: cache
+        uses: ./.github/actions/cached-ci-job
+        with:
+          check-name: nix-${{ matrix.category }}
+          hash-sources: '**/*.nix flake.lock justfile packages/*/pyproject.toml packages/*/uv.lock packages/*/crates/Cargo.lock'
+          force-run: ${{ needs.set-variables.outputs.force_ci }}
+
+      - name: Setup Nix
+        if: steps.cache.outputs.should-run == 'true'
+        uses: ./.github/actions/setup-nix
+        with:
+          system: ${{ matrix.system }}
+          extra-conf: "system-features = nixos-test benchmark big-parallel kvm"
+          enable-cachix: true
+          cachix-name: ${{ vars.CACHIX_CACHE_NAME }}
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          extra-pull-names: nix-community,pyproject-nix,sciexp,srid
+
+      - name: Build ${{ matrix.category }}
+        if: steps.cache.outputs.should-run == 'true'
+        run: |
+          echo "Building ${{ matrix.category }} for ${{ matrix.system }}"
+          nix develop --accept-flake-config -c just ci-build-category "${{ matrix.system }}" "${{ matrix.category }}"
+
+      - name: Report disk usage
+        if: always()
+        run: df -h
+
+      - name: Create job result marker
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        run: |
+          mkdir -p "${{ steps.cache.outputs.cache-path }}"
+          echo '{"success":true}' > "${{ steps.cache.outputs.cache-path }}/marker"
+
+      - name: Save execution cache
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # ratchet:actions/cache/save@v4
+        with:
+          path: ${{ steps.cache.outputs.cache-path }}
+          key: ${{ steps.cache.outputs.cache-key }}
+
+  # ---------------------------------------------------------------------------
+  # job 6: test-python
+  # per-package python test matrix
+  # ---------------------------------------------------------------------------
   test-python:
     needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }}
@@ -279,6 +402,82 @@ jobs:
       force_run: ${{ inputs.force_run && 'true' || 'false' }}
     secrets: inherit
 
+  # ---------------------------------------------------------------------------
+  # job 7: preview-release-version
+  # preview semantic-release version for each package (PR only)
+  # ---------------------------------------------------------------------------
+  preview-release-version:
+    needs: [set-variables]
+    if: ${{ github.event_name == 'pull_request' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.set-variables.outputs.packages) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
+        with:
+          ref: ${{ needs.set-variables.outputs.checkout_ref }}
+          fetch-depth: 0
+
+      - name: Check execution cache
+        id: cache
+        uses: ./.github/actions/cached-ci-job
+        with:
+          check-name: preview-release-version-${{ matrix.package.name }}
+          force-run: ${{ needs.set-variables.outputs.force_ci }}
+
+      - name: Setup Nix
+        if: steps.cache.outputs.should-run == 'true'
+        uses: ./.github/actions/setup-nix
+        with:
+          system: x86_64-linux
+          enable-cachix: true
+          cachix-name: ${{ vars.CACHIX_CACHE_NAME }}
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Preview version for ${{ matrix.package.name }}
+        if: steps.cache.outputs.should-run == 'true'
+        run: |
+          nix develop --accept-flake-config -c just preview-version main ${{ matrix.package.path }}
+
+      - name: Create job result marker
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        run: |
+          mkdir -p "${{ steps.cache.outputs.cache-path }}"
+          echo '{"success":true}' > "${{ steps.cache.outputs.cache-path }}/marker"
+
+      - name: Save execution cache
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # ratchet:actions/cache/save@v4
+        with:
+          path: ${{ steps.cache.outputs.cache-path }}
+          key: ${{ steps.cache.outputs.cache-key }}
+
+  # ---------------------------------------------------------------------------
+  # job 8: preview-docs
+  # deploy docs to preview environment (PR only)
+  # ---------------------------------------------------------------------------
+  preview-docs:
+    needs: set-variables
+    if: ${{ needs.set-variables.outputs.has_docs == 'true' && needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'docs-preview') || (github.event_name == 'workflow_dispatch' && inputs.run_docs_preview) ) }}
+    uses: ./.github/workflows/deploy-docs.yaml
+    permissions:
+      contents: read
+      deployments: write
+    concurrency:
+      group: docs-preview-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}-${{ github.sha }}
+      cancel-in-progress: true
+    with:
+      debug_enabled: ${{ needs.set-variables.outputs.debug }}
+      branch: ${{ needs.set-variables.outputs.checkout_ref }}
+    secrets: inherit
+
+  # ---------------------------------------------------------------------------
+  # job 9: test-release-packages
+  # dry-run release for each package (PR only)
+  # ---------------------------------------------------------------------------
   test-release-packages:
     needs: [set-variables, test-python]
     if: ${{ github.event_name == 'pull_request' }}
@@ -302,8 +501,12 @@ jobs:
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
     secrets: inherit
 
+  # ---------------------------------------------------------------------------
+  # job 10: release-packages
+  # production release on push to main/beta
+  # ---------------------------------------------------------------------------
   release-packages:
-    needs: [test-python, nixci]
+    needs: [set-variables, test-python, nix]
     if: ${{ github.repository_owner == 'sciexp' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     concurrency:
       group: release-${{ matrix.package.name }}-${{ github.workflow }}-${{ github.ref_name }}
@@ -334,8 +537,12 @@ jobs:
       images-to-build: ${{ matrix.package.images }}
     secrets: inherit
 
+  # ---------------------------------------------------------------------------
+  # job 11: deploy-docs
+  # production docs deployment on push to main/beta
+  # ---------------------------------------------------------------------------
   deploy-docs:
-    needs: [set-variables, test-python, nixci]
+    needs: [set-variables, test-python, nix]
     if: ${{ needs.set-variables.outputs.has_docs == 'true' && github.repository_owner == 'sciexp' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     uses: ./.github/workflows/deploy-docs.yaml
     permissions:
@@ -349,6 +556,10 @@ jobs:
       branch: ${{ github.ref_name }}
     secrets: inherit
 
+  # ---------------------------------------------------------------------------
+  # job 12: build-pr-images
+  # build container images for PR validation
+  # ---------------------------------------------------------------------------
   build-pr-images:
     needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'build-images') || (github.event_name == 'workflow_dispatch' && inputs.run_build_images) ) }}
