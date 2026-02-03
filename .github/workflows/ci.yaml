@@ -34,6 +34,7 @@ on:
       - "!justfile"
       - "!packages/*/uv.lock"
       - "!packages/*/pyproject.toml"
+      - "!packages/*/crates/**"
   push:
     branches:
       - "main"
@@ -47,6 +48,7 @@ on:
       - "!justfile"
       - "!packages/*/uv.lock"
       - "!packages/*/pyproject.toml"
+      - "!packages/*/crates/**"
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
@@ -213,7 +215,7 @@ jobs:
         id: cache
         uses: ./.github/actions/cached-ci-job
         with:
-          hash-sources: '**/*.nix flake.lock justfile packages/*/pyproject.toml packages/*/uv.lock'
+          hash-sources: '**/*.nix flake.lock justfile packages/*/pyproject.toml packages/*/uv.lock packages/*/crates/Cargo.lock'
           force-run: ${{ inputs.force_run || 'false' }}
 
       - name: Install dependencies
