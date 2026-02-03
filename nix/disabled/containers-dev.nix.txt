@@ -1,0 +1,184 @@
+# Dev containers disabled pending nixpod nix2container migration (pnt-mgq).
+# Re-enable after sciexp-h0g completes.
+#
+# This file preserves the dev container code that was removed from
+# modules/containers.nix. It lives outside modules/ so import-tree
+# does not attempt to import it.
+
+# Required flake input (add back to flake.nix):
+#   nixpod = {
+#     url = "github:cameronraysmith/nixpod/00-lock";
+#     inputs.nixpkgs.follows = "nixpkgs";
+#     inputs.flake-parts.follows = "flake-parts";
+#   };
+
+# --- Dev container definitions (top-level let binding) ---
+#
+# devContainerDefs = {
+#   ${repoName} = {
+#     imageAttr = "containerImage";
+#   };
+#   "${repoName}-dev" = {
+#     imageAttr = "devcontainerImage";
+#   };
+# };
+
+# --- Dev container infrastructure (perSystem let binding) ---
+#
+# buildMultiUserNixImage = import "${inputs.nixpod.outPath}/containers/nix.nix";
+#
+# containerUsername = "jovyan";
+# containerUserInfo = {
+#   uid = 1000;
+#   gid = 0;
+#   uname = containerUsername;
+#   gname = "wheel";
+# };
+#
+# containerSysPackages = with pkgs; [
+#   bashInteractive
+#   cacert
+#   coreutils
+#   direnv
+#   gnutar
+#   gzip
+#   less
+#   nix
+#   procps
+#   sudo
+#   zsh
+# ];
+#
+# containerDevPackages = with pkgs; [
+#   git
+#   helix
+#   lazygit
+#   neovim
+#   starship
+# ];
+#
+# mkBaseContainer =
+#   {
+#     name,
+#     tag ? "latest",
+#     pythonPackageEnv,
+#     extraContents ? [ ],
+#     extraPkgs ? [ ],
+#     extraEnv ? [ ],
+#     extraConfig ? { },
+#   }:
+#   buildMultiUserNixImage {
+#     inherit pkgs name tag;
+#     storeOwner = containerUserInfo;
+#     maxLayers = 121;
+#     fromImage = inputs'.nixpod.packages.sudoImage;
+#     compressor = "zstd";
+#
+#     extraPkgs = containerSysPackages ++ extraPkgs ++ [ pythonPackageEnv ];
+#     extraContents = [
+#       inputs'.nixpod.legacyPackages.homeConfigurations.${containerUsername}.activationPackage
+#     ]
+#     ++ extraContents;
+#
+#     extraFakeRootCommands = ''
+#       chown -R ${containerUsername}:wheel /nix
+#     '';
+#
+#     nixConf = {
+#       allowed-users = [ "*" ];
+#       experimental-features = [
+#         "nix-command"
+#         "flakes"
+#       ];
+#       max-jobs = [ "auto" ];
+#       sandbox = "false";
+#       trusted-users = [
+#         "root"
+#         "${containerUsername}"
+#         "runner"
+#       ];
+#     };
+#
+#     extraEnv = [
+#       "NB_USER=${containerUsername}"
+#       "NB_UID=1000"
+#       "NB_PREFIX=/"
+#       "LD_LIBRARY_PATH=${pythonPackageEnv}/lib:/usr/local/nvidia/lib64"
+#       "NVIDIA_DRIVER_CAPABILITIES='compute,utility'"
+#       "NVIDIA_VISIBLE_DEVICES=all"
+#       "QUARTO_PYTHON=${pythonPackageEnv}/bin/python"
+#     ]
+#     ++ extraEnv;
+#
+#     extraConfig = {
+#       ExposedPorts."8888/tcp" = { };
+#     }
+#     // extraConfig;
+#   };
+
+# --- Dev container Python environments (perSystem let binding) ---
+#
+# defaultEditablePythonSet = editablePythonSets.${defaultPythonVersion};
+#
+# allDeps = lib.foldlAttrs (
+#   acc: _: pkg:
+#   lib.zipAttrsWith (_: values: lib.unique (lib.flatten values)) [
+#     acc
+#     pkg.workspace.deps.all
+#   ]
+# ) { } packageWorkspaces;
+#
+# defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "${repoName}-editable-env" allDeps;
+
+# --- Dev container package outputs (perSystem packages) ---
+#
+# containerImage = mkBaseContainer {
+#   name = repoName;
+#   pythonPackageEnv = defaultPythonEnv;
+# };
+#
+# devcontainerImage = mkBaseContainer {
+#   name = "${repoName}-dev";
+#   pythonPackageEnv = defaultEditablePythonEnv;
+#   extraPkgs = containerDevPackages;
+# };
+
+# --- Dev manifest packages (perSystem let binding) ---
+#
+# devManifestPackages = lib.mapAttrs' (
+#   manifestName: def:
+#   lib.nameValuePair "${manifestName}Manifest" (mkMultiArchManifest {
+#     name = manifestName;
+#     images = lib.listToAttrs (
+#       map (sys: {
+#         name = sys;
+#         value = inputs.self.packages.${sys}.${def.imageAttr};
+#       }) includedSystems
+#     );
+#     registry = {
+#       name = "ghcr.io";
+#       repo = "${gitHubOrg}/${manifestName}";
+#       username = manifestUsername;
+#       password = "$GITHUB_TOKEN";
+#     };
+#     version = manifestVersion;
+#     tags = manifestTags;
+#     branch = manifestBranch;
+#     skopeo = pkgs.skopeo;
+#     mkSourceUri = image: "docker-archive:${image}";
+#   })
+# ) devContainerDefs;
+
+# --- Dev containerMatrix entries (flake-level) ---
+#
+# Append to containerMatrix.build:
+#   ++ (lib.mapAttrsToList (_: def: {
+#     package = def.imageAttr;
+#     type = "dev";
+#   }) devContainerDefs);
+#
+# Append to containerMatrix.manifest:
+#   ++ (lib.mapAttrsToList (manifestName: _: {
+#     name = manifestName;
+#     type = "dev";
+#   }) devContainerDefs);
