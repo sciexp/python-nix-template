@@ -1,0 +1,16 @@
+[package]
+name = "pnt-cli-py"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "pnt_cli_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+pnt-cli-core = { path = "../pnt-cli-core" }
+pyo3 = { version = "0.23", features = ["extension-module"] }
+
+[lints]
+workspace = true
