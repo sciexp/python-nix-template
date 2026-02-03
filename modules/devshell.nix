@@ -44,7 +44,7 @@
             quarto
             teller
             uv
-            yarn-berry
+            bun
             virtualenv
             age
             gitleaks
