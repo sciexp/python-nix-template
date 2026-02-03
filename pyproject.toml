@@ -1,6 +1,6 @@
 [project]
 description     = "A Python project template for Nix using uv2nix and flake-parts"
-name            = "python-nix-template"
+name            = "python-nix-template-workspace"
 requires-python = ">=3.11,<3.13"
 version         = "0.0.0"
 
