@@ -82,31 +82,19 @@ pre-commit:
 list-workflows:
   @act -l
 
-# Test build-docs job locally with act
+# Test docs deploy workflow locally with act (preview)
 [group('CI/CD')]
-test-docs-build branch=`git branch --show-current`:
-  @echo "Testing docs build job locally (branch: {{branch}})..."
+test-docs-deploy branch=`git branch --show-current` environment="preview":
+  @echo "Testing docs deployment workflow locally (branch: {{branch}}, environment: {{environment}})..."
   @sops exec-env vars/shared.yaml 'act workflow_dispatch \
     -W .github/workflows/deploy-docs.yaml \
-    -j build-docs \
-    -s CI_AGE_KEY -s CACHIX_AUTH_TOKEN \
-    -s GITHUB_TOKEN="$(gh auth token)" \
-    --var CACHIX_CACHE_NAME \
-    --input debug_enabled=false \
-    --input branch={{branch}}'
-
-# Test full deploy-docs workflow locally with act
-[group('CI/CD')]
-test-docs-deploy branch=`git branch --show-current`:
-  @echo "Testing full docs deployment workflow locally (branch: {{branch}})..."
-  @echo "Note: Cloudflare deployment may not work in local environment"
-  @sops exec-env vars/shared.yaml 'act workflow_dispatch \
-    -W .github/workflows/deploy-docs.yaml \
+    -j deploy-docs \
     -s CI_AGE_KEY -s CACHIX_AUTH_TOKEN \
     -s CLOUDFLARE_API_TOKEN -s CLOUDFLARE_ACCOUNT_ID \
     -s GITHUB_TOKEN="$(gh auth token)" \
     --var CACHIX_CACHE_NAME \
     --input debug_enabled=false \
+    --input environment={{environment}} \
     --input branch={{branch}}'
 
 # Trigger docs build job remotely on GitHub (requires workflow on main)
