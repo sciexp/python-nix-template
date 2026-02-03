@@ -1,23 +1,5 @@
 {
   "nodes": {
-    "catppuccin": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_2"
-      },
-      "locked": {
-        "lastModified": 1757929733,
-        "narHash": "sha256-dzKGtCdGbW7v95MS6pxb97u025JP24QsqCLE5bHAumI=",
-        "owner": "catppuccin",
-        "repo": "nix",
-        "rev": "039cd59357bc6fdd8d9848717069fbc9ee609a73",
-        "type": "github"
-      },
-      "original": {
-        "owner": "catppuccin",
-        "repo": "nix",
-        "type": "github"
-      }
-    },
     "crane": {
       "locked": {
         "lastModified": 1769737823,
@@ -53,36 +35,6 @@
         "type": "github"
       }
     },
-    "flocken": {
-      "inputs": {
-        "flake-parts": [
-          "nixpod",
-          "flake-parts"
-        ],
-        "nixpkgs": [
-          "nixpod",
-          "nixpkgs"
-        ],
-        "systems": [
-          "nixpod",
-          "systems"
-        ]
-      },
-      "locked": {
-        "lastModified": 1766934152,
-        "narHash": "sha256-qCfmMX8Q00WehZpOHb7a8/IRg/I7aDnVawpMZPggjxY=",
-        "owner": "mirkolenz",
-        "repo": "flocken",
-        "rev": "d42cf9b6febe4ad7ba7d916a293e928af50281b5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "mirkolenz",
-        "ref": "v2",
-        "repo": "flocken",
-        "type": "github"
-      }
-    },
     "git-hooks": {
       "flake": false,
       "locked": {
@@ -99,27 +51,6 @@
         "type": "github"
       }
     },
-    "home-manager": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpod",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1757997814,
-        "narHash": "sha256-F+1aoG+3NH4jDDEmhnDUReISyq6kQBBuktTUqCUWSiw=",
-        "owner": "nix-community",
-        "repo": "home-manager",
-        "rev": "5820376beb804de9acf07debaaff1ac84728b708",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "home-manager",
-        "type": "github"
-      }
-    },
     "import-tree": {
       "locked": {
         "lastModified": 1763762820,
@@ -132,27 +63,6 @@
       "original": {
         "owner": "vic",
         "repo": "import-tree",
-        "type": "github"
-      }
-    },
-    "nix-index-database": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpod",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1757822619,
-        "narHash": "sha256-3HIpe3P2h1AUPYcAH9cjuX0tZOqJpX01c0iDwoUYNZ8=",
-        "owner": "nix-community",
-        "repo": "nix-index-database",
-        "rev": "050a5feb5d1bb5b6e5fc04a7d3d816923a87c9ea",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nix-index-database",
         "type": "github"
       }
     },
@@ -176,22 +86,6 @@
         "type": "github"
       }
     },
-    "nixos-flake": {
-      "locked": {
-        "lastModified": 1718149389,
-        "narHash": "sha256-Bom7owfn/piwRum+VmsRSGAjvnlhDEeE60IONzIQffs=",
-        "owner": "srid",
-        "repo": "nixos-flake",
-        "rev": "c23ce31c707c3e4b699312ab9c80a4a003e893b1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "srid",
-        "repo": "nixos-flake",
-        "rev": "c23ce31c707c3e4b699312ab9c80a4a003e893b1",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1757745802,
@@ -205,52 +99,6 @@
         "owner": "NixOS",
         "ref": "nixos-unstable",
         "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1756266583,
-        "narHash": "sha256-cr748nSmpfvnhqSXPiCfUPxRz2FJnvf/RjJGvFfaCsM=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "8a6d5427d99ec71c64f0b93d45778c889005d9c2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpod": {
-      "inputs": {
-        "catppuccin": "catppuccin",
-        "flake-parts": [
-          "flake-parts"
-        ],
-        "flocken": "flocken",
-        "home-manager": "home-manager",
-        "nix-index-database": "nix-index-database",
-        "nixos-flake": "nixos-flake",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1758064941,
-        "narHash": "sha256-iUkWjXWDVdvf7NhoP4dCMejqxHzyKWfrUbFh0wa8LfM=",
-        "owner": "cameronraysmith",
-        "repo": "nixpod",
-        "rev": "763f1b86519be9ba4298838dfbd997a14af07c05",
-        "type": "github"
-      },
-      "original": {
-        "owner": "cameronraysmith",
-        "ref": "00-lock",
-        "repo": "nixpod",
         "type": "github"
       }
     },
@@ -308,29 +156,13 @@
         "import-tree": "import-tree",
         "nix2container": "nix2container",
         "nixpkgs": "nixpkgs",
-        "nixpod": "nixpod",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
-        "systems": "systems_2",
+        "systems": "systems",
         "uv2nix": "uv2nix"
       }
     },
     "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_2": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
