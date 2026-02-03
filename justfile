@@ -344,10 +344,18 @@ container-matrix:
 dev:
     nix develop
 
-# Validate the Nix flake configuration
+# Validate the Nix flake configuration for the current system
 [group('nix')]
 flake-check:
-    nix flake check
+    #!/usr/bin/env bash
+    set -euo pipefail
+    SYSTEM=$(nix eval --impure --raw --expr builtins.currentSystem)
+    echo "Validating flake for $SYSTEM..."
+    nix flake metadata
+    echo "Evaluating checks for $SYSTEM..."
+    nix eval ".#checks.$SYSTEM" --apply builtins.attrNames --json
+    echo "Building checks for $SYSTEM..."
+    nix build ".#checks.$SYSTEM" --no-link -L
 
 # Update all flake inputs to their latest versions
 [group('nix')]
