@@ -16,13 +16,6 @@ inputs:
   releaseVersion:
     description: "Release version"
     required: true
-  cachixCacheName:
-    description: "Name of the Cachix cache"
-    required: true
-  cachixAuthToken:
-    description: "Cachix authentication token"
-    required: true
-
 runs:
   using: "composite"
   steps:
@@ -37,18 +30,6 @@ runs:
         sudo apt-get update
         sudo apt-get install -yq skopeo
         sudo apt-get clean
-
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@786fff0690178f1234e4e1fe9b536e94f5433196 # ratchet:DeterminateSystems/nix-installer-action@main
-      with:
-        extra-conf: |
-          extra-platforms = aarch64-linux
-
-    - name: Setup Remote Nix Cache
-      uses: cachix/cachix-action@be5295a636153b6ad194d3245f78f8e0b78dc704 # ratchet:cachix/cachix-action@master
-      with:
-        name: "${{ inputs.cachixCacheName }}"
-        authToken: "${{ inputs.cachixAuthToken }}"
 
     - name: Set GitHub CI Slug Variables
       uses: rlespinasse/github-slug-action@797d68864753cbceedc271349d402da4590e6302 # ratchet:rlespinasse/github-slug-action@v4

@@ -86,5 +86,3 @@ jobs:
           imageFQN: "ghcr.io/sciexp/${{ matrix.image }}"
           nixCommand: "nix run .#${{ matrix.image }}Manifest --impure --accept-flake-config --print-build-logs --show-trace"
           releaseVersion: "${{ inputs.version }}"
-          cachixCacheName: ${{ vars.CACHIX_CACHE_NAME }}
-          cachixAuthToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
