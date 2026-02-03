@@ -87,15 +87,9 @@ result-*
 *~
 *scratch*
 
-# Yarn Berry
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-.pnp.*
+# bun
 node_modules/
+.wrangler/
 
 # DVC
 .dvc/cache
