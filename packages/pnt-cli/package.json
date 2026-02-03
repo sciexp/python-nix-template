@@ -1,0 +1,92 @@
+{
+  "description": "pnt-cli with pyo3 native bindings",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.1",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
+    "cross-env": "^7.0.3",
+    "semantic-release": "^24.2.3",
+    "semantic-release-major-tag": "^0.3.2",
+    "semantic-release-monorepo": "^8.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "name": "pnt-cli",
+  "packageManager": "yarn@4.6.0",
+  "private": true,
+  "release": {
+    "branches": [
+      {
+        "name": "main"
+      },
+      {
+        "name": "beta",
+        "prerelease": true
+      }
+    ],
+    "extends": "semantic-release-monorepo",
+    "npmPublish": false,
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING-CHANGE"
+            ]
+          },
+          "preset": "conventionalcommits"
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING-CHANGE",
+              "NOTABLE CHANGE",
+              "NOTABLE-CHANGE"
+            ]
+          },
+          "preset": "conventionalcommits"
+        }
+      ],
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogTitle": "# Changelog"
+        }
+      ],
+      [
+        "@semantic-release/github",
+        {
+          "addReleases": "bottom",
+          "failComment": false,
+          "successComment": false
+        }
+      ],
+      [
+        "semantic-release-major-tag",
+        {
+          "customTags": [
+            "v${major}",
+            "v${major}.${minor}"
+          ]
+        }
+      ]
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sciexp/python-nix-template.git"
+  },
+  "scripts": {
+    "test-release": "semantic-release --dry-run --no-ci"
+  },
+  "version": "0.0.0-development"
+}
