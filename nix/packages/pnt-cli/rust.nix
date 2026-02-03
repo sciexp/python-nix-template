@@ -24,9 +24,6 @@ let
       pkgs.pkg-config
       python
     ];
-    buildInputs = lib.optionals pkgs.stdenv.isDarwin [
-      pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
-    ];
   };
 
   cargoArtifacts = crane-lib.buildDepsOnly commonArgs;
