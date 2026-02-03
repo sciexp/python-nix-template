@@ -9,6 +9,7 @@ default:
 ## Nix
 ## Python
 ## Release
+## Rust
 ## Secrets
 ## Template
 
@@ -376,6 +377,33 @@ uv-type: _ensure-venv
 [group('python')]
 check: lint type test
     @printf "\n\033[92mAll checks passed!\033[0m\n"
+
+## Rust
+
+# Build Rust crates for a package
+[group('rust')]
+cargo-build package="pnt-cli":
+    cd packages/{{package}}/crates && cargo build
+
+# Run Rust tests via cargo test
+[group('rust')]
+cargo-test package="pnt-cli":
+    cd packages/{{package}}/crates && cargo test
+
+# Run Rust clippy lints
+[group('rust')]
+cargo-clippy package="pnt-cli":
+    cd packages/{{package}}/crates && cargo clippy --all-targets -- --deny warnings
+
+# Run Rust tests via cargo-nextest
+[group('rust')]
+cargo-nextest package="pnt-cli":
+    cd packages/{{package}}/crates && cargo nextest run --no-tests=pass
+
+# Run all Rust checks (clippy, test)
+[group('rust')]
+cargo-check package="pnt-cli": (cargo-clippy package) (cargo-test package)
+    @printf "\nAll Rust checks passed for {{package}}.\n"
 
 ## Secrets
 

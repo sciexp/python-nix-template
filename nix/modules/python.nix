@@ -82,21 +82,17 @@
             ]
           );
 
+      # Editable set excludes pnt-cli: maturin packages are incompatible with
+      # uv2nix's editable overlay (pyprojectFixupEditableHook expects EDITABLE_ROOT
+      # which maturin's build process does not set). pnt-cli is built as a regular
+      # wheel in the devshell; use `maturin develop` for iterative Rust development.
       mkEditablePythonSet =
         python:
         (mkPythonSet python).overrideScope (
           lib.composeManyExtensions [
-            packageWorkspaces.pnt-cli.editableOverlay
             packageWorkspaces.pnt-functional.editableOverlay
             packageWorkspaces.python-nix-template.editableOverlay
             (final: prev: {
-              pnt-cli = prev.pnt-cli.overrideAttrs (old: {
-                nativeBuildInputs =
-                  old.nativeBuildInputs
-                  ++ final.resolveBuildSystem {
-                    editables = [ ];
-                  };
-              });
               python-nix-template = prev.python-nix-template.overrideAttrs (old: {
                 nativeBuildInputs =
                   old.nativeBuildInputs
