@@ -39,10 +39,14 @@
           };
         };
 
+      hasFunctional = builtins.pathExists ../packages/pnt-functional;
+
       packageWorkspaces = {
         pnt-cli = loadPackage "pnt-cli" ../packages/pnt-cli;
-        pnt-functional = loadPackage "pnt-functional" ../packages/pnt-functional;
         python-nix-template = loadPackage "python-nix-template" ../packages/python-nix-template;
+      }
+      // lib.optionalAttrs hasFunctional {
+        pnt-functional = loadPackage "pnt-functional" ../packages/pnt-functional;
       };
 
       # Per-package Nix modules with optional Rust overlays.
@@ -70,16 +74,20 @@
           inherit python;
         }).overrideScope
           (
-            lib.composeManyExtensions [
-              inputs.pyproject-build-systems.overlays.default
-              packageWorkspaces.pnt-cli.overlay
-              packageWorkspaces.pnt-functional.overlay
-              packageWorkspaces.python-nix-template.overlay
-              # Rust integration overlay for pnt-cli (crane + maturin)
-              (mkPackageModule python).overlay
-              packageOverrides
-              sdistOverrides
-            ]
+            lib.composeManyExtensions (
+              [
+                inputs.pyproject-build-systems.overlays.default
+                packageWorkspaces.pnt-cli.overlay
+              ]
+              ++ lib.optional hasFunctional packageWorkspaces.pnt-functional.overlay
+              ++ [
+                packageWorkspaces.python-nix-template.overlay
+                # Rust integration overlay for pnt-cli (crane + maturin)
+                (mkPackageModule python).overlay
+                packageOverrides
+                sdistOverrides
+              ]
+            )
           );
 
       # Editable set excludes pnt-cli: maturin packages are incompatible with
@@ -89,26 +97,33 @@
       mkEditablePythonSet =
         python:
         (mkPythonSet python).overrideScope (
-          lib.composeManyExtensions [
-            packageWorkspaces.pnt-functional.editableOverlay
-            packageWorkspaces.python-nix-template.editableOverlay
-            (final: prev: {
-              python-nix-template = prev.python-nix-template.overrideAttrs (old: {
-                nativeBuildInputs =
-                  old.nativeBuildInputs
-                  ++ final.resolveBuildSystem {
-                    editables = [ ];
-                  };
-              });
-              pnt-functional = prev.pnt-functional.overrideAttrs (old: {
-                nativeBuildInputs =
-                  old.nativeBuildInputs
-                  ++ final.resolveBuildSystem {
-                    editables = [ ];
-                  };
-              });
-            })
-          ]
+          lib.composeManyExtensions (
+            lib.optional hasFunctional packageWorkspaces.pnt-functional.editableOverlay
+            ++ [
+              packageWorkspaces.python-nix-template.editableOverlay
+              (
+                final: prev:
+                {
+                  python-nix-template = prev.python-nix-template.overrideAttrs (old: {
+                    nativeBuildInputs =
+                      old.nativeBuildInputs
+                      ++ final.resolveBuildSystem {
+                        editables = [ ];
+                      };
+                  });
+                }
+                // lib.optionalAttrs hasFunctional {
+                  pnt-functional = prev.pnt-functional.overrideAttrs (old: {
+                    nativeBuildInputs =
+                      old.nativeBuildInputs
+                      ++ final.resolveBuildSystem {
+                        editables = [ ];
+                      };
+                  });
+                }
+              )
+            ]
+          )
         );
 
       pythonSets = lib.mapAttrs (_: mkPythonSet) pythonVersions;
