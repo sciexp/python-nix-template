@@ -5,6 +5,7 @@ default:
 # Contents
 ## CI/CD
 ## Conda
+## Containers
 ## Docs
 ## Nix
 ## Python
@@ -271,11 +272,61 @@ conda-type package="python-nix-template":
 conda-check package="python-nix-template": (conda-lint package) (conda-type package) (conda-test package)
     @printf "\n\033[92mAll conda checks passed!\033[0m\n"
 
+## Containers
+
+# Build production container image
+[group('containers')]
+container-build-production CONTAINER="pnt-cli":
+    nix build ".#{{CONTAINER}}ProductionImage" -L
+
+# Load production container to local Docker daemon
+[group('containers')]
+container-load-production CONTAINER="pnt-cli":
+    nix run ".#{{CONTAINER}}ProductionImage.copyToDockerDaemon"
+
+# Push production container manifest (requires registry auth)
+[group('containers')]
+container-push-production CONTAINER="pnt-cli" VERSION="0.0.0" +TAGS="":
+    VERSION={{VERSION}} TAGS={{TAGS}} nix run --impure ".#{{CONTAINER}}Manifest" -L
+
+# Build dev container image
+[group('containers')]
+container-build-dev:
+    nix build .#devcontainerImage -L
+
+# Run dev container with port 8888 exposed
+[group('containers')]
+container-run-dev:
+    docker load < $(nix build .#devcontainerImage --no-link --print-out-paths)
+    docker run -it --rm -p 8888:8888 python-nix-template-dev:latest
+
+# Build production-deps container image
+[group('containers')]
+container-build:
+    nix build .#containerImage -L
+
+# Run production-deps container with port 8888 exposed
+[group('containers')]
+container-run:
+    docker load < $(nix build .#containerImage --no-link --print-out-paths)
+    docker run -it --rm -p 8888:8888 python-nix-template:latest
+
+# Push dev container manifests (requires registry auth)
+[group('containers')]
+container-push-dev VERSION="0.0.0" +TAGS="":
+    VERSION={{VERSION}} TAGS={{TAGS}} nix run --impure ".#python-nix-templateManifest" -L
+    VERSION={{VERSION}} TAGS={{TAGS}} nix run --impure ".#python-nix-template-devManifest" -L
+
+# Display container CI matrix
+[group('containers')]
+container-matrix:
+    nix eval .#containerMatrix --json | jq .
+
 ## Nix
 
 # Enter the Nix development shell
 [group('nix')]
-dev: 
+dev:
     nix develop
 
 # Validate the Nix flake configuration
@@ -292,28 +343,6 @@ flake-update:
 [group('nix')]
 ci:
     om ci
-
-# Build development container image
-[group('nix')]
-container-build-dev:
-    nix build .#devcontainerImage
-
-# Run development container with port 8888 exposed
-[group('nix')]
-container-run-dev:
-    docker load < $(nix build .#devcontainerImage --print-out-paths)
-    docker run -it --rm -p 8888:8888 mypackage-dev:latest
-
-# Build production container image
-[group('nix')]
-container-build:
-    nix build .#containerImage
-
-# Run production container with port 8888 exposed
-[group('nix')]
-container-run:
-    docker load < $(nix build .#containerImage --print-out-paths)
-    docker run -it --rm -p 8888:8888 mypackage:latest
 
 ## Python
 
