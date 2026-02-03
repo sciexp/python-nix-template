@@ -1,9 +1,10 @@
 # Python + Rust composition for pnt-cli.
 #
 # Imports rust.nix for crane derivations, then creates a Python package
-# overlay that injects cargoVendorDir and CARGO_TARGET_DIR into the
-# uv2nix-generated pnt-cli derivation. Exports the overlay and Rust checks
-# for flake composition.
+# overlay that injects vendored cargo deps into the uv2nix-generated pnt-cli
+# derivation. Crane's cargoArtifacts caching applies to the Rust-only check
+# derivations (clippy, nextest); the maturin wheel build compiles Rust from
+# source within the pyproject.nix derivation using vendored dependencies.
 {
   pkgs,
   lib,
@@ -34,14 +35,12 @@ in
           maturin = [ ];
         };
 
-      # Configure cargo to use crane's vendored dependencies (offline build)
-      # and reuse crane's cargoArtifacts for incremental compilation.
-      # Crane's vendorCargoDeps output includes a config.toml with the correct
-      # source replacement directives.
+      # Configure cargo to use crane's vendored dependencies for offline builds.
+      # Crane's vendorCargoDeps output includes a config.toml with source
+      # replacement directives pointing to the vendored crate store paths.
       preBuild = ''
         mkdir -p .cargo
         cp ${rustPkgs.cargoVendorDir}/config.toml .cargo/config.toml
-        export CARGO_TARGET_DIR="${rustPkgs.cargoArtifacts}/target"
       '';
 
       env.PYO3_PYTHON = python.interpreter;
