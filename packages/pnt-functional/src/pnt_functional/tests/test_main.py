@@ -1,7 +1,6 @@
 """Tests for main module."""
 
 from expression import Error, Ok
-
 from pnt_functional.main import create_greeting, greet, validate_name
 
 
