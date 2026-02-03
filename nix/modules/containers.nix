@@ -1,7 +1,32 @@
 {
   inputs,
+  lib,
   ...
 }:
+let
+  gitHubOrg = "sciexp";
+  repoName = "python-nix-template";
+
+  # Production container definitions (nix2container)
+  # Add new containers here; containerMatrix auto-discovers them.
+  productionContainerDefs = {
+    pnt-cli = {
+      name = "pnt-cli";
+      entrypoint = "pnt-cli";
+      description = "pnt-cli with pyo3 native bindings";
+    };
+  };
+
+  # Dev container image attribute names for manifest generation
+  devContainerDefs = {
+    ${repoName} = {
+      imageAttr = "containerImage";
+    };
+    "${repoName}-dev" = {
+      imageAttr = "devcontainerImage";
+    };
+  };
+in
 {
   perSystem =
     {
@@ -19,6 +44,8 @@
     }:
     let
       isLinux = pkgs.stdenv.isLinux;
+
+      # --- Python environments ---
 
       defaultPythonVersion = "py312";
       defaultPythonSet = pythonSets.${defaultPythonVersion};
@@ -41,8 +68,10 @@
         ]
       ) { } packageWorkspaces;
 
-      defaultPythonEnv = defaultPythonSet.mkVirtualEnv "python-nix-template-env" defaultDeps;
-      defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "python-nix-template-editable-env" allDeps;
+      defaultPythonEnv = defaultPythonSet.mkVirtualEnv "${repoName}-env" defaultDeps;
+      defaultEditablePythonEnv = defaultEditablePythonSet.mkVirtualEnv "${repoName}-editable-env" allDeps;
+
+      # --- Dev container infrastructure (nixpod/dockerTools, unchanged) ---
 
       buildMultiUserNixImage = import "${inputs.nixpod.outPath}/containers/nix.nix";
 
@@ -135,10 +164,85 @@
           // extraConfig;
         };
 
-      gitHubOrg = "sciexp";
-      packageName = "python-nix-template";
-      version = builtins.getEnv "VERSION";
+      # --- Production container infrastructure (nix2container) ---
+      # Built natively per-system. Cross-compilation via pkgsCross for the
+      # Python + maturin + Cargo stack is orthogonal and tracked separately.
 
+      nix2container = inputs'.nix2container.packages.nix2container;
+      skopeo-nix2container = inputs'.nix2container.packages.skopeo-nix2container;
+
+      mkMultiArchManifest = pkgs.callPackage ../lib/mk-multi-arch-manifest.nix { };
+
+      productionBaseLayer = nix2container.buildLayer {
+        deps = [
+          pkgs.bashInteractive
+          pkgs.coreutils
+          pkgs.cacert
+        ];
+      };
+
+      mkProductionContainer =
+        {
+          name,
+          entrypoint,
+          pythonEnv ? defaultPythonEnv,
+          tag ? "latest",
+          description ? "",
+        }:
+        nix2container.buildImage {
+          inherit name tag;
+          layers = [ productionBaseLayer ];
+          copyToRoot = pkgs.buildEnv {
+            name = "${name}-root";
+            paths = [
+              pythonEnv
+              pkgs.cacert
+            ];
+            pathsToLink = [
+              "/bin"
+              "/lib"
+              "/etc"
+            ];
+          };
+          config = {
+            entrypoint = [ "${pythonEnv}/bin/${entrypoint}" ];
+            Env = [
+              "PATH=${pythonEnv}/bin:${pkgs.coreutils}/bin:${pkgs.bashInteractive}/bin"
+              "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+            ];
+            Labels = {
+              "org.opencontainers.image.description" = description;
+              "org.opencontainers.image.source" = "https://github.com/${gitHubOrg}/${repoName}";
+            };
+          };
+          maxLayers = 2;
+        };
+
+      productionContainerPackages = lib.mapAttrs' (
+        containerName: def:
+        lib.nameValuePair "${containerName}ProductionImage" (mkProductionContainer {
+          inherit (def) name entrypoint description;
+        })
+      ) productionContainerDefs;
+
+      # --- Manifest generation (crane-based, replaces flocken) ---
+      # Env vars (require --impure): VERSION, TAGS, GITHUB_REF_NAME, GITHUB_ACTOR, GITHUB_TOKEN
+
+      getEnvOr =
+        var: default:
+        let
+          val = builtins.getEnv var;
+        in
+        if val == "" then default else val;
+
+      getEnvList =
+        var:
+        let
+          val = builtins.getEnv var;
+        in
+        if val == "" then [ ] else lib.splitString "," val;
+
+      # Systems to include in multi-arch manifests
       includedSystems =
         let
           envVar = builtins.getEnv "NIX_IMAGE_SYSTEMS";
@@ -150,65 +254,102 @@
           ]
         else
           builtins.filter (sys: sys != "") (builtins.split " " envVar);
+
+      manifestVersion = getEnvOr "VERSION" "0.0.0";
+      manifestTags = getEnvList "TAGS";
+      manifestBranch = getEnvOr "GITHUB_REF_NAME" "main";
+      manifestUsername = getEnvOr "GITHUB_ACTOR" "cameronraysmith";
+
+      # Production manifests use nix: transport (skopeo-nix2container)
+      productionManifestPackages = lib.mapAttrs' (
+        containerName: _def:
+        lib.nameValuePair "${containerName}Manifest" (mkMultiArchManifest {
+          name = containerName;
+          images = lib.listToAttrs (
+            map (sys: {
+              name = sys;
+              value = inputs.self.packages.${sys}."${containerName}ProductionImage";
+            }) includedSystems
+          );
+          registry = {
+            name = "ghcr.io";
+            repo = "${gitHubOrg}/${repoName}/${containerName}";
+            username = manifestUsername;
+            password = "$GITHUB_TOKEN";
+          };
+          version = manifestVersion;
+          tags = manifestTags;
+          branch = manifestBranch;
+          skopeo = skopeo-nix2container;
+        })
+      ) productionContainerDefs;
+
+      # Dev manifests use docker-archive: transport (regular skopeo)
+      devManifestPackages = lib.mapAttrs' (
+        manifestName: def:
+        lib.nameValuePair "${manifestName}Manifest" (mkMultiArchManifest {
+          name = manifestName;
+          images = lib.listToAttrs (
+            map (sys: {
+              name = sys;
+              value = inputs.self.packages.${sys}.${def.imageAttr};
+            }) includedSystems
+          );
+          registry = {
+            name = "ghcr.io";
+            repo = "${gitHubOrg}/${manifestName}";
+            username = manifestUsername;
+            password = "$GITHUB_TOKEN";
+          };
+          version = manifestVersion;
+          tags = manifestTags;
+          branch = manifestBranch;
+          skopeo = pkgs.skopeo;
+          mkSourceUri = image: "docker-archive:${image}";
+        })
+      ) devContainerDefs;
+
     in
     {
-      packages = lib.optionalAttrs isLinux {
-        containerImage = mkBaseContainer {
-          name = "python-nix-template";
-          pythonPackageEnv = defaultPythonEnv;
-        };
+      packages = lib.optionalAttrs isLinux (
+        {
+          # Dev containers (nixpod/dockerTools, unchanged)
+          containerImage = mkBaseContainer {
+            name = repoName;
+            pythonPackageEnv = defaultPythonEnv;
+          };
 
-        devcontainerImage = mkBaseContainer {
-          name = "python-nix-template-dev";
-          pythonPackageEnv = defaultEditablePythonEnv;
-          extraPkgs = containerDevPackages;
-        };
-      };
-
-      legacyPackages = lib.optionalAttrs isLinux {
-        python-nix-templateManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
-          inherit version;
-          github = {
-            enable = true;
-            enableRegistry = true;
-            token = "$GH_TOKEN";
+          devcontainerImage = mkBaseContainer {
+            name = "${repoName}-dev";
+            pythonPackageEnv = defaultEditablePythonEnv;
+            extraPkgs = containerDevPackages;
           };
-          autoTags.branch = false;
-          registries = {
-            "ghcr.io" = {
-              repo = lib.mkForce "${gitHubOrg}/${packageName}";
-            };
-          };
-          imageFiles = map (sys: inputs.self.packages.${sys}.containerImage) includedSystems;
-          tags = [
-            (builtins.getEnv "GIT_SHA_SHORT")
-            (builtins.getEnv "GIT_SHA")
-            (builtins.getEnv "GIT_REF")
-            "dev"
-          ];
-        };
-
-        python-nix-template-devManifest = inputs.flocken.legacyPackages.${system}.mkDockerManifest {
-          inherit version;
-          github = {
-            enable = true;
-            enableRegistry = true;
-            token = "$GH_TOKEN";
-          };
-          autoTags.branch = false;
-          registries = {
-            "ghcr.io" = {
-              repo = lib.mkForce "${gitHubOrg}/${packageName}-dev";
-            };
-          };
-          imageFiles = map (sys: inputs.self.packages.${sys}.devcontainerImage) includedSystems;
-          tags = [
-            (builtins.getEnv "GIT_SHA_SHORT")
-            (builtins.getEnv "GIT_SHA")
-            (builtins.getEnv "GIT_REF")
-            "dev"
-          ];
-        };
-      };
+        }
+        // productionContainerPackages
+        // productionManifestPackages
+        // devManifestPackages
+      );
     };
+
+  # CI matrix data (pure evaluation): nix eval .#containerMatrix --json
+  flake.containerMatrix = {
+    build =
+      (lib.mapAttrsToList (containerName: _: {
+        package = "${containerName}ProductionImage";
+        type = "production";
+      }) productionContainerDefs)
+      ++ (lib.mapAttrsToList (_: def: {
+        package = def.imageAttr;
+        type = "dev";
+      }) devContainerDefs);
+    manifest =
+      (lib.mapAttrsToList (containerName: _: {
+        name = containerName;
+        type = "production";
+      }) productionContainerDefs)
+      ++ (lib.mapAttrsToList (manifestName: _: {
+        name = manifestName;
+        type = "dev";
+      }) devContainerDefs);
+  };
 }
