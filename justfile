@@ -97,18 +97,19 @@ test-docs-deploy branch=`git branch --show-current` environment="preview":
     --input environment={{environment}} \
     --input branch={{branch}}'
 
-# Trigger docs build job remotely on GitHub (requires workflow on main)
+# Trigger docs deploy workflow remotely on GitHub (requires workflow on main)
 [group('CI/CD')]
-gh-docs-build branch=`git branch --show-current` debug="false":
+gh-docs-deploy branch=`git branch --show-current` environment="preview" debug="false":
   #!/usr/bin/env bash
-  echo "Triggering docs build workflow on GitHub (branch: {{branch}}, debug: {{debug}})..."
+  echo "Triggering docs deployment on GitHub (branch: {{branch}}, environment: {{environment}}, debug: {{debug}})..."
   echo "Note: This requires deploy-docs.yaml to exist on the default branch"
   gh workflow run deploy-docs.yaml \
     --repo ${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner -q .nameWithOwner)} \
     --ref "{{branch}}" \
     --field debug_enabled="{{debug}}" \
+    --field environment="{{environment}}" \
     --field branch="{{branch}}"
-  echo "Check workflow status with: just gh-docs-status"
+  echo "Check workflow status with: just gh-workflow-status"
 
 # View recent workflow runs status
 [group('CI/CD')]
