@@ -112,6 +112,13 @@ build_category() {
     local attrs
     attrs=$(nix eval ".#${flake_attr}.${system}" --apply 'builtins.attrNames' --json 2>/dev/null | jq -r '.[]' || echo "")
 
+    # Exclude multi-arch manifest packages from single-system CI builds.
+    # Manifests reference packages from other systems and are built by
+    # the dedicated build-nix-images workflow instead.
+    if [ "$flake_attr" = "packages" ]; then
+        attrs=$(echo "$attrs" | grep -v 'Manifest$' || echo "")
+    fi
+
     if [ -z "$attrs" ]; then
         echo "no $label found for $system"
         return 0
