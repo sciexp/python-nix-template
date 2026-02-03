@@ -749,15 +749,155 @@ docs-check:
 docs-dev: docs-build
   bunx wrangler dev
 
-# Deploy docs to production (promote existing version or fallback to build+deploy)
+# Deploy preview version with aliased preview URL for branch
 [group('docs')]
-docs-deploy: docs-build
-  bunx wrangler deploy
+docs-deploy-preview branch=`git branch --show-current`: docs-build
+  #!/usr/bin/env bash
+  set -euo pipefail
 
-# Preview docs on remote
+  # Sanitize branch name for Cloudflare alias (must be valid subdomain component)
+  # - Replace / and other non-alphanumeric chars with -
+  # - Collapse consecutive hyphens, remove leading/trailing hyphens
+  # - Truncate to 40 chars (safe for subdomain label limit of 63)
+  SAFE_BRANCH=$(echo "{{branch}}" | tr '/' '-' | tr -c 'a-zA-Z0-9-' '-' | sed 's/--*/-/g; s/^-//; s/-$//' | cut -c1-40)
+
+  # Capture git metadata (use 12-char SHA for tag - fits in 25 char limit, extremely collision-resistant)
+  COMMIT_SHA=$(git rev-parse HEAD)
+  COMMIT_TAG=$(git rev-parse --short=12 HEAD)
+  COMMIT_SHORT=$(git rev-parse --short HEAD)
+  COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+  GIT_STATUS=$(git diff-index --quiet HEAD -- && echo "clean" || echo "dirty")
+
+  # Tag is 12-char SHA (deterministic, <= 25 chars, used to find this version on main)
+  TAG="${COMMIT_TAG}"
+  # Message includes full context for verification
+  MESSAGE="[{{branch}}] ${COMMIT_MSG} (${COMMIT_TAG}, ${GIT_STATUS})"
+
+  echo "Deploying preview for branch: {{branch}}"
+  echo "Sanitized alias: b-${SAFE_BRANCH}"
+  echo "Commit: ${COMMIT_SHORT} (${GIT_STATUS})"
+  echo "Full SHA: ${COMMIT_SHA}"
+  echo "Tag: ${COMMIT_TAG}"
+  echo "Message: ${COMMIT_MSG}"
+  echo ""
+
+  # Export variables for use in sops exec-env
+  export VERSION_TAG="${TAG}"
+  export VERSION_MESSAGE="${MESSAGE}"
+  export SAFE_BRANCH="${SAFE_BRANCH}"
+
+  sops exec-env vars/shared.yaml '
+    echo "Uploading version with preview alias and metadata..."
+    bunx wrangler versions upload \
+      --preview-alias "b-${SAFE_BRANCH}" \
+      --tag "$VERSION_TAG" \
+      --message "$VERSION_MESSAGE"
+  '
+
+  echo ""
+  echo "Version uploaded successfully"
+  echo "  Tag: ${COMMIT_TAG}"
+  echo "  Full SHA: ${COMMIT_SHA}"
+  echo "  Message: ${MESSAGE}"
+  echo "  Preview URL: https://b-${SAFE_BRANCH}-python-nix-template.sciexp.workers.dev"
+
+# Deploy to production (promote existing version or fallback to build+deploy)
 [group('docs')]
-docs-preview-deploy: docs-build
-  bunx wrangler versions upload --preview-alias b-$(git branch --show-current)
+docs-deploy-production: docs-build
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  # Get current commit tag (should match a previously uploaded version if fast-forward merged)
+  CURRENT_SHA=$(git rev-parse HEAD)
+  CURRENT_TAG=$(git rev-parse --short=12 HEAD)
+  CURRENT_SHORT=$(git rev-parse --short HEAD)
+  CURRENT_BRANCH=$(git branch --show-current)
+
+  # Build deployment message (works in both CI and local)
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    DEPLOYER="${GITHUB_ACTOR:-github-actions}"
+    DEPLOY_CONTEXT="${GITHUB_WORKFLOW:-CI}"
+    DEPLOY_MSG="Deployed by ${DEPLOYER} from ${CURRENT_BRANCH} via ${DEPLOY_CONTEXT}"
+  else
+    DEPLOYER=$(whoami)
+    DEPLOY_HOST=$(hostname -s)
+    DEPLOY_MSG="Deployed by ${DEPLOYER} from ${CURRENT_BRANCH} on ${DEPLOY_HOST}"
+  fi
+
+  echo "Deploying to production from branch: ${CURRENT_BRANCH}"
+  echo "Current commit: ${CURRENT_SHORT}"
+  echo "Full SHA: ${CURRENT_SHA}"
+  echo "Looking for existing version with tag: ${CURRENT_TAG}"
+  echo "Deployment message: ${DEPLOY_MSG}"
+  echo ""
+
+  # Query for existing version with matching tag (take most recent if multiple)
+  EXISTING_VERSION=$(sops exec-env vars/shared.yaml \
+    "bunx wrangler versions list --json" | \
+    jq -r --arg tag "$CURRENT_TAG" \
+    '.[] | select(.annotations["workers/tag"] == $tag) | .id' | head -1)
+
+  if [ -n "$EXISTING_VERSION" ]; then
+    echo "Found existing version: ${EXISTING_VERSION}"
+    echo "  This version was already built and tested in preview"
+    echo "  Promoting to 100% production traffic..."
+    echo ""
+
+    export DEPLOYMENT_MESSAGE="${DEPLOY_MSG}"
+
+    if sops exec-env vars/shared.yaml "
+      bunx wrangler versions deploy ${EXISTING_VERSION}@100% --yes --message \"\$DEPLOYMENT_MESSAGE\"
+    "; then
+      echo ""
+      echo "Successfully promoted version ${EXISTING_VERSION} to production"
+      echo "  Tag: ${CURRENT_TAG}"
+      echo "  Full SHA: ${CURRENT_SHA}"
+      echo "  Deployed by: ${DEPLOY_MSG}"
+      echo "  Production URL: https://python-nix-template.scientistexperience.net"
+    else
+      echo ""
+      echo "Failed to promote version ${EXISTING_VERSION}"
+      echo "  Deployment was cancelled or failed"
+      exit 1
+    fi
+  else
+    echo "No existing version found with tag: ${CURRENT_TAG}"
+    echo "  This should only happen if:"
+    echo "    - This is the first deployment"
+    echo "    - Commit was made directly on main (not recommended)"
+    echo "    - Version was cleaned up (retention policy)"
+    echo ""
+    echo "  Falling back to direct deploy..."
+    echo ""
+
+    export DEPLOYMENT_MESSAGE="${DEPLOY_MSG}"
+
+    sops exec-env vars/shared.yaml '
+      echo "Deploying to production..."
+      bunx wrangler deploy
+    '
+
+    echo ""
+    echo "Deployed directly to production"
+    echo "  Full SHA: ${CURRENT_SHA}"
+    echo "  Deployed by: ${DEPLOY_MSG}"
+    echo "  Production URL: https://python-nix-template.scientistexperience.net"
+  fi
+
+# List recent Cloudflare versions
+[group('docs')]
+docs-versions limit="10":
+  sops exec-env vars/shared.yaml "bunx wrangler versions list --limit {{limit}}"
+
+# List recent Cloudflare deployments
+[group('docs')]
+docs-deployments:
+  sops exec-env vars/shared.yaml "bunx wrangler deployments list"
+
+# Tail live logs from Cloudflare Workers
+[group('docs')]
+docs-tail:
+  sops exec-env vars/shared.yaml "bunx wrangler tail"
 
 # Sync data from drive (using encrypted service account)
 [group('docs')]
