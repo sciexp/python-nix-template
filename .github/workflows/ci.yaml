@@ -567,6 +567,9 @@ jobs:
   build-pr-images:
     needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'build-images') || (github.event_name == 'workflow_dispatch' && inputs.run_build_images) ) }}
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/build-nix-images.yaml
     concurrency:
       group: bni-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
