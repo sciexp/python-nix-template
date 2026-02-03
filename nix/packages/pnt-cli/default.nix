@@ -23,14 +23,6 @@ in
 {
   overlay = final: prev: {
     pnt-cli = prev.pnt-cli.overrideAttrs (old: {
-      # Inject pre-vendored Cargo deps (crane's vendoring, not rustPlatform's)
-      cargoVendorDir = rustPkgs.cargoVendorDir;
-
-      # Reuse crane's cargoArtifacts for incremental builds
-      preBuild = ''
-        export CARGO_TARGET_DIR="${rustPkgs.cargoArtifacts}/target"
-      '';
-
       nativeBuildInputs =
         (old.nativeBuildInputs or [ ])
         ++ [
@@ -41,6 +33,21 @@ in
         ++ final.resolveBuildSystem {
           maturin = [ ];
         };
+
+      # Configure cargo to use crane's vendored dependencies (offline build)
+      # and reuse crane's cargoArtifacts for incremental compilation.
+      preBuild = ''
+        mkdir -p .cargo
+        cat > .cargo/config.toml <<CARGO_CONFIG
+        [source.crates-io]
+        replace-with = "vendored-sources"
+
+        [source.vendored-sources]
+        directory = "${rustPkgs.cargoVendorDir}"
+        CARGO_CONFIG
+
+        export CARGO_TARGET_DIR="${rustPkgs.cargoArtifacts}/target"
+      '';
 
       env.PYO3_PYTHON = python.interpreter;
     });
