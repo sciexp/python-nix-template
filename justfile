@@ -744,7 +744,7 @@ release-package package-name dry-run="false":
     yarn workspace {{package-name}} install
     if [ "{{dry-run}}" = "true" ]; then
         unset GITHUB_ACTIONS
-        yarn workspace {{package-name}} test-release -b "${GITHUB_REF_NAME:-main}"
+        yarn workspace {{package-name}} test-release -b main
     else
         yarn workspace {{package-name}} release
     fi
