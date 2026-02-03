@@ -128,17 +128,3 @@ testpaths = [
 omit = [
   "src/pnt_functional/tests/*",
 ]
-
-[tool.ruff]
-line-length    = 88
-src            = ["src"]
-target-version = "py311"
-
-[tool.ruff.lint]
-select = [
-  "B", # flake8-bugbear
-  "E", # pycodestyle errors
-  "F", # pyflakes
-  "I", # isort
-  "W", # pycodestyle warnings
-]
