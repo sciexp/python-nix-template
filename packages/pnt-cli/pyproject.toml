@@ -61,7 +61,7 @@ addopts = """
 """
 log_level = "INFO"
 testpaths = [
-  "src/pnt_cli/tests",
+  "tests",
 ]
 
 [tool.ruff]
