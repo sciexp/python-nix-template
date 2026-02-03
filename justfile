@@ -16,6 +16,21 @@ default:
 
 ## CI/CD
 
+# Build a category of nix flake outputs for CI matrix
+[group('CI/CD')]
+ci-build-category system category:
+    bash scripts/ci/ci-build-category.sh {{system}} {{category}}
+
+# Scan repository for hardcoded secrets
+[group('CI/CD')]
+scan-secrets:
+    gitleaks detect --verbose --redact
+
+# Scan staged files for hardcoded secrets (pre-commit)
+[group('CI/CD')]
+scan-staged:
+    gitleaks protect --staged --verbose --redact
+
 # Set gcloud context
 [group('CI/CD')]
 gcloud-context:
@@ -699,6 +714,29 @@ test-release-direct:
 [group('release')]
 test-package-release package-name="python-nix-template" branch="main":
     yarn workspace {{package-name}} test-release -b {{branch}}
+
+# Preview release version for a package (dry-run semantic-release)
+[group('release')]
+preview-version base-branch package-path:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    PACKAGE_NAME=$(basename "{{package-path}}")
+    yarn workspace "$PACKAGE_NAME" install
+    unset GITHUB_ACTIONS
+    yarn workspace "$PACKAGE_NAME" test-release -b "{{base-branch}}"
+
+# Run semantic-release for a package
+[group('release')]
+release-package package-name dry-run="false":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    yarn workspace {{package-name}} install
+    if [ "{{dry-run}}" = "true" ]; then
+        unset GITHUB_ACTIONS
+        yarn workspace {{package-name}} test-release -b "${GITHUB_REF_NAME:-main}"
+    else
+        yarn workspace {{package-name}} release
+    fi
 
 ## Docs
 
