@@ -355,7 +355,10 @@ flake-check:
     echo "Evaluating checks for $SYSTEM..."
     nix eval ".#checks.$SYSTEM" --apply builtins.attrNames --json
     echo "Building checks for $SYSTEM..."
-    nix build ".#checks.$SYSTEM" --no-link -L
+    for check in $(nix eval ".#checks.$SYSTEM" --apply builtins.attrNames --json | jq -r '.[]'); do
+      echo "Building check: $check"
+      nix build ".#checks.$SYSTEM.$check" --no-link -L
+    done
 
 # Update all flake inputs to their latest versions
 [group('nix')]
