@@ -1,0 +1,12 @@
+[package]
+name = "pnt-cli-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "pnt_cli_core"
+path = "src/lib.rs"
+
+[lints]
+workspace = true
