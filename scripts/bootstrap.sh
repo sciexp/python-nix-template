@@ -42,8 +42,8 @@ echo "Checking direnv installation..."
 if command -v direnv >/dev/null 2>&1; then
     echo "direnv is already installed."
 else
-    echo "Installing direnv via nix..."
-    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && nix profile install nixpkgs#direnv
+    echo "Installing direnv..."
+    curl -sfL https://direnv.net/install.sh | bash
 fi
 echo
 
