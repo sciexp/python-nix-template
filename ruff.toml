@@ -1,0 +1,12 @@
+line-length    = 88
+src            = ["src"]
+target-version = "py311"
+
+[lint]
+select = [
+  "B", # flake8-bugbear
+  "E", # pycodestyle errors
+  "F", # pyflakes
+  "I", # isort
+  "W", # pycodestyle warnings
+]
