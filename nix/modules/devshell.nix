@@ -47,6 +47,7 @@
             yarn-berry
             virtualenv
             age
+            gitleaks
             sops
             ssh-to-age
             config.packages.set-git-env
