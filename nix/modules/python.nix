@@ -40,9 +40,20 @@
         };
 
       packageWorkspaces = {
+        pnt-cli = loadPackage "pnt-cli" ../../packages/pnt-cli;
         pnt-functional = loadPackage "pnt-functional" ../../packages/pnt-functional;
         python-nix-template = loadPackage "python-nix-template" ../../packages/python-nix-template;
       };
+
+      # Per-package Nix modules with optional Rust overlays.
+      # Packages with Rust extensions get a dedicated module in nix/packages/
+      # that encapsulates crane configuration and exports an overlay + checks.
+      mkPackageModule =
+        python:
+        import ../packages/pnt-cli {
+          inherit pkgs lib python;
+          crane = inputs.crane;
+        };
 
       # Compose per-package uv2nix overlays with shared overrides.
       #
@@ -61,8 +72,11 @@
           (
             lib.composeManyExtensions [
               inputs.pyproject-build-systems.overlays.default
+              packageWorkspaces.pnt-cli.overlay
               packageWorkspaces.pnt-functional.overlay
               packageWorkspaces.python-nix-template.overlay
+              # Rust integration overlay for pnt-cli (crane + maturin)
+              (mkPackageModule python).overlay
               packageOverrides
               sdistOverrides
             ]
@@ -72,9 +86,17 @@
         python:
         (mkPythonSet python).overrideScope (
           lib.composeManyExtensions [
+            packageWorkspaces.pnt-cli.editableOverlay
             packageWorkspaces.pnt-functional.editableOverlay
             packageWorkspaces.python-nix-template.editableOverlay
             (final: prev: {
+              pnt-cli = prev.pnt-cli.overrideAttrs (old: {
+                nativeBuildInputs =
+                  old.nativeBuildInputs
+                  ++ final.resolveBuildSystem {
+                    editables = [ ];
+                  };
+              });
               python-nix-template = prev.python-nix-template.overrideAttrs (old: {
                 nativeBuildInputs =
                   old.nativeBuildInputs
@@ -95,8 +117,13 @@
 
       pythonSets = lib.mapAttrs (_: mkPythonSet) pythonVersions;
       editablePythonSets = lib.mapAttrs (_: mkEditablePythonSet) pythonVersions;
+
+      # Rust checks from per-package modules (using default Python version)
+      rustChecks = (mkPackageModule pythonVersions.py312).checks;
     in
     {
+      checks = rustChecks;
+
       _module.args = {
         inherit
           packageWorkspaces
