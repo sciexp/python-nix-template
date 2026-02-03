@@ -133,7 +133,7 @@
           };
           asserts = {
             source = {
-              "pyproject.toml" = true;
+              "ruff.toml" = true;
               "flake.nix" = true;
               ".github/workflows/ci.yaml" = true;
               ".vscode" = true;
