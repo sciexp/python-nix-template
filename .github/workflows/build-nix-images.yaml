@@ -132,7 +132,7 @@ jobs:
           nix build .#${{ matrix.package }} -L --accept-flake-config
 
   manifest:
-    needs: build
+    needs: [discover, build]
     if: inputs.push == true
     runs-on: ubuntu-latest
     strategy:
