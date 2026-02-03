@@ -8,8 +8,13 @@ on:
         required: true
         type: boolean
         default: false
+      force_run:
+        description: "Force execution even if already successful for this commit"
+        required: false
+        type: boolean
+        default: false
   pull_request:
-    types: [opened, labeled, reopened, synchronize]
+    types: [opened, reopened, synchronize]
     paths-ignore:
       - "**/*.md"
       - "*"
@@ -33,28 +38,86 @@ on:
       - "!packages/*/uv.lock"
       - "!packages/*/pyproject.toml"
 
+concurrency:
+  group: template-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
-  test-omnix-template:
+  set-variables:
     runs-on: ubuntu-latest
-    concurrency:
-      group: test-omnix-template-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
-      cancel-in-progress: true
+    outputs:
+      debug: ${{ steps.set-variables.outputs.debug }}
+      skip_ci: ${{ steps.set-variables.outputs.skip_ci }}
+      checkout_ref: ${{ steps.set-variables.outputs.checkout_ref }}
+      checkout_rev: ${{ steps.set-variables.outputs.checkout_rev }}
+
     steps:
-      - name: Checkout
+      - name: Set action variables
+        id: set-variables
+        run: |
+          DEBUG="false"
+          SKIP_CI="false"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            DEBUG="${{ inputs.debug_enabled }}"
+          fi
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if ${{ contains(github.event.pull_request.labels.*.name, 'skip-ci') }}; then
+              SKIP_CI="true"
+            fi
+            if ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }}; then
+              DEBUG="true"
+            fi
+            CHECKOUT_REF="${{ github.event.pull_request.head.ref }}"
+            CHECKOUT_REV="${{ github.event.pull_request.head.sha }}"
+          else
+            CHECKOUT_REF="${{ github.ref_name }}"
+            CHECKOUT_REV="${{ github.sha }}"
+          fi
+
+          echo "DEBUG=$DEBUG"
+          echo "SKIP_CI=$SKIP_CI"
+          echo "CHECKOUT_REF=$CHECKOUT_REF"
+          echo "CHECKOUT_REV=$CHECKOUT_REV"
+
+          echo "debug=$DEBUG" >> $GITHUB_OUTPUT
+          echo "skip_ci=$SKIP_CI" >> $GITHUB_OUTPUT
+          echo "checkout_ref=$CHECKOUT_REF" >> $GITHUB_OUTPUT
+          echo "checkout_rev=$CHECKOUT_REV" >> $GITHUB_OUTPUT
+
+  test-omnix-template:
+    needs: [set-variables]
+    runs-on: ubuntu-latest
+    if: |
+      !cancelled() &&
+      needs.set-variables.outputs.skip_ci != 'true'
+    steps:
+      - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Check execution cache
+        id: cache
+        uses: ./.github/actions/cached-ci-job
+        with:
+          hash-sources: 'flake.nix flake.lock modules/**/*.nix .github/workflows/template.yaml .github/actions/setup-nix/action.yml .github/actions/cached-ci-job/action.yaml'
+          force-run: ${{ inputs.force_run || 'false' }}
+
       - name: Setup Nix
+        if: steps.cache.outputs.should-run == 'true'
         uses: ./.github/actions/setup-nix
         with:
+          installer: full
           system: x86_64-linux
           enable-cachix: true
           cachix-name: ${{ vars.CACHIX_CACHE_NAME }}
@@ -62,15 +125,17 @@ jobs:
           extra-pull-names: nix-community,pyproject-nix,sciexp,srid
 
       - name: Setup tmate debug session
+        if: steps.cache.outputs.should-run == 'true' && needs.set-variables.outputs.debug == 'true'
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48 # ratchet:mxschmitt/action-tmate@v3
-        if: ${{ inputs.debug_enabled == true }}
 
       - name: Install omnix
-        run: nix --accept-flake-config profile install "github:juspay/omnix"
+        if: steps.cache.outputs.should-run == 'true'
+        run: nix --accept-flake-config profile install "github:juspay/omnix/v1.3.0"
 
       - name: Test monorepo template initialization
+        if: steps.cache.outputs.should-run == 'true'
         run: |
-          REPO_REF="github:sciexp/python-nix-template/${{ github.event.pull_request.head.sha || github.sha }}"
+          REPO_REF="github:sciexp/python-nix-template/${{ needs.set-variables.outputs.checkout_rev }}"
           echo "Using repository reference: $REPO_REF"
 
           pwd
@@ -99,11 +164,13 @@ jobs:
           nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock
           git add .
 
-          nix develop --accept-flake-config -c pytest
+          nix flake check --accept-flake-config
+          nix develop --accept-flake-config -c python -c "import pnt_mono"
 
       - name: Test single-package template initialization
+        if: steps.cache.outputs.should-run == 'true'
         run: |
-          REPO_REF="github:sciexp/python-nix-template/${{ github.event.pull_request.head.sha || github.sha }}"
+          REPO_REF="github:sciexp/python-nix-template/${{ needs.set-variables.outputs.checkout_rev }}"
           echo "Using repository reference: $REPO_REF"
 
           pwd
@@ -132,4 +199,27 @@ jobs:
           nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock
           git add .
 
-          nix develop --accept-flake-config -c pytest
+          nix flake check --accept-flake-config
+          nix develop --accept-flake-config -c python -c "import pnt_new"
+
+      - name: Create job result marker
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        shell: bash
+        run: |
+          mkdir -p "${{ steps.cache.outputs.cache-path }}"
+          cat > "${{ steps.cache.outputs.cache-path }}/marker" <<EOF
+          job: test-omnix-template
+          workflow: ${{ github.workflow }}
+          run_id: ${{ github.run_id }}
+          run_number: ${{ github.run_number }}
+          sha: ${{ needs.set-variables.outputs.checkout_rev }}
+          ref: ${{ needs.set-variables.outputs.checkout_ref }}
+          timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+      - name: Save execution cache
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # ratchet:actions/cache/save@v4
+        with:
+          path: ${{ steps.cache.outputs.cache-path }}
+          key: ${{ steps.cache.outputs.cache-key }}
