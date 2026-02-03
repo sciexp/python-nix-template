@@ -356,8 +356,8 @@ jobs:
       group: bni-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
     with:
-      debug_enabled: ${{ needs.set-variables.outputs.debug }}
-      version: ""
-      images: '["python-nix-template", "python-nix-template-dev"]'
-      branch: ${{ needs.set-variables.outputs.checkout_ref }}
+      debug_enabled: ${{ needs.set-variables.outputs.debug == 'true' }}
+      version: ${{ needs.set-variables.outputs.checkout_rev }}
+      push: false
+      tags: ""
     secrets: inherit
