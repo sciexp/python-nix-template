@@ -668,30 +668,30 @@ gcp-sa-key-delete key_id:
 
 ## Release
 
-# Release testing with yarn
+# Release testing
 [group('release')]
 test-release:
-    yarn test-release
+    bun run test-release
 
 # Test release as if on main branch
 [group('release')]
 test-release-as-main:
-    yarn test-release:main
+    bun run test-release:main
 
 # Test release with explicit branch override
 [group('release')]
 test-release-on-current-branch:
-    yarn test-release:current
+    bun run test-release:current
 
 # Test release directly on release branch
 [group('release')]
 test-release-direct:
-    yarn test-release:direct
+    bun run test-release:direct
 
 # Test package release
 [group('release')]
 test-package-release package-name="python-nix-template" branch="main":
-    yarn workspace {{package-name}} test-release -b {{branch}}
+    bun --filter {{package-name}} test-release -b {{branch}}
 
 # Preview release version for a package (dry-run semantic-release)
 [group('release')]
@@ -699,21 +699,21 @@ preview-version base-branch package-path:
     #!/usr/bin/env bash
     set -euo pipefail
     PACKAGE_NAME=$(basename "{{package-path}}")
-    yarn workspace "$PACKAGE_NAME" install
+    bun install --filter "$PACKAGE_NAME"
     unset GITHUB_ACTIONS
-    yarn workspace "$PACKAGE_NAME" test-release -b "{{base-branch}}"
+    bun --filter "$PACKAGE_NAME" test-release -b "{{base-branch}}"
 
 # Run semantic-release for a package
 [group('release')]
 release-package package-name dry-run="false":
     #!/usr/bin/env bash
     set -euo pipefail
-    yarn workspace {{package-name}} install
+    bun install --filter {{package-name}}
     if [ "{{dry-run}}" = "true" ]; then
         unset GITHUB_ACTIONS
-        yarn workspace {{package-name}} test-release -b main
+        bun --filter {{package-name}} test-release -b main
     else
-        yarn workspace {{package-name}} release
+        bun --filter {{package-name}} release
     fi
 
 ## Docs
@@ -747,17 +747,17 @@ docs-check:
 # Run local docs deployment
 [group('docs')]
 docs-dev: docs-build
-  yarn dlx wrangler dev
+  bunx wrangler dev
 
-# Deploy docs
+# Deploy docs to production (promote existing version or fallback to build+deploy)
 [group('docs')]
 docs-deploy: docs-build
-  yarn dlx wrangler deploy
+  bunx wrangler deploy
 
 # Preview docs on remote
 [group('docs')]
-docs-preview-deploy: data-sync docs-build
-  yarn dlx wrangler versions upload --preview-alias b-$(git branch --show-current)
+docs-preview-deploy: docs-build
+  bunx wrangler versions upload --preview-alias b-$(git branch --show-current)
 
 # Sync data from drive (using encrypted service account)
 [group('docs')]
