@@ -18,6 +18,9 @@ name = "pnt-cli"
 requires-python = ">=3.11,<3.13"
 version = "0.1.0"
 
+[project.scripts]
+pnt-cli = "pnt_cli:main"
+
 [build-system]
 build-backend = "maturin"
 requires      = ["maturin>=1.5,<2.0"]
