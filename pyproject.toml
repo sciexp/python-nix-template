@@ -1,3 +1,12 @@
+[project]
+description     = "A Python project template for Nix using uv2nix and flake-parts"
+name            = "python-nix-template"
+requires-python = ">=3.11,<3.13"
+version         = "0.0.0"
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
 [tool.pytest.ini_options]
 addopts = """
 -rA
