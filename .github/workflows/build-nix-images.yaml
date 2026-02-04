@@ -80,8 +80,8 @@ jobs:
           MANIFEST=$(nix eval .#containerMatrix.manifest --json --accept-flake-config)
           echo "Build matrix: $BUILD"
           echo "Manifest matrix: $MANIFEST"
-          echo "build=$BUILD" >> $GITHUB_OUTPUT
-          echo "manifest=$MANIFEST" >> $GITHUB_OUTPUT
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "manifest=$MANIFEST" >> "$GITHUB_OUTPUT"
 
   build:
     needs: discover
