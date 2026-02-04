@@ -118,13 +118,15 @@ jobs:
         id: check-docs
         run: |
           if [ -d "docs" ] && [ "$(ls -A docs 2>/dev/null)" ]; then
-            echo "has_docs=true" >> $GITHUB_OUTPUT
+            echo "has_docs=true" >> "$GITHUB_OUTPUT"
           else
-            echo "has_docs=false" >> $GITHUB_OUTPUT
+            echo "has_docs=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set action variables
         id: set-variables
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           DEBUG="false"
           SKIP_CI="false"
@@ -155,30 +157,32 @@ jobs:
             if ${{ contains(github.event.pull_request.labels.*.name, 'force-ci') }}; then
               FORCE_CI="true"
             fi
-            CHECKOUT_REF="${{ github.event.pull_request.head.ref }}"
+            CHECKOUT_REF="$PR_HEAD_REF"
             CHECKOUT_REV="${{ github.event.pull_request.head.sha }}"
           else
             CHECKOUT_REF="${{ github.ref_name }}"
             CHECKOUT_REV="${{ github.sha }}"
           fi
 
-          echo "debug=$DEBUG" >> $GITHUB_OUTPUT
-          echo "skip_ci=$SKIP_CI" >> $GITHUB_OUTPUT
-          echo "skip_tests=$SKIP_TESTS" >> $GITHUB_OUTPUT
-          echo "dry_run_release=$DRY_RUN_RELEASE" >> $GITHUB_OUTPUT
-          echo "checkout_ref=$CHECKOUT_REF" >> $GITHUB_OUTPUT
-          echo "checkout_rev=$CHECKOUT_REV" >> $GITHUB_OUTPUT
-          echo "force_ci=$FORCE_CI" >> $GITHUB_OUTPUT
+          {
+            echo "debug=$DEBUG"
+            echo "skip_ci=$SKIP_CI"
+            echo "skip_tests=$SKIP_TESTS"
+            echo "dry_run_release=$DRY_RUN_RELEASE"
+            echo "checkout_ref=$CHECKOUT_REF"
+            echo "checkout_rev=$CHECKOUT_REV"
+            echo "force_ci=$FORCE_CI"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Discover packages
         id: discover-packages
         run: |
-          PACKAGES=$(ls -d packages/*/pyproject.toml | while read f; do
+          PACKAGES=$(ls -d packages/*/pyproject.toml | while read -r f; do
             d=$(dirname "$f")
             n=$(basename "$d")
             printf '{"name":"%s","path":"%s"}\n' "$n" "$d"
           done | jq -sc '.')
-          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+          echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
           echo "Discovered packages: $PACKAGES"
 
   # ---------------------------------------------------------------------------
@@ -501,7 +505,7 @@ jobs:
       package-path: ${{ matrix.package.path }}
       package-name: ${{ matrix.package.name }}
       version: "0.0.0-test"
-      release-dry-run: true
+      release-dry-run: "true"
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
     secrets: inherit
 
@@ -524,23 +528,23 @@ jobs:
         package:
           - name: python-nix-template
             path: "packages/python-nix-template"
-            build-images: true
+            build-images: "true"
             images: '["python-nix-template", "python-nix-template-dev"]'
           - name: pnt-functional
             path: packages/pnt-functional
-            build-images: false
+            build-images: "false"
             images: "[]"
           - name: pnt-cli
             path: packages/pnt-cli
-            build-images: false
+            build-images: "false"
             images: "[]"
-            build-wheels: true
+            build-wheels: "true"
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: ${{ matrix.package.path }}
       package-name: ${{ matrix.package.name }}
       version: "0.0.0"
-      release-dry-run: false
+      release-dry-run: "false"
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
       build-images: ${{ matrix.package.build-images }}
       images-to-build: ${{ matrix.package.images }}
