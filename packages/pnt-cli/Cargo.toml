@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["pnt-cli-core", "pnt-cli-py"]
+members = ["crates/pnt-cli-core", "crates/pnt-cli-py"]
 
 [workspace.package]
 version = "0.1.0"
