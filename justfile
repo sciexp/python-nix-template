@@ -693,15 +693,10 @@ test-release-direct:
 test-package-release package-name="python-nix-template" branch="main":
     yarn workspace {{package-name}} test-release -b {{branch}}
 
-# Preview release version for a package (dry-run semantic-release)
+# Preview release version for a package (dry-run semantic-release with merge simulation)
 [group('release')]
 preview-version base-branch package-path:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    PACKAGE_NAME=$(basename "{{package-path}}")
-    yarn workspace "$PACKAGE_NAME" install
-    unset GITHUB_ACTIONS
-    yarn workspace "$PACKAGE_NAME" test-release -b "{{base-branch}}"
+    ./scripts/preview-version.sh "{{base-branch}}" "{{package-path}}"
 
 # Run semantic-release for a package
 [group('release')]
@@ -715,6 +710,57 @@ release-package package-name dry-run="false":
     else
         yarn workspace {{package-name}} release
     fi
+
+# Update version for a specific package across all relevant files
+[group('release')]
+update-version package-name version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    PACKAGE_PATH="packages/{{package-name}}"
+
+    if [ ! -d "$PACKAGE_PATH" ]; then
+        echo "Error: package directory $PACKAGE_PATH does not exist"
+        exit 1
+    fi
+
+    PYPROJECT="$PACKAGE_PATH/pyproject.toml"
+    if [ ! -f "$PYPROJECT" ]; then
+        echo "Error: $PYPROJECT not found"
+        exit 1
+    fi
+
+    # Extract current version from pyproject.toml [project] section
+    CURRENT=$(sed -n '/^\[project\]/,/^\[/{/^version = /p}' "$PYPROJECT" | head -1 | sed 's/version = "\(.*\)"/\1/')
+    if [ -z "$CURRENT" ]; then
+        echo "Error: could not extract current version from $PYPROJECT"
+        exit 1
+    fi
+
+    echo "Updating {{package-name}} from $CURRENT to {{version}}"
+
+    # Update pyproject.toml [project] version
+    sed -i'' -e '/^\[project\]/,/^\[/ s/^version = "'"$CURRENT"'"$/version = "{{version}}"/' "$PYPROJECT"
+    echo "  Updated $PYPROJECT [project] version"
+
+    # Update [tool.pixi.package] version if present
+    if grep -q '^\[tool\.pixi\.package\]' "$PYPROJECT"; then
+        sed -i'' -e '/^\[tool\.pixi\.package\]/,/^\[/ s/^version = "'"$CURRENT"'"$/version = "{{version}}"/' "$PYPROJECT"
+        echo "  Updated $PYPROJECT [tool.pixi.package] version"
+    fi
+
+    # For maturin packages: update Cargo.toml workspace version
+    CARGO_TOML="$PACKAGE_PATH/Cargo.toml"
+    if [ -f "$CARGO_TOML" ]; then
+        CARGO_CURRENT=$(sed -n '/^\[workspace\.package\]/,/^\[/{/^version = /p}' "$CARGO_TOML" | head -1 | sed 's/version = "\(.*\)"/\1/')
+        if [ -n "$CARGO_CURRENT" ]; then
+            sed -i'' -e '/^\[workspace\.package\]/,/^\[/ s/^version = "'"$CARGO_CURRENT"'"$/version = "{{version}}"/' "$CARGO_TOML"
+            echo "  Updated $CARGO_TOML [workspace.package] version"
+        fi
+    fi
+
+    echo "Running uv lock..."
+    uv lock
+    echo "Version update complete for {{package-name}}"
 
 ## Docs
 
