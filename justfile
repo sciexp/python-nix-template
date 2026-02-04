@@ -682,15 +682,16 @@ test-release-direct:
 test-package-release package-name="python-nix-template" branch="main":
     bun --filter {{package-name}} test-release -b {{branch}}
 
-# Preview release version for a package (dry-run semantic-release)
+# Preview release version for a package (merge-simulated dry-run)
 [group('release')]
-preview-version base-branch package-path:
+preview-version target="main" package="":
     #!/usr/bin/env bash
     set -euo pipefail
-    PACKAGE_NAME=$(basename "{{package-path}}")
-    bun install --filter "$PACKAGE_NAME"
-    unset GITHUB_ACTIONS
-    bun --filter "$PACKAGE_NAME" test-release -b "{{base-branch}}"
+    if [ -n "{{package}}" ]; then
+      ./scripts/preview-version.sh "{{target}}" "{{package}}"
+    else
+      ./scripts/preview-version.sh "{{target}}"
+    fi
 
 # Run semantic-release for a package
 [group('release')]
