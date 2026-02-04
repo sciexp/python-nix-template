@@ -429,6 +429,17 @@ jobs:
         with:
           ref: ${{ needs.set-variables.outputs.checkout_ref }}
           fetch-depth: 0
+          fetch-tags: true
+
+      - name: Fetch target branch for preview
+        run: |
+          git fetch origin
+          git branch -f main origin/main
+
+      - name: Configure git identity for temporary commits
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Check execution cache
         id: cache
