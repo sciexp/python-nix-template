@@ -2,7 +2,6 @@
     "description": "Python Nix Template with uv2nix integration",
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",
-        "@semantic-release/git": "^10.0.1",
         "@semantic-release/github": "^11.0.1",
         "conventional-changelog-conventionalcommits": "^8.0.0",
         "cross-env": "^7.0.3",
