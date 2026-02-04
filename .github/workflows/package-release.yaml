@@ -194,7 +194,7 @@ jobs:
         if: steps.cache.outputs.should-run == 'true'
         run: |
           ARTIFACT_NAME="${{ inputs.package-name }}-${{ github.run_id }}"
-          echo "artifact-name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+          echo "artifact-name=$ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
 
           if [ "${{ steps.semantic-release.outputs.new_release_published }}" == "true" ]; then
             echo "Package ${{ inputs.package-name }} released version ${{ steps.semantic-release.outputs.new_release_version }}"
