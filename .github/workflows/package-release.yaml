@@ -44,6 +44,11 @@ on:
         required: false
         type: string
         default: "[]"
+      build-wheels:
+        description: "Whether to build cross-platform wheels via maturin"
+        required: false
+        type: boolean
+        default: false
       force-run:
         description: "Force execution even if already successful"
         required: false
@@ -93,6 +98,11 @@ on:
         required: false
         type: string
         default: "[]"
+      build-wheels:
+        description: "Whether to build cross-platform wheels via maturin"
+        required: false
+        type: string
+        default: "false"
       force-run:
         description: "Force execution even if already successful"
         required: false
@@ -194,7 +204,7 @@ jobs:
           fi
 
       - name: Build package
-        if: steps.cache.outputs.should-run == 'true' && (steps.semantic-release.outputs.new_release_published == 'true' || inputs.release-dry-run == 'true')
+        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && (steps.semantic-release.outputs.new_release_published == 'true' || inputs.release-dry-run == 'true')
         working-directory: ${{ inputs.package-path }}
         run: |
           nix develop --accept-flake-config -c uv build
@@ -204,14 +214,14 @@ jobs:
         if: ${{ inputs.debug-enabled }}
 
       - name: Upload artifacts
-        if: steps.cache.outputs.should-run == 'true' && (steps.semantic-release.outputs.new_release_published == 'true' || inputs.release-dry-run == 'true')
+        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && (steps.semantic-release.outputs.new_release_published == 'true' || inputs.release-dry-run == 'true')
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: ${{ steps.set-outputs.outputs.artifact-name }}
           path: ${{ inputs.package-path }}/dist
 
       - name: Publish to PyPI
-        if: steps.cache.outputs.should-run == 'true' && steps.semantic-release.outputs.new_release_published == 'true' && inputs.release-dry-run != 'true'
+        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && steps.semantic-release.outputs.new_release_published == 'true' && inputs.release-dry-run != 'true'
         continue-on-error: true
         run: nix develop --accept-flake-config -c uv publish
         env:
@@ -240,3 +250,28 @@ jobs:
       push: true
       tags: ""
     secrets: inherit
+
+  build-wheels:
+    needs: [release]
+    if: ${{ inputs.build-wheels == 'true' && needs.release.outputs.released == 'true' && inputs.release-dry-run != 'true' }}
+    uses: ./.github/workflows/wheel-build.yaml
+    with:
+      checkout-ref: ${{ needs.release.outputs.tag }}
+
+  publish-wheels:
+    name: Publish wheels to PyPI
+    needs: [release, build-wheels]
+    if: ${{ needs.release.outputs.released == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment: pypi
+    steps:
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+      - name: Publish to PyPI
+        run: uv publish --trusted-publishing always dist/*
