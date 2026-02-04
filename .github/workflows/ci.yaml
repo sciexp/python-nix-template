@@ -347,7 +347,7 @@ jobs:
         uses: ./.github/actions/cached-ci-job
         with:
           check-name: nix-${{ matrix.category }}
-          hash-sources: '**/*.nix flake.lock justfile packages/*/pyproject.toml packages/*/uv.lock packages/*/crates/Cargo.lock'
+          hash-sources: '**/*.nix flake.lock justfile packages/*/pyproject.toml packages/*/uv.lock packages/*/Cargo.lock'
           force-run: ${{ needs.set-variables.outputs.force_ci }}
 
       - name: Setup Nix

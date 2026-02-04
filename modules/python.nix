@@ -57,6 +57,7 @@
         import ../nix/packages/pnt-cli {
           inherit pkgs lib python;
           crane = inputs.crane;
+          inherit (inputs) crane-maturin;
         };
 
       # Compose per-package uv2nix overlays with shared overrides.

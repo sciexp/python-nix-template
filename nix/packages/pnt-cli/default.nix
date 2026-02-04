@@ -1,27 +1,47 @@
-# Python + Rust composition for pnt-cli.
+# pnt-cli: PyO3/maturin package with crane-maturin test suite.
 #
-# Imports rust.nix for crane derivations, then creates a Python package
-# overlay that injects vendored cargo deps into the uv2nix-generated pnt-cli
-# derivation. Crane's cargoArtifacts caching applies to the Rust-only check
-# derivations (clippy, nextest); the maturin wheel build compiles Rust from
-# source within the pyproject.nix derivation using vendored dependencies.
+# crane-maturin's buildMaturinPackage provides the standalone build and
+# comprehensive passthru.tests (pytest, clippy, doc, fmt, cargo test).
+# The overlay augments the uv2nix base with Rust build support, preserving
+# pyproject-nix hooks and resolver metadata. crane-maturin's vendored
+# cargo dependencies are injected via preBuild.
 {
   pkgs,
   lib,
   crane,
+  crane-maturin,
   python,
 }:
 let
-  rustPkgs = import ./rust.nix {
-    inherit
-      pkgs
-      lib
-      crane
-      python
-      ;
+  cmLib = crane-maturin.mkLib crane pkgs;
+
+  pyFilter = path: _type: builtins.match ".*\\.pyi?$|.*/pyproject\\.toml$" path != null;
+
+  testFilter = path: _type: builtins.match ".*/tests(/.*\\.py)?$" path != null;
+
+  sourceFilter = path: type: (pyFilter path type) || (cmLib.filterCargoSources path type);
+
+  src = lib.cleanSourceWith {
+    src = cmLib.path ../../../packages/pnt-cli;
+    filter = sourceFilter;
+  };
+
+  testSrc = lib.cleanSourceWith {
+    src = cmLib.path ../../../packages/pnt-cli;
+    filter = path: type: (sourceFilter path type) || (testFilter path type);
+  };
+
+  # Standalone crane-maturin build for test suite and artifact caching.
+  # The overlay does not replace the uv2nix base with this derivation —
+  # instead it augments the base and extracts passthru.tests for checks.
+  cmPackage = cmLib.buildMaturinPackage {
+    pname = "pnt-cli";
+    inherit src testSrc python;
   };
 in
 {
+  # Augment uv2nix base with Rust build support, keeping pyproject-nix hooks
+  # (pythonOutputDistPhase, resolveVirtualEnv metadata) intact.
   overlay = final: prev: {
     pnt-cli = prev.pnt-cli.overrideAttrs (old: {
       nativeBuildInputs =
@@ -35,20 +55,29 @@ in
           maturin = [ ];
         };
 
-      # Configure cargo to use crane's vendored dependencies for offline builds.
-      # Crane's vendorCargoDeps output includes a config.toml with source
-      # replacement directives pointing to the vendored crate store paths.
       preBuild = ''
         mkdir -p .cargo
-        cp ${rustPkgs.cargoVendorDir}/config.toml .cargo/config.toml
+        cp ${cmPackage.cargoVendorDir}/config.toml .cargo/config.toml
       '';
 
       env.PYO3_PYTHON = python.interpreter;
+
+      passthru = (old.passthru or { }) // {
+        inherit (cmPackage.passthru) crate tests withCoverage;
+      };
     });
   };
 
-  checks = {
-    pnt-cli-clippy = rustPkgs.clippy;
-    pnt-cli-nextest = rustPkgs.nextest;
-  };
+  checks =
+    lib.mapAttrs'
+      (name: drv: {
+        name = "pnt-cli-${name}";
+        value = drv;
+      })
+      (
+        builtins.removeAttrs cmPackage.passthru.tests [
+          "test-coverage"
+          "pytest-coverage"
+        ]
+      );
 }
