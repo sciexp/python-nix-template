@@ -103,6 +103,7 @@ jobs:
       has_docs: ${{ steps.check-docs.outputs.has_docs }}
       packages: ${{ steps.discover-packages.outputs.packages }}
       force_ci: ${{ steps.set-variables.outputs.force_ci }}
+      sanitized_branch: ${{ steps.set-variables.outputs.sanitized_branch }}
 
     steps:
       - name: Checkout for discovery
@@ -169,6 +170,10 @@ jobs:
           echo "checkout_ref=$CHECKOUT_REF" >> $GITHUB_OUTPUT
           echo "checkout_rev=$CHECKOUT_REV" >> $GITHUB_OUTPUT
           echo "force_ci=$FORCE_CI" >> $GITHUB_OUTPUT
+
+          # Sanitize branch name for Cloudflare preview alias (valid subdomain component)
+          SANITIZED_BRANCH=$(echo "$CHECKOUT_REF" | tr '/' '-' | tr -c 'a-zA-Z0-9-' '-' | sed 's/--*/-/g; s/^-//; s/-$//' | cut -c1-40)
+          echo "sanitized_branch=$SANITIZED_BRANCH" >> $GITHUB_OUTPUT
 
       - name: Discover packages
         id: discover-packages
@@ -444,7 +449,17 @@ jobs:
       - name: Preview version for ${{ matrix.package.name }}
         if: steps.cache.outputs.should-run == 'true'
         run: |
-          nix develop --accept-flake-config -c just preview-version main ${{ matrix.package.path }}
+          echo "::group::Preview semantic-release version"
+          OUTPUT=$(nix develop --accept-flake-config -c just preview-version main ${{ matrix.package.path }} 2>&1 | tee /dev/stderr)
+          echo "::endgroup::"
+
+          # Extract and annotate the next version (grep returns 1 on no match, so suppress with || true)
+          VERSION=$(echo "$OUTPUT" | grep "next version:" | awk '{print $3}') || true
+          if [ -n "$VERSION" ]; then
+            echo "::notice title=Next Version (${{ matrix.package.name }})::$VERSION"
+          else
+            echo "::notice title=Next Version (${{ matrix.package.name }})::No release pending"
+          fi
 
       - name: Create job result marker
         if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
@@ -465,17 +480,22 @@ jobs:
   # ---------------------------------------------------------------------------
   preview-docs:
     needs: set-variables
-    if: ${{ needs.set-variables.outputs.has_docs == 'true' && needs.set-variables.outputs.skip_ci != 'true' && ( contains(github.event.pull_request.labels.*.name, 'docs-preview') || (github.event_name == 'workflow_dispatch' && inputs.run_docs_preview) ) }}
+    if: |
+      !cancelled() &&
+      github.event_name == 'pull_request'
     uses: ./.github/workflows/deploy-docs.yaml
     permissions:
       contents: read
       deployments: write
     concurrency:
-      group: docs-preview-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}-${{ github.sha }}
+      group: docs-preview-${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.sha }}
       cancel-in-progress: true
     with:
       debug_enabled: ${{ needs.set-variables.outputs.debug }}
-      branch: ${{ needs.set-variables.outputs.checkout_ref }}
+      branch: ${{ github.head_ref }}
+      sanitized_branch: ${{ needs.set-variables.outputs.sanitized_branch }}
+      environment: preview
+      force_run: ${{ needs.set-variables.outputs.force_ci }}
     secrets: inherit
 
   # ---------------------------------------------------------------------------
@@ -558,6 +578,8 @@ jobs:
     with:
       debug_enabled: "false"
       branch: ${{ github.ref_name }}
+      environment: production
+      force_run: ${{ needs.set-variables.outputs.force_ci }}
     secrets: inherit
 
   # ---------------------------------------------------------------------------
