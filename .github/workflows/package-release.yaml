@@ -180,7 +180,6 @@ jobs:
           semantic_version: 24
           extra_plugins: |
             @semantic-release/changelog
-            @semantic-release/git
             semantic-release-major-tag
             semantic-release-monorepo
             conventional-changelog-conventionalcommits
