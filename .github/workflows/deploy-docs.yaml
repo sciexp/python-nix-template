@@ -16,7 +16,6 @@ on:
     inputs:
       debug_enabled:
         description: "Run with tmate.io debugging enabled"
-        required: true
         type: string
         default: "false"
       branch:
