@@ -26,6 +26,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     crane.url = "github:ipetkov/crane";
+    crane-maturin = {
+      url = "github:vlaci/crane-maturin";
+      inputs.flake-parts.follows = "flake-parts";
+    };
 
     import-tree.url = "github:vic/import-tree";
 
