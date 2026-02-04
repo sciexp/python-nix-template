@@ -7,46 +7,36 @@ inputs:
       nix installation strategy:
       - 'full' (default): space reclamation + magic-nix-cache + cachix for builds
       - 'quick': minimal install for simple tasks (no space reclamation, no caching overhead)
-    type: string
     required: false
     default: full
   system:
     description: nix system to configure (e.g., x86_64-linux, aarch64-darwin)
-    type: string
     required: true
   sandbox:
     description: enable nix sandbox builds
-    type: string
     default: "true"
   extra-conf:
     description: additional nix configuration lines (appended to generated config)
-    type: string
     required: false
     default: ""
   enable-cachix:
     description: enable cachix binary cache
-    type: boolean
     default: false
   cachix-name:
     description: cachix cache name
-    type: string
     required: false
   cachix-auth-token:
     description: cachix auth token
-    type: string
     required: false
   cachix-skip-push:
     description: skip pushing to cachix (read-only)
-    type: boolean
     default: false
   extra-pull-names:
     description: comma-separated list of additional cachix caches to pull from
-    type: string
     required: false
     default: ""
   nix-version:
     description: nix version to install (e.g., 2.32.4, 2.31.2)
-    type: string
     required: false
     default: "2.32.4"
   hatchet:
@@ -56,21 +46,18 @@ inputs:
       - 'carve' (level 1): ~85GB, preserves Docker
       - 'cleave' (level 2, default): ~115GB, removes Docker
       - 'rampage' (level 3): ~130GB, removes Docker
-    type: string
     required: false
     default: "cleave"
   root-safe-haven:
     description: |
       Space in MB to reserve on root filesystem for non-Nix usage (e.g., Docker overlay).
       Only effective with carve/cleave/rampage protocols that expand from root.
-    type: string
     required: false
     default: "2048"
   mnt-safe-haven:
     description: |
       Space in MB to reserve on /mnt filesystem. On single-disk runners where /mnt
       is on root, this effectively reserves space for Docker overlay storage.
-    type: string
     required: false
     default: "4096"
 
