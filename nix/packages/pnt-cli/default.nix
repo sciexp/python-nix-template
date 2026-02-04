@@ -2,18 +2,20 @@
 #
 # crane-maturin's buildMaturinPackage provides the standalone build and
 # comprehensive passthru.tests (pytest, clippy, doc, fmt, cargo test).
-# The overlay augments the uv2nix base with Rust build support, preserving
-# pyproject-nix hooks and resolver metadata. crane-maturin's vendored
-# cargo dependencies are injected via preBuild.
+# The overlay uses pyproject-nix's nixpkgsPrebuilt to install from
+# crane-maturin's output, eliminating duplicate Rust compilation while
+# preserving uv2nix resolver metadata (passthru.dependencies) from prev.
 {
   pkgs,
   lib,
   crane,
   crane-maturin,
+  pyproject-nix,
   python,
 }:
 let
   cmLib = crane-maturin.mkLib crane pkgs;
+  hacks = pkgs.callPackage pyproject-nix.build.hacks { };
 
   pyFilter = path: _type: builtins.match ".*\\.pyi?$|.*/pyproject\\.toml$" path != null;
 
@@ -31,41 +33,33 @@ let
     filter = path: type: (sourceFilter path type) || (testFilter path type);
   };
 
-  # Standalone crane-maturin build for test suite and artifact caching.
-  # The overlay does not replace the uv2nix base with this derivation —
-  # instead it augments the base and extracts passthru.tests for checks.
+  # Standalone crane-maturin build for test suite and Python package output.
+  # nixpkgsPrebuilt installs from this derivation, avoiding duplicate Rust
+  # compilation in the uv2nix overlay. passthru.tests provides checks.
   cmPackage = cmLib.buildMaturinPackage {
     pname = "pnt-cli";
     inherit src testSrc python;
   };
 in
 {
-  # Augment uv2nix base with Rust build support, keeping pyproject-nix hooks
-  # (pythonOutputDistPhase, resolveVirtualEnv metadata) intact.
+  # Install crane-maturin's pre-built output into the uv2nix package set via
+  # nixpkgsPrebuilt. This preserves uv2nix's passthru.dependencies (from prev)
+  # for resolveVirtualEnv while using crane-maturin's compiled artifacts.
+  #
+  # Note on passthru key spaces: uv2nix owns dependencies, optional-dependencies,
+  # and dependency-groups. crane-maturin contributes crate, tests, withCoverage.
+  # If either upstream adds keys that collide, the shallow merge will clobber.
   overlay = final: prev: {
-    pnt-cli = prev.pnt-cli.overrideAttrs (old: {
-      nativeBuildInputs =
-        (old.nativeBuildInputs or [ ])
-        ++ [
-          pkgs.cargo
-          pkgs.rustc
-          python
-        ]
-        ++ final.resolveBuildSystem {
-          maturin = [ ];
-        };
-
-      preBuild = ''
-        mkdir -p .cargo
-        cp ${cmPackage.cargoVendorDir}/config.toml .cargo/config.toml
-      '';
-
-      env.PYO3_PYTHON = python.interpreter;
-
-      passthru = (old.passthru or { }) // {
-        inherit (cmPackage.passthru) crate tests withCoverage;
-      };
-    });
+    pnt-cli =
+      (hacks.nixpkgsPrebuilt {
+        from = cmPackage;
+        prev = prev.pnt-cli;
+      }).overrideAttrs
+        (old: {
+          passthru = (old.passthru or { }) // {
+            inherit (cmPackage.passthru) crate tests withCoverage;
+          };
+        });
   };
 
   checks =

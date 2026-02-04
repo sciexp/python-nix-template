@@ -7,6 +7,9 @@ version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 
+[workspace.metadata.crane]
+name = "pnt-cli"
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 rust_2018_idioms = { level = "warn", priority = -1 }
