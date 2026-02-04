@@ -62,6 +62,8 @@ jobs:
     steps:
       - name: Set action variables
         id: set-variables
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           DEBUG="false"
           SKIP_CI="false"
@@ -77,7 +79,7 @@ jobs:
             if ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }}; then
               DEBUG="true"
             fi
-            CHECKOUT_REF="${{ github.event.pull_request.head.ref }}"
+            CHECKOUT_REF="$PR_HEAD_REF"
             CHECKOUT_REV="${{ github.event.pull_request.head.sha }}"
           else
             CHECKOUT_REF="${{ github.ref_name }}"
@@ -89,10 +91,12 @@ jobs:
           echo "CHECKOUT_REF=$CHECKOUT_REF"
           echo "CHECKOUT_REV=$CHECKOUT_REV"
 
-          echo "debug=$DEBUG" >> $GITHUB_OUTPUT
-          echo "skip_ci=$SKIP_CI" >> $GITHUB_OUTPUT
-          echo "checkout_ref=$CHECKOUT_REF" >> $GITHUB_OUTPUT
-          echo "checkout_rev=$CHECKOUT_REV" >> $GITHUB_OUTPUT
+          {
+            echo "debug=$DEBUG"
+            echo "skip_ci=$SKIP_CI"
+            echo "checkout_ref=$CHECKOUT_REF"
+            echo "checkout_rev=$CHECKOUT_REV"
+          } >> "$GITHUB_OUTPUT"
 
   test-omnix-template:
     needs: [set-variables]
