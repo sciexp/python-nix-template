@@ -530,6 +530,11 @@ jobs:
             path: packages/pnt-functional
             build-images: false
             images: "[]"
+          - name: pnt-cli
+            path: packages/pnt-cli
+            build-images: false
+            images: "[]"
+            build-wheels: true
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: ${{ matrix.package.path }}
@@ -539,6 +544,7 @@ jobs:
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
       build-images: ${{ matrix.package.build-images }}
       images-to-build: ${{ matrix.package.images }}
+      build-wheels: ${{ matrix.package.build-wheels || 'false' }}
     secrets: inherit
 
   # ---------------------------------------------------------------------------
