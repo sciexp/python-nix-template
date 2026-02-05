@@ -48,8 +48,15 @@
         ❯ direnv allow
         ```
 
-        You should then be able to run `pytest` to verify the project is working.
-        See the README for more information.
+        Each package maintains its own lock file. Generate them with:
+
+        ```bash
+        for pkg in packages/*/; do [ -f "$pkg/pyproject.toml" ] && (cd "$pkg" && nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock); done
+        git add .
+        ```
+
+        You should then be able to run `just test-all` inside the nix devshell
+        to verify all packages are working. See the README for more information.
       '';
     };
 
