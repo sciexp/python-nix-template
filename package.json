@@ -14,7 +14,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "yarn@4.6.0",
+  "packageManager": "bun@1.3.4",
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/github": "^11.0.1",
@@ -25,6 +25,7 @@
     "semantic-release-monorepo": "^8.0.2"
   },
   "scripts": {
+    "reinstall": "rm -rf node_modules packages/*/node_modules && bun install",
     "test-release": "semantic-release --dry-run --no-ci"
   },
   "release": {
