@@ -758,8 +758,8 @@ update-version package-name version:
         fi
     fi
 
-    echo "Running uv lock..."
-    uv lock
+    echo "Running uv lock in $PACKAGE_PATH..."
+    uv lock --directory "$PACKAGE_PATH"
     echo "Version update complete for {{package-name}}"
 
 ## Docs
