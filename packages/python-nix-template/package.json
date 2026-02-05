@@ -14,7 +14,7 @@
   },
   "license": "MIT",
   "name": "python-nix-template",
-  "packageManager": "yarn@4.6.0",
+  "packageManager": "bun@1.3.4",
   "private": true,
   "release": {
     "branches": [
