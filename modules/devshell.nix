@@ -42,7 +42,6 @@
             just
             pixi
             quarto
-            teller
             uv
             bun
             nodejs
