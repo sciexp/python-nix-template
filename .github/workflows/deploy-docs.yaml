@@ -125,4 +125,4 @@ jobs:
         run: |
           WRANGLER_VERSION_ID=$(echo "$WRANGLER_OUTPUT" | grep -oP 'Version ID: \K[a-f0-9-]+')
           echo "WRANGLER_VERSION_ID=$WRANGLER_VERSION_ID"
-          echo "pnpm --package=wrangler -c dlx wrangler versions deploy ${WRANGLER_VERSION_ID}@100 --yes --dry-run"
+          echo "bunx wrangler versions deploy ${WRANGLER_VERSION_ID}@100 --yes --dry-run"
