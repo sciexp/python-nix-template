@@ -57,6 +57,24 @@
 
         You should then be able to run `just test-all` inside the nix devshell
         to verify all packages are working. See the README for more information.
+
+        ┌─────────────────────────────────────────────────────────────────────┐
+        │  ❄️  Nix binary cache notice                                       │
+        │                                                                     │
+        │  You may see a warning about an HTTP 401 error from cachix.org.    │
+        │  This is expected and harmless — the template's binary cache name  │
+        │  was replaced with your project name during instantiation, and     │
+        │  that cache does not exist yet.                                     │
+        │                                                                     │
+        │  Nix will skip the missing cache and build from source. To set up  │
+        │  your own binary cache later, see:                                  │
+        │                                                                     │
+        │    https://docs.cachix.org (hosted)                                │
+        │    https://nix.dev/guides/recipes/sharing-dependencies (self-hosted)│
+        │                                                                     │
+        │  Update extra-substituters and extra-trusted-public-keys in your   │
+        │  flake.nix once your cache is ready.                               │
+        └─────────────────────────────────────────────────────────────────────┘
       '';
     };
 
