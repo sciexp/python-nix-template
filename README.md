@@ -46,8 +46,9 @@ cd "$PROJECT_DIRECTORY" && \
 git init && \
 git commit --allow-empty -m "initial commit (empty)" && \
 git add . && \
-nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock && \
-nix develop --accept-flake-config -c pytest
+for pkg in packages/*/; do [ -f "$pkg/pyproject.toml" ] && (cd "$pkg" && nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock); done && \
+git add . && \
+nix develop --accept-flake-config -c just test-all
 ```
 
 </details>
@@ -77,14 +78,15 @@ PARAMS=$(cat <<EOF
 }
 EOF
 ) && \
-nix --accept-flake-config run github:juspay/omnix/1.0.3 -- init github:sciexp/python-nix-template/main -o "$PROJECT_DIRECTORY" --non-interactive --params "$PARAMS" && \
+nix --accept-flake-config run github:juspay/omnix/v1.3.2 -- init github:sciexp/python-nix-template/main -o "$PROJECT_DIRECTORY" --non-interactive --params "$PARAMS" && \
 (command -v direnv >/dev/null 2>&1 && direnv revoke "./$PROJECT_DIRECTORY/" || true) && \
 cd "$PROJECT_DIRECTORY" && \
 git init && \
 git commit --allow-empty -m "initial commit (empty)" && \
-nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock && \
 git add . && \
-nix develop --accept-flake-config -c pytest
+for pkg in packages/*/; do [ -f "$pkg/pyproject.toml" ] && (cd "$pkg" && nix run github:NixOS/nixpkgs/nixos-unstable#uv -- lock); done && \
+git add . && \
+nix develop --accept-flake-config -c just test-all
 ```
 
 </details>
@@ -135,18 +137,22 @@ provides an alternative to using [GNU Make](https://www.gnu.org/software/make/)
 as a task runner. See the [task runner](#task-runner) section for a listing of
 development commands.
 
-You should now be able to run `pytest` or `just test` to confirm the package
-tests pass in the devshell environment.
+You should now be able to run `just test-all` to confirm all package tests pass
+in the devshell environment, or `just test <package-name>` to test a specific
+package.
 
-> [!WARNING]  
-> uv recognizes all the packages in the workspace monorepo layout but pixi
-> treats each package separately. See [#22](https://github.com/sciexp/python-nix-template/issues/22).
+> [!NOTE]
+> This template uses an independent-lock pattern where each package under
+> `packages/` maintains its own `pyproject.toml` and `uv.lock`. There is no root
+> `pyproject.toml` or uv workspace. After instantiation, lock each package
+> individually:
+>
+> ```sh
+> for pkg in packages/*/; do [ -f "$pkg/pyproject.toml" ] && (cd "$pkg" && uv lock); done
+> ```
 
-If you choose to modify the monorepo packages such as
-[packages/pnt-functional](./packages/pnt-functional) then you will need to run
-`just uv-lock` to update the [pyproject.toml](./pyproject.toml) and
-[uv.lock](./uv.lock) files to include the package and its tests in the
-workspace.
+If you choose to modify packages or add dependencies, run `just uv-lock
+<package-name>` to update the lock file for that specific package.
 
 #### python virtualenv
 
