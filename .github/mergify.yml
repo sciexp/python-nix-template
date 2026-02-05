@@ -1,3 +1,56 @@
+shared:
+  base_conditions: &base_conditions
+    - label!=work-in-progress
+    - -draft
+    - -conflict
+
+  required_checks: &required_checks
+    - check-success=secrets-scan
+    - check-success=set-variables
+    - check-success=check-fast-forward
+    - or:
+        - check-success=flake-validation
+        - check-skipped=flake-validation
+    - or:
+        - check-success=bootstrap-verification
+        - check-skipped=bootstrap-verification
+    - or:
+        - check-success=nix (x86_64-linux, ubuntu-latest, packages)
+        - check-skipped=nix (x86_64-linux, ubuntu-latest, packages)
+    - or:
+        - check-success=nix (x86_64-linux, ubuntu-latest, checks)
+        - check-skipped=nix (x86_64-linux, ubuntu-latest, checks)
+    - or:
+        - check-success=nix (x86_64-linux, ubuntu-latest, devshells)
+        - check-skipped=nix (x86_64-linux, ubuntu-latest, devshells)
+    - or:
+        - "check-success=test-python (python-nix-template, packages/python-nix-template) / test"
+        - "check-skipped=test-python (python-nix-template, packages/python-nix-template) / test"
+    - or:
+        - "check-success=test-python (pnt-functional, packages/pnt-functional) / test"
+        - "check-skipped=test-python (pnt-functional, packages/pnt-functional) / test"
+    - or:
+        - "check-success=test-python (pnt-cli, packages/pnt-cli) / test"
+        - "check-skipped=test-python (pnt-cli, packages/pnt-cli) / test"
+    - or:
+        - check-success=test-omnix-template
+        - check-skipped=test-omnix-template
+
+  human_author_conditions: &human_author_conditions
+    - author!=renovate[bot]
+    - author!=mergify[bot]
+    - author!=github-actions[bot]
+    - "author!=sciexp-flake-updater[bot]"
+    - label!=flake-update
+
+  bot_author_conditions: &bot_author_conditions
+    - or:
+        - author=renovate[bot]
+        - author=mergify[bot]
+        - author=github-actions[bot]
+        - "author=sciexp-flake-updater[bot]"
+        - label=flake-update
+
 pull_request_rules:
   - name: self-assign PRs
     conditions:
@@ -8,18 +61,62 @@ pull_request_rules:
       assign:
         add_users:
           - "{{ author }}"
-  - name: automatic merge when not WIP, CI passes, and at least 1 approving review
+
+  # Optional: uncomment to auto-approve bot PRs (currently requires manual approval)
+  # - name: auto-approve bot PRs
+  #   conditions:
+  #     - or:
+  #       - author=renovate[bot]
+  #       - author=mergify[bot]
+  #       - author=github-actions[bot]
+  #       - author=sciexp-flake-updater[bot]
+  #   actions:
+  #     review:
+  #       type: APPROVE
+  #       message: Automated approval for bot PR
+
+  - name: queue human PRs
     conditions:
       - "#approved-reviews-by>=1"
-      - check-success=gitguardian
-      - check-success=nixci
-      - base=main
-      - label!=work-in-progress
+      - and: *base_conditions
+      - and: *human_author_conditions
+      - and: *required_checks
     actions:
       queue:
         name: default
+
+  - name: queue bot PRs
+    conditions:
+      - "#approved-reviews-by>=1"
+      - and: *base_conditions
+      - and: *bot_author_conditions
+      - and: *required_checks
+    actions:
+      queue:
+        name: bot-updates
+
 queue_rules:
+  # Human PRs: rebase merge preserves original commits with linear history
   - name: default
-    merge_method: fast-forward
+    merge_method: rebase
     update_method: rebase
     update_bot_account: cameronraysmith
+    batch_size: 1
+    checks_timeout: 1 h
+    queue_conditions:
+      - -conflict
+    merge_conditions:
+      - and: *required_checks
+
+  # Bot PRs: rebase merge with batching for CI efficiency
+  - name: bot-updates
+    merge_method: rebase
+    update_method: rebase
+    update_bot_account: cameronraysmith
+    batch_size: 10
+    batch_max_wait_time: 5 min
+    checks_timeout: 1 h
+    queue_conditions:
+      - -conflict
+    merge_conditions:
+      - and: *required_checks
