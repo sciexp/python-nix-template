@@ -68,7 +68,7 @@ if [ "$CURRENT_BRANCH" == "$TARGET_BRANCH" ]; then
   if [ -n "$PACKAGE_PATH" ]; then
     cd "$REPO_ROOT/$PACKAGE_PATH"
   fi
-  exec yarn run test-release
+  exec bun run test-release
 fi
 
 # Display what we're doing
@@ -147,7 +147,7 @@ cd "$WORKTREE_DIR"
 
 # Install dependencies in worktree
 echo -e "${BLUE}installing dependencies in worktree...${NC}"
-yarn install --immutable 2>/dev/null || yarn install
+bun install --silent
 
 # Navigate to package if specified
 if [ -n "$PACKAGE_PATH" ]; then
@@ -168,10 +168,10 @@ PLUGINS="@semantic-release/commit-analyzer,@semantic-release/release-notes-gener
 
 if [ -n "$PACKAGE_PATH" ]; then
   # For monorepo packages, check if package.json has specific plugins configured
-  OUTPUT=$(GITHUB_REF="refs/heads/$TARGET_BRANCH" yarn run semantic-release --dry-run --no-ci --branches "$TARGET_BRANCH" --plugins "$PLUGINS" 2>&1 || true)
+  OUTPUT=$(GITHUB_REF="refs/heads/$TARGET_BRANCH" bun run semantic-release --dry-run --no-ci --branches "$TARGET_BRANCH" --plugins "$PLUGINS" 2>&1 || true)
 else
   # For root package
-  OUTPUT=$(GITHUB_REF="refs/heads/$TARGET_BRANCH" yarn run semantic-release --dry-run --no-ci --branches "$TARGET_BRANCH" --plugins "$PLUGINS" 2>&1 || true)
+  OUTPUT=$(GITHUB_REF="refs/heads/$TARGET_BRANCH" bun run semantic-release --dry-run --no-ci --branches "$TARGET_BRANCH" --plugins "$PLUGINS" 2>&1 || true)
 fi
 
 # Display semantic-release summary (filter out verbose plugin repetition)
