@@ -271,7 +271,7 @@ uv-type                                     # Run type checking in uv virtual en
 venv                                        # Sync and enter uv virtual environment
 
 [secrets]
-check-secrets                               # Check secrets are available in teller shell.
+check-secrets                               # Check secrets are available in sops environment.
 create-and-populate-separate-secrets path   # Complete process: Create and populate separate secrets for each line in the dotenv file
 create-and-populate-single-secret name path # Complete process: Create a secret and populate it with the entire contents of a dotenv file
 create-secret name                          # Create a secret with the given name
