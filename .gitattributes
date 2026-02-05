@@ -1,4 +1,7 @@
 Makefile linguist-detectable=false
+justfile linguist-detectable=false
+scripts/** linguist-detectable=false
+.envrc linguist-detectable=false
 flake.lock linguist-generated=true
 uv.lock linguist-generated=true
 pixi.lock linguist-generated=true
