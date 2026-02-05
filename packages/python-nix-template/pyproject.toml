@@ -7,7 +7,7 @@ description = "Add your description here"
 name = "python-nix-template"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-version = "0.1.1"
+version = "0.2.0"
 
 [project.scripts]
 python-nix-template = "python_nix_template:main"
@@ -83,7 +83,7 @@ types = "pyright src/"
 
 [tool.pixi.package]
 name    = "python-nix-template"
-version = "0.1.1"
+version = "0.2.0"
 
 [tool.pixi.package.run-dependencies]
 
