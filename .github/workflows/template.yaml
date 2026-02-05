@@ -174,7 +174,7 @@ jobs:
           git add .
 
           nix flake check --accept-flake-config
-          nix develop --accept-flake-config -c python -c "import pnt_mono"
+          nix develop --accept-flake-config -c just test-all
 
       - name: Test single-package template initialization
         if: steps.cache.outputs.should-run == 'true'
@@ -214,7 +214,7 @@ jobs:
           git add .
 
           nix flake check --accept-flake-config
-          nix develop --accept-flake-config -c python -c "import pnt_new"
+          nix develop --accept-flake-config -c just test-all
 
       - name: Create job result marker
         if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
