@@ -15,6 +15,8 @@
       ...
     }:
     let
+      hasCli = builtins.pathExists ../packages/pnt-cli;
+
       # Merge deps from all independent package workspaces, unioning extras lists
       # for shared dependency names rather than silently dropping via //
       allDeps = lib.foldlAttrs (
@@ -38,26 +40,33 @@
         pkgs.mkShell {
           inherit name;
           inputsFrom = [ config.pre-commit.devShell ];
-          packages = with pkgs; [
-            just
-            pixi
-            quarto
-            uv
-            bun
-            nodejs
-            virtualenv
-            age
-            gitleaks
-            sops
-            ssh-to-age
-            config.packages.set-git-env
-            # Rust tooling for pnt-cli pyo3 extension
-            cargo
-            rustc
-            clippy
-            cargo-nextest
-            maturin
-          ];
+          packages =
+            with pkgs;
+            [
+              just
+              pixi
+              quarto
+              uv
+              bun
+              nodejs
+              virtualenv
+              age
+              gitleaks
+              sops
+              ssh-to-age
+              config.packages.set-git-env
+            ]
+            ++ lib.optionals hasCli (
+              with pkgs;
+              [
+                # Rust tooling for pnt-cli pyo3 extension
+                cargo
+                rustc
+                clippy
+                cargo-nextest
+                maturin
+              ]
+            );
 
           env = {
             UV_NO_SYNC = "1";
