@@ -99,6 +99,16 @@
           value = false;
         }
         {
+          name = "pyo3-package";
+          description = "Include the pyo3/Rust extension module example package";
+          paths = [
+            "packages/pnt-cli"
+            "nix/packages/pnt-cli"
+            "rust-toolchain.toml"
+          ];
+          value = false;
+        }
+        {
           name = "git-org";
           description = "GitHub organization or user name";
           placeholder = "sciexp";
