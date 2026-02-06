@@ -1,0 +1,4 @@
+{
+  "build-images": true,
+  "images": ["python-nix-template", "python-nix-template-dev"]
+}
