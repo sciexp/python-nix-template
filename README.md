@@ -234,64 +234,124 @@ List available commands by running `just` alone.
 <summary>just recipes</summary>
 
 ```sh
-default                                     # List all recipes
+Available recipes:
+    default                                            # List all recipes
 
-[CI/CD]
-gcloud-context                              # Set gcloud context
-ghsecrets repo="sciexp/python-nix-template" # Update github secrets for repo from environment variables
-ghvars repo="sciexp/python-nix-template"    # Update github vars for repo from environment variables
-pre-commit                                  # Run pre-commit hooks (see pre-commit.nix and note the yaml is git-ignored)
+    [CI/CD]
+    ci-build-category system category                  # Build a category of nix flake outputs for CI matrix
+    ci-check package                                   # Run all checks for a package (lint, typecheck, test)
+    ci-lint package                                    # Run linting for a package
+    ci-sync package                                    # Sync dependencies for a package via uv
+    ci-test package                                    # Run tests for a package
+    ci-typecheck package                               # Run type checking for a package
+    gcloud-context                                     # Set gcloud context
+    gh-docs-build branch=`git branch --show-current` debug="false" # Trigger docs build job remotely on GitHub (requires workflow on main)
+    gh-docs-cancel run_id=""                           # Cancel a running docs workflow
+    gh-docs-logs run_id="" job=""                       # View logs for a specific docs workflow run
+    gh-docs-rerun run_id="" failed_only="true"         # Re-run a failed docs workflow
+    gh-docs-watch run_id=""                            # Watch a specific docs workflow run
+    gh-workflow-status workflow="deploy-docs.yaml" branch=`git branch --show-current` limit="5" # View recent workflow runs status
+    ghsecrets repo="sciexp/python-nix-template"        # Update github secrets for repo from environment variables
+    ghvars repo="sciexp/python-nix-template"           # Update github vars for repo from environment variables
+    list-packages-json                                 # Discover packages as JSON array for CI matrix
+    list-workflows                                     # List available workflows and associated jobs using act
+    pre-commit                                         # Run pre-commit hooks (see pre-commit.nix and note the yaml is git-ignored)
+    scan-secrets                                       # Scan repository for hardcoded secrets
+    scan-staged                                        # Scan staged files for hardcoded secrets (pre-commit)
+    test-docs-build branch=`git branch --show-current` # Test build-docs job locally with act
+    test-docs-deploy branch=`git branch --show-current` # Test full deploy-docs workflow locally with act
 
-[conda package]
-conda-build                                 # Package commands (conda)
-conda-check                                 # Run all checks in conda environment (lint, type, test)
-conda-env                                   # Create and sync conda environment with pixi
-conda-lint                                  # Run linting in conda environment with pixi
-conda-lint-fix                              # Run linting and fix errors in conda environment with pixi
-conda-lock                                  # Update conda environment
-conda-test                                  # Run tests in conda environment with pixi
-conda-type                                  # Run type checking in conda environment with pixi
-pixi-lock                                   # Update pixi lockfile
+    [conda]
+    conda-build package="python-nix-template"          # Package commands (conda)
+    conda-check package="python-nix-template"          # Run all checks in conda environment (lint, type, test)
+    conda-env package="python-nix-template"            # Create and sync conda environment with pixi
+    conda-lint package="python-nix-template"           # Run linting in conda environment with pixi
+    conda-lint-fix package="python-nix-template"       # Run linting and fix errors in conda environment with pixi
+    conda-lock package="python-nix-template"           # Update conda environment
+    conda-test package="python-nix-template"           # Run tests in conda environment with pixi
+    conda-type package="python-nix-template"           # Run type checking in conda environment with pixi
+    pixi-lock package="python-nix-template"            # Update pixi lockfile
 
-[nix]
-ci                                          # Run CI checks locally with `om ci`
-container-build                             # Build production container image
-container-build-dev                         # Build development container image
-container-run                               # Run production container with port 8888 exposed
-container-run-dev                           # Run development container with port 8888 exposed
-dev                                         # Enter the Nix development shell
-flake-check                                 # Validate the Nix flake configuration
-flake-update                                # Update all flake inputs to their latest versions
+    [containers]
+    container-build-production CONTAINER="pnt-cli"     # Build production container image
+    container-load-production CONTAINER="pnt-cli"      # Load production container to local Docker daemon
+    container-matrix                                   # Display container CI matrix
+    container-push-production CONTAINER="pnt-cli" VERSION="0.0.0" +TAGS="" # Push production container manifest (requires registry auth)
 
-[python package]
-check                                       # Run all checks (lint, type, test)
-lint                                        # Run linting
-lint-fix                                    # Run linting and fix errors
-test                                        # Run tests
-type                                        # Run type checking in uv virtual environment
-uv-build                                    # Package commands
-uv-lint                                     # Run linting in uv virtual environment
-uv-lint-fix                                 # Run linting and fix errors in uv virtual environment
-uv-lock                                     # Update lockfile from pyproject.toml
-uv-test                                     # Run tests in uv virtual environment
-uv-type                                     # Run type checking in uv virtual environment
-venv                                        # Sync and enter uv virtual environment
+    [docs]
+    data-sync                                          # Sync data from drive (using encrypted service account)
+    docs-build                                         # Build docs
+    docs-check                                         # Check docs
+    docs-deploy                                        # Deploy docs
+    docs-dev                                           # Run local docs deployment
+    docs-extensions                                    # Add quartodoc extension
+    docs-local                                         # Preview docs locally
+    docs-preview-deploy                                # Preview docs on remote
+    docs-reference                                     # Build quartodoc API reference
+    docs-sync                                          # Sync docs freeze data to DVC remote
 
-[secrets]
-check-secrets                               # Check secrets are available in sops environment.
-create-and-populate-separate-secrets path   # Complete process: Create and populate separate secrets for each line in the dotenv file
-create-and-populate-single-secret name path # Complete process: Create a secret and populate it with the entire contents of a dotenv file
-create-secret name                          # Create a secret with the given name
-export                                      # Export unique secrets to dotenv format
-get-secret name                             # Retrieve the contents of a given secret
-populate-separate-secrets path              # Populate each line of a dotenv-formatted file as a separate secret
-populate-single-secret name path            # Populate a single secret with the contents of a dotenv-formatted file
-seed-dotenv                                 # Create empty dotenv from template
-show                                        # Show existing secrets
+    [nix]
+    ci                                                 # Run CI checks locally with `om ci`
+    dev                                                # Enter the Nix development shell
+    flake-check                                        # Validate the Nix flake configuration for the current system
+    flake-update                                       # Update all flake inputs to their latest versions
 
-[template]
-template-init                               # Initialize new project from template
-template-verify                             # Verify template functionality by creating and checking a test project
+    [python]
+    check package="python-nix-template"                # Run all checks for a package (lint, type, test)
+    lint package="python-nix-template"                 # Run linting for a package
+    lint-all                                           # Run linting for all packages
+    lint-fix package="python-nix-template"             # Run linting and fix errors for a package
+    test package="python-nix-template"                 # Run tests for a package
+    test-all                                           # Run tests for all packages
+    type package="python-nix-template"                 # Run type checking for a package
+    uv-build package="python-nix-template"             # Build a package with uv
+    uv-lock package="python-nix-template"              # Update lockfile for a package
+    uv-sync package="python-nix-template"              # Sync a package environment with uv
+
+    [release]
+    preview-version base-branch package-path           # Preview release version for a package (dry-run semantic-release with merge simulation)
+    release-package package-name dry-run="false"       # Run semantic-release for a package
+    test-package-release package-name="python-nix-template" branch="main" # Test package release
+    test-release                                       # Release testing with bun
+    test-release-as-main                               # Test release as if on main branch
+    test-release-direct                                # Test release directly on release branch
+    test-release-on-current-branch                     # Test release with explicit branch override
+    update-version package-name version                # Update version for a specific package across all relevant files
+
+    [rust]
+    cargo-build package="pnt-cli"                      # Build Rust crates for a package
+    cargo-check package="pnt-cli"                      # Run all Rust checks (clippy, test)
+    cargo-clippy package="pnt-cli"                     # Run Rust clippy lints
+    cargo-nextest package="pnt-cli"                    # Run Rust tests via cargo-nextest
+    cargo-test package="pnt-cli"                       # Run Rust tests via cargo test
+
+    [secrets]
+    check-secrets                                      # Check secrets are available in sops environment
+    dvc-run +command                                   # Helper: Run any DVC command with decrypted service account
+    edit-secrets                                       # Edit shared secrets file
+    export-secrets                                     # Export unique secrets to dotenv format using sops
+    gcp-enable-drive-api                               # Enable Google Drive API in GCP project
+    gcp-sa-create                                      # Create GCP service account for DVC access (run once)
+    gcp-sa-key-delete key_id                           # Delete a specific service account key
+    gcp-sa-key-download                                # Download service account key (for key rotation)
+    gcp-sa-key-encrypt                                 # Encrypt service account key with sops
+    gcp-sa-key-rotate                                  # Rotate service account key
+    gcp-sa-keys-list                                   # List existing service account keys (for auditing)
+    gcp-sa-storage-user                                # Grant Storage Object User role for GCS access
+    get-secret key                                     # Show specific secret value from shared secrets
+    new-secret file                                    # Create a new sops encrypted file
+    rotate-secret secret_name                          # Rotate a specific secret interactively
+    run-with-secrets +command                          # Run command with all shared secrets as environment variables
+    set-secret secret_name secret_value                # Add or update a secret non-interactively
+    show-secrets                                       # Show existing secrets using sops
+    sops-add-key                                       # Add existing age key to local configuration
+    sops-init                                          # Initialize sops age key for new developers
+    updatekeys                                         # Update keys for existing secrets files after adding new recipients
+    validate-secrets                                   # Validate all sops encrypted files can be decrypted
+
+    [template]
+    template-init                                      # Initialize new project from template
+    template-verify                                    # Verify template functionality by creating and checking a test project
 ```
 
 </details>
