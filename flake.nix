@@ -33,8 +33,12 @@
 
     import-tree.url = "github:vic/import-tree";
 
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+
     git-hooks.url = "github:cachix/git-hooks.nix";
-    git-hooks.flake = false;
+    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
+    git-hooks.inputs.flake-compat.follows = "";
   };
 
   nixConfig = {
