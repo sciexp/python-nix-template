@@ -180,7 +180,31 @@ jobs:
           PACKAGES=$(ls -d packages/*/pyproject.toml | while read -r f; do
             d=$(dirname "$f")
             n=$(basename "$d")
-            printf '{"name":"%s","path":"%s"}\n' "$n" "$d"
+
+            # Infer build-wheels from Cargo.toml presence (maturin/pyo3 package)
+            if [ -f "$d/Cargo.toml" ]; then
+              build_wheels="true"
+            else
+              build_wheels="false"
+            fi
+
+            # Read per-package CI metadata from .ci.json if present
+            ci_json="$d/.ci.json"
+            if [ -f "$ci_json" ]; then
+              build_images=$(jq -r '.["build-images"] // false' "$ci_json")
+              images=$(jq -c '.images // []' "$ci_json")
+            else
+              build_images="false"
+              images="[]"
+            fi
+
+            jq -nc \
+              --arg name "$n" \
+              --arg path "$d" \
+              --arg build_wheels "$build_wheels" \
+              --arg build_images "$build_images" \
+              --argjson images "$images" \
+              '{name: $name, path: $path, "build-wheels": $build_wheels, "build-images": $build_images, images: ($images | tojson)}'
           done | jq -sc '.')
           echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
           echo "Discovered packages: $PACKAGES"
@@ -597,21 +621,9 @@ jobs:
       id-token: write
       packages: write
     strategy:
+      fail-fast: false
       matrix:
-        package:
-          - name: python-nix-template
-            path: "packages/python-nix-template"
-            build-images: "true"
-            images: '["python-nix-template", "python-nix-template-dev"]'
-          - name: pnt-functional
-            path: packages/pnt-functional
-            build-images: "false"
-            images: "[]"
-          - name: pnt-cli
-            path: packages/pnt-cli
-            build-images: "false"
-            images: "[]"
-            build-wheels: "true"
+        package: ${{ fromJson(needs.set-variables.outputs.packages) }}
     uses: ./.github/workflows/package-release.yaml
     with:
       package-path: ${{ matrix.package.path }}

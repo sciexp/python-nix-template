@@ -7,9 +7,11 @@ let
   gitHubOrg = "sciexp";
   repoName = "python-nix-template";
 
+  hasCli = builtins.pathExists ../packages/pnt-cli;
+
   # Production container definitions (nix2container)
   # Add new containers here; containerMatrix auto-discovers them.
-  productionContainerDefs = {
+  productionContainerDefs = lib.optionalAttrs hasCli {
     pnt-cli = {
       name = "pnt-cli";
       entrypoint = "pnt-cli";
