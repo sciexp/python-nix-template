@@ -1,0 +1,5 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+[allowlist]
+  description = "Global allowlist for false positives"
