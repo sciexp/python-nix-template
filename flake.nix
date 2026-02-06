@@ -1,5 +1,5 @@
 {
-  description = "python-nix-template integrating uv2nix with flake-parts";
+  description = "python-nix-template: federated monorepo with uv2nix and pyo3/Rust extension modules";
 
   outputs =
     inputs@{ flake-parts, ... }:
