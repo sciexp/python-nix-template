@@ -1,5 +1,5 @@
 { ... }:
 {
   # External flake-parts module imports.
-  # git-hooks is imported in pre-commit.nix.
+  # git-hooks and treefmt-nix are imported in formatting.nix.
 }
