@@ -2,9 +2,8 @@
 
 A nix template for python packages managed with
 [uv2nix](https://github.com/pyproject-nix/uv2nix) and
-[flake-parts](https://github.com/hercules-ci/flake-parts). The structure mirrors
-those in the [omnix registry](#credits) to the extent possible with python and
-its ecosystem.
+[flake-parts](https://github.com/hercules-ci/flake-parts).
+The structure mirrors those in the [omnix registry](#credits) to the extent possible with python and its ecosystem.
 
 ## Template usage
 
@@ -103,7 +102,7 @@ particular version:
 
 ### Quick start
 
-#### nix-managed environment
+#### Nix-managed environment
 
 The template supports three types of development environments:
 
@@ -117,10 +116,9 @@ The intended workflow is to run
 make bootstrap
 ```
 
-only the very first time you are setting up one of these templates. This will
-verify you have the [nix package manager](https://nix.dev) and
-[direnv](https://direnv.net/) installed. Registration of the repository contents
-requires creating a git repository, for example with
+only the very first time you are setting up one of these templates.
+This will verify you have the [nix package manager](https://nix.dev) and [direnv](https://direnv.net/) installed.
+Registration of the repository contents requires creating a git repository, for example with
 
 ```sh
 git init && git commit --allow-empty -m "initial commit (empty)" && git add .
@@ -133,15 +131,11 @@ After this running
 direnv allow
 ```
 
-will ensure you have all development tools on a project directory-specific
-version of your PATH variable. These include the `just` task runner, which
-provides an alternative to using [GNU Make](https://www.gnu.org/software/make/)
-as a task runner. See the [task runner](#task-runner) section for a listing of
-development commands.
+will ensure you have all development tools on a project directory-specific version of your PATH variable.
+These include the `just` task runner, which provides an alternative to using [GNU Make](https://www.gnu.org/software/make/) as a task runner.
+See the [task runner](#task-runner) section for a listing of development commands.
 
-You should now be able to run `just test-all` to confirm all package tests pass
-in the devshell environment, or `just test <package-name>` to test a specific
-package.
+You should now be able to run `just test-all` to confirm all package tests pass in the devshell environment, or `just test <package-name>` to test a specific package.
 
 > [!NOTE]
 > This template uses an independent-lock pattern where each package under
@@ -153,10 +147,9 @@ package.
 > for pkg in packages/*/; do [ -f "$pkg/pyproject.toml" ] && (cd "$pkg" && uv lock); done
 > ```
 
-If you choose to modify packages or add dependencies, run `just uv-lock
-<package-name>` to update the lock file for that specific package.
+If you choose to modify packages or add dependencies, run `just uv-lock <package-name>` to update the lock file for that specific package.
 
-#### python virtualenv
+#### Python virtualenv
 
 1. Create and sync virtual environment:
 
@@ -188,28 +181,37 @@ If you choose to modify packages or add dependencies, run `just uv-lock
 - Modern python packaging with `pyproject.toml`
 - Fast dependency management with `uv`
 - Reproducible developer environments and builds with `nix` and `uv2nix`
-- See the optional monorepo workspace package [pnt-functional](./packages/pnt-functional)
-  for a brief illustration of functional programming patterns (disabled by default):
-  - Railway-oriented programming with `expression` for type-safe error handling
-  - Effect tracking via monad transformers for composable side effects
-  - Runtime type checking with `beartype` for robust type safety
-  - Pure functions and immutable data types for reliable code
-  - Composition of effectful functions using monadic bind operations
 - conda ecosystem compatibility via `pixi`
+
+<details><summary>Optional packages</summary>
+
+The template includes optional packages controlled by omnix template parameters.
+Both default to false for the single-package variant and can be set to true individually or together.
+
+*pnt-functional* (`monorepo-package` parameter) provides a brief illustration of functional programming patterns in Python.
+It demonstrates railway-oriented programming with `expression` for type-safe error handling, effect tracking via monad transformers for composable side effects, runtime type checking with `beartype`, pure functions and immutable data types, and composition of effectful functions using monadic bind operations.
+See [packages/pnt-functional](./packages/pnt-functional) for details.
+
+*pnt-cli* (`pyo3-package` parameter) is a Rust extension module demonstrating Python-Rust interop via [pyo3](https://pyo3.rs) and [maturin](https://www.maturin.rs).
+It exposes Rust functions callable from Python through a compiled native module (`pnt_cli._native`).
+The Rust side is organized as a Cargo workspace with a core library crate and a pyo3 binding crate under `packages/pnt-cli/crates/`.
+On the Nix side, the build uses [crane](https://github.com/ipetkov/crane) for incremental Rust compilation caching and [crane-maturin](https://github.com/vlaci/crane-maturin) for producing maturin-compatible wheels.
+The resulting artifact is installed into the uv2nix package set via `pyproject-nix`'s `nixpkgsPrebuilt`, avoiding duplicate Rust compilation during Nix evaluation.
+See [packages/pnt-cli](./packages/pnt-cli) and [nix/packages/pnt-cli](./nix/packages/pnt-cli) for the implementation.
+
+</details>
 
 ## Development
 
 ### Prerequisites
 
-If you'd like to develop `python-nix-template` you'll need the [nix package
-manager](https://nix.dev). You can optionally make use of
-[direnv](https://direnv.net/) to automatically activate the environment. The
-project includes a Makefile to help bootstrap your development environment.
+If you'd like to develop `python-nix-template` you'll need the [nix package manager](https://nix.dev).
+You can optionally make use of [direnv](https://direnv.net/) to automatically activate the environment.
+The project includes a Makefile to help bootstrap your development environment.
 
 It provides:
 
-1. Installation of the nix package manager using the Determinate Systems
-   installer
+1. Installation of the nix package manager using the Determinate Systems installer
 2. Installation of direnv for automatic environment activation
 3. Link to instructions for shell configuration
 
@@ -221,15 +223,12 @@ make bootstrap
 
 Run `make` alone for a listing of available targets.
 
-After nix and direnv are installed, you can either run `direnv allow` or `nix
-develop` to enter a [development shell](./nix/modules/devshell.nix) that will
-contain necessary system-level dependencies.
+After nix and direnv are installed, you can either run `direnv allow` or `nix develop` to enter a [development shell](./nix/modules/devshell.nix) that will contain necessary system-level dependencies.
 
 ### Task runner
 
-This project uses [`just`](https://just.systems/man/en/) as a task runner, which
-is provided in the [development shell](#prerequisites). List available commands
-by running `just` alone.
+This project uses [`just`](https://just.systems/man/en/) as a task runner, which is provided in the [development shell](#prerequisites).
+List available commands by running `just` alone.
 
 <details>
 <summary>just recipes</summary>
@@ -297,22 +296,33 @@ template-verify                             # Verify template functionality by c
 
 </details>
 
-## credits
+## Credits
 
-### python
+### Python
 
-- [beartypte/beartype](https://github.com/beartype/beartype)
-- [dbrattli/Expression](https://github.com/dbrattli/Expression)
+- [beartype](https://github.com/beartype/beartype) -- gradual runtime type checking
+- [Expression](https://github.com/dbrattli/Expression) -- functional programming abstractions for Python
 
-### python in nix
+### Python in Nix
 
-- [uv2nix](https://github.com/pyproject-nix/uv2nix)
+- [uv2nix](https://github.com/pyproject-nix/uv2nix) -- Nix integration for uv-managed Python workspaces
+- [pyproject.nix](https://github.com/pyproject-nix/pyproject.nix) -- Nix library for Python project management, used by uv2nix for build-system resolution
+- [pyproject-build-systems](https://github.com/pyproject-nix/build-system-pkgs) -- pre-built Python build-system packages for Nix
 
-### nix
+### Rust in Nix
 
-See the [omnix registry
-flake](https://github.com/juspay/omnix/blob/1.0.0/crates/omnix-init/registry/flake.nix)
+- [crane](https://github.com/ipetkov/crane) -- Nix library for building Rust projects with incremental compilation caching
+- [crane-maturin](https://github.com/vlaci/crane-maturin) -- crane extension for building maturin/pyo3 Python-Rust packages
+- [rust-overlay](https://github.com/oxalica/rust-overlay) -- Nix overlay providing nightly and stable Rust toolchains
+
+### Nix
+
+<details><summary>omnix registry and flake-parts ecosystem</summary>
+
+See the [omnix registry flake](https://github.com/juspay/omnix/blob/1.0.0/crates/omnix-init/registry/flake.nix)
 
 - [srid/haskell-template](https://github.com/srid/haskell-template)
 - [srid/rust-nix-template](https://github.com/srid/rust-nix-template)
 - [hercules-ci/flake-parts](https://github.com/hercules-ci/flake-parts)
+
+</details>
