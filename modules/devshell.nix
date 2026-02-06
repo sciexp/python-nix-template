@@ -54,7 +54,6 @@
               gitleaks
               sops
               ssh-to-age
-              config.packages.set-git-env
             ]
             ++ lib.optionals hasCli (
               with pkgs;
@@ -77,7 +76,11 @@
           shellHook = ''
             unset PYTHONPATH
             export REPO_ROOT=$(git rev-parse --show-toplevel)
-            set-git-env
+            export GIT_REPO_NAME=$(basename -s .git "$(git config --get remote.origin.url 2>/dev/null || echo "unknown-repo")")
+            export GIT_REF=$(git symbolic-ref -q --short HEAD 2>/dev/null || git rev-parse HEAD 2>/dev/null || echo "unknown-ref")
+            export GIT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "unknown-sha")
+            export GIT_SHA_SHORT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+            printf "\n%s %s %s %s\n\n" "$GIT_REPO_NAME" "$GIT_REF" "$GIT_SHA_SHORT" "$GIT_SHA"
           '';
         };
     in
