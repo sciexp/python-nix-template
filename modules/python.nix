@@ -40,10 +40,13 @@
         };
 
       hasFunctional = builtins.pathExists ../packages/pnt-functional;
+      hasCli = builtins.pathExists ../packages/pnt-cli;
 
       packageWorkspaces = {
-        pnt-cli = loadPackage "pnt-cli" ../packages/pnt-cli;
         python-nix-template = loadPackage "python-nix-template" ../packages/python-nix-template;
+      }
+      // lib.optionalAttrs hasCli {
+        pnt-cli = loadPackage "pnt-cli" ../packages/pnt-cli;
       }
       // lib.optionalAttrs hasFunctional {
         pnt-functional = loadPackage "pnt-functional" ../packages/pnt-functional;
@@ -52,13 +55,23 @@
       # Per-package Nix modules with optional Rust overlays.
       # Packages with Rust extensions get a dedicated module in nix/packages/
       # that encapsulates crane configuration and exports an overlay + checks.
+      # When pnt-cli is absent (pyo3-package: false), returns an inert module
+      # with no-op overlay and empty checks to avoid import path errors.
+      emptyModule = {
+        overlay = _final: _prev: { };
+        checks = { };
+      };
+
       mkPackageModule =
         python:
-        import ../nix/packages/pnt-cli {
-          inherit pkgs lib python;
-          crane = inputs.crane;
-          inherit (inputs) crane-maturin pyproject-nix;
-        };
+        if hasCli then
+          import ../nix/packages/pnt-cli {
+            inherit pkgs lib python;
+            crane = inputs.crane;
+            inherit (inputs) crane-maturin pyproject-nix;
+          }
+        else
+          emptyModule;
 
       # Compose per-package uv2nix overlays with shared overrides.
       #
@@ -78,8 +91,8 @@
             lib.composeManyExtensions (
               [
                 inputs.pyproject-build-systems.overlays.default
-                packageWorkspaces.pnt-cli.overlay
               ]
+              ++ lib.optional hasCli packageWorkspaces.pnt-cli.overlay
               ++ lib.optional hasFunctional packageWorkspaces.pnt-functional.overlay
               ++ [
                 packageWorkspaces.python-nix-template.overlay
@@ -134,7 +147,7 @@
       rustChecks = (mkPackageModule pythonVersions.py312).checks;
     in
     {
-      checks = rustChecks;
+      checks = lib.optionalAttrs hasCli rustChecks;
 
       _module.args = {
         inherit
