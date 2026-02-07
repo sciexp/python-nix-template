@@ -32,10 +32,10 @@
     in
     {
       packages = rec {
-        pythonNixTemplate311 = pythonSets.py311.mkVirtualEnv "python-nix-template-3.11" defaultDeps;
         pythonNixTemplate312 = pythonSets.py312.mkVirtualEnv "python-nix-template-3.12" defaultDeps;
+        pythonNixTemplate313 = pythonSets.py313.mkVirtualEnv "python-nix-template-3.13" defaultDeps;
 
-        default = pythonNixTemplate312;
+        default = pythonNixTemplate313;
       };
     };
 }
