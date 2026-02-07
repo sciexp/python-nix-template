@@ -19,4 +19,4 @@ https://conda.anaconda.org/conda-forge/osx-arm64/python-3.13.2-h81fe080_101_cp31
 https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.12.2-pyha770c72_1.conda#d17f13df8b65464ca316cbc000a3cb64
 https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.12.2-hd8ed1ab_1.conda#b6a408c64b78ec7b779a3e5c7a902433
 https://conda.anaconda.org/conda-forge/noarch/expression-5.6.0-pyhd8ed1ab_0.conda#d559e093ed94fd9b4ade06440e9f9c07
-https://conda.anaconda.org/conda-forge/noarch/beartype-0.19.0-pyhd8ed1ab_0.conda#4d35362664efdc0c9de9b685f94ecae3
+https://conda.anaconda.org/conda-forge/noarch/beartype-0.22.9-pyhd8ed1ab_0.conda#c69efc0c283c897a3d79868454b823a8
