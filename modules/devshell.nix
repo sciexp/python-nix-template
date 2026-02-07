@@ -86,17 +86,17 @@
     in
     {
       devShells = rec {
-        pythonNixTemplate311 = mkDevShell {
-          name = "python-nix-template-3.11";
-          pythonVersion = "py311";
-        };
-
         pythonNixTemplate312 = mkDevShell {
           name = "python-nix-template-3.12";
           pythonVersion = "py312";
         };
 
-        default = pythonNixTemplate312;
+        pythonNixTemplate313 = mkDevShell {
+          name = "python-nix-template-3.13";
+          pythonVersion = "py313";
+        };
+
+        default = pythonNixTemplate313;
       };
     };
 }
