@@ -38,7 +38,7 @@ in
 
       # --- Python environments ---
 
-      defaultPythonVersion = "py312";
+      defaultPythonVersion = "py313";
       defaultPythonSet = pythonSets.${defaultPythonVersion};
 
       # Merge deps from all independent package workspaces, unioning extras lists
