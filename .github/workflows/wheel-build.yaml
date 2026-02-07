@@ -68,12 +68,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: |
-            3.11
             3.12
+            3.13
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist -i python3.11 python3.12
+          args: --release --out dist -i python3.12 python3.13
           manylinux: auto
           working-directory: ${{ env.PACKAGE_PATH }}
       - uses: actions/upload-artifact@v4
