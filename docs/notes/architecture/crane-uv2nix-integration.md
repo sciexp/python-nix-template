@@ -203,7 +203,7 @@ Enforce version alignment by running `uv lock --check` in each package directory
 
     # Compose all overlays
     pythonBase = pkgs.callPackage inputs.pyproject-nix.build.packages {
-      python = pkgs.python312;
+      python = pkgs.python313;
     };
 
     pythonSet = pythonBase.overrideScope (lib.composeManyExtensions [
@@ -238,7 +238,7 @@ build-backend = "maturin"
 [project]
 name = "pnt-cli"
 version = "0.1.0"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = []
 
 [tool.maturin]
