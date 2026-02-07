@@ -69,22 +69,19 @@ jobs:
   secrets-scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # full history for comprehensive secret scanning
 
       - name: Setup Nix
         uses: ./.github/actions/setup-nix
         with:
+          installer: quick # fast install without space reclamation overhead
           system: x86_64-linux
-          enable-cachix: true
-          cachix-name: ${{ vars.CACHIX_CACHE_NAME }}
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          extra-pull-names: nix-community,pyproject-nix,sciexp,srid
 
-      - name: Scan for secrets
-        run: nix develop --accept-flake-config -c just scan-secrets
+      - name: Scan for secrets with gitleaks
+        run: nix run nixpkgs#gitleaks -- detect --verbose --redact
 
   # ---------------------------------------------------------------------------
   # job 2: set-variables
