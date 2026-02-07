@@ -37,7 +37,7 @@ jobs:
           command: sdist
           args: --out dist
           working-directory: ${{ env.PACKAGE_PATH }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-sdist
           path: ${{ env.PACKAGE_PATH }}/dist/*.tar.gz
@@ -76,7 +76,7 @@ jobs:
           args: --release --out dist -i python3.12 python3.13
           manylinux: auto
           working-directory: ${{ env.PACKAGE_PATH }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-${{ matrix.platform }}
           path: ${{ env.PACKAGE_PATH }}/dist/*.whl
