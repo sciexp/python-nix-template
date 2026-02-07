@@ -1,6 +1,6 @@
 line-length    = 88
 src            = ["src"]
-target-version = "py311"
+target-version = "py312"
 
 [lint]
 select = [
