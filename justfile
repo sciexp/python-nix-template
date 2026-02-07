@@ -756,6 +756,8 @@ update-version package-name version:
             sed -i'' -e '/^\[workspace\.package\]/,/^\[/ s/^version = "'"$CARGO_CURRENT"'"$/version = "{{version}}"/' "$CARGO_TOML"
             echo "  Updated $CARGO_TOML [workspace.package] version"
         fi
+        echo "Regenerating Cargo.lock in $PACKAGE_PATH..."
+        cargo generate-lockfile --manifest-path "$CARGO_TOML"
     fi
 
     echo "Running uv lock in $PACKAGE_PATH..."
