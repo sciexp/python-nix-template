@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/pnt-cli-core", "crates/pnt-cli-py"]
 
 [workspace.package]
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 license = "Apache-2.0"
 
