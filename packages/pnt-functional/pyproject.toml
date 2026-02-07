@@ -18,7 +18,7 @@ description = "A Python package template using Nix and uv"
 license = { text = "Apache-2.0" }
 name = "pnt-functional"
 readme = "README.md"
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.14,<3.15"
 version = "0.2.1"
 
 [project.scripts]
