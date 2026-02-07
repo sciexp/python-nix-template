@@ -15,8 +15,8 @@
     }:
     let
       pythonVersions = {
-        py311 = pkgs.python311;
         py312 = pkgs.python312;
+        py313 = pkgs.python313;
       };
 
       # Load each Python package independently (no root workspace).
@@ -144,7 +144,7 @@
       editablePythonSets = lib.mapAttrs (_: mkEditablePythonSet) pythonVersions;
 
       # Rust checks from per-package modules (using default Python version)
-      rustChecks = (mkPackageModule pythonVersions.py312).checks;
+      rustChecks = (mkPackageModule pythonVersions.py313).checks;
     in
     {
       checks = lib.optionalAttrs hasCli rustChecks;
@@ -156,7 +156,7 @@
           editablePythonSets
           pythonVersions
           ;
-        defaultPython = pythonVersions.py312;
+        defaultPython = pythonVersions.py313;
       };
     };
 }
