@@ -263,7 +263,7 @@ jobs:
     if: ${{ needs.release.outputs.released == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - uses: actions/download-artifact@v4
         with:
           pattern: wheels-*
