@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pnt-cli-core = { path = "../pnt-cli-core" }
-pyo3 = { version = "0.23", features = ["extension-module"] }
+pyo3 = { version = "0.24", features = ["extension-module"] }
 
 [lints]
 workspace = true
