@@ -730,7 +730,9 @@ update-version package-name version:
     fi
 
     # Extract current version from pyproject.toml [project] section
-    CURRENT=$(sed -n '/^\[project\]/,/^\[/{/^version = /p}' "$PYPROJECT" | head -1 | sed 's/version = "\(.*\)"/\1/')
+    CURRENT=$(sed -n '/^\[project\]/,/^\[/{
+    /^version = /p
+    }' "$PYPROJECT" | head -1 | sed 's/version = "\(.*\)"/\1/')
     if [ -z "$CURRENT" ]; then
         echo "Error: could not extract current version from $PYPROJECT"
         exit 1
@@ -751,7 +753,9 @@ update-version package-name version:
     # For maturin packages: update Cargo.toml workspace version
     CARGO_TOML="$PACKAGE_PATH/Cargo.toml"
     if [ -f "$CARGO_TOML" ]; then
-        CARGO_CURRENT=$(sed -n '/^\[workspace\.package\]/,/^\[/{/^version = /p}' "$CARGO_TOML" | head -1 | sed 's/version = "\(.*\)"/\1/')
+        CARGO_CURRENT=$(sed -n '/^\[workspace\.package\]/,/^\[/{
+        /^version = /p
+        }' "$CARGO_TOML" | head -1 | sed 's/version = "\(.*\)"/\1/')
         if [ -n "$CARGO_CURRENT" ]; then
             sed -i'' -e '/^\[workspace\.package\]/,/^\[/ s/^version = "'"$CARGO_CURRENT"'"$/version = "{{version}}"/' "$CARGO_TOML"
             echo "  Updated $CARGO_TOML [workspace.package] version"
