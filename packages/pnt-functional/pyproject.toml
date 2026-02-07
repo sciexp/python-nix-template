@@ -19,7 +19,7 @@ license = { text = "Apache-2.0" }
 name = "pnt-functional"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-version = "0.2.0"
+version = "0.2.1"
 
 [project.scripts]
 pnt-functional = "pnt_functional.main:greet"
@@ -89,7 +89,7 @@ types = "pyright src/"
 
 [tool.pixi.package]
 name    = "pnt-functional"
-version = "0.2.0"
+version = "0.2.1"
 
 [tool.pixi.package.run-dependencies]
 beartype   = ">=0.19.0,<0.20.0"
