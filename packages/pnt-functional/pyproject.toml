@@ -7,8 +7,8 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
   "beartype>=0.22.9,<0.23.0",
@@ -18,7 +18,7 @@ description = "A Python package template using Nix and uv"
 license = { text = "Apache-2.0" }
 name = "pnt-functional"
 readme = "README.md"
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.12,<3.14"
 version = "0.2.1"
 
 [project.scripts]
@@ -64,7 +64,7 @@ preview   = ["pixi-build"]
 [tool.pixi.dependencies]
 beartype   = ">=0.22.9,<0.23.0"
 expression = ">=5.5.0"
-python     = ">=3.11"
+python     = ">=3.12"
 
 [tool.pixi.pypi-dependencies]
 pnt-functional = { path = ".", editable = true }
