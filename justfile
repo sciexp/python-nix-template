@@ -65,7 +65,9 @@ ghsecrets repo="sciexp/python-nix-template":
   gh secret set GITGUARDIAN_API_KEY --repo={{ repo }} --body="$GITGUARDIAN_API_KEY" && \
   gh secret set UV_PUBLISH_TOKEN --repo={{ repo }} --body="$UV_PUBLISH_TOKEN" && \
   gh secret set CLOUDFLARE_ACCOUNT_ID --repo={{ repo }} --body="$CLOUDFLARE_ACCOUNT_ID" && \
-  gh secret set CLOUDFLARE_API_TOKEN --repo={{ repo }} --body="$CLOUDFLARE_API_TOKEN"'
+  gh secret set CLOUDFLARE_API_TOKEN --repo={{ repo }} --body="$CLOUDFLARE_API_TOKEN" && \
+  gh secret set FLAKE_UPDATER_APP_ID --repo={{ repo }} --body="$FLAKE_UPDATER_APP_ID" && \
+  gh secret set FLAKE_UPDATER_PRIVATE_KEY --repo={{ repo }} --body="$FLAKE_UPDATER_PRIVATE_KEY"'
   @echo
   @echo "secrets after updates (wait 3 seconds for github to update):"
   sleep 3
