@@ -74,6 +74,16 @@ sops exec-env vars/shared.yaml "
     echo '   ✅ CLOUDFLARE_ACCOUNT_ID'
   fi
 
+  if [ -n \"\${FLAKE_UPDATER_APP_ID:-}\" ] && [ \"\$FLAKE_UPDATER_APP_ID\" != \"REPLACE_ME\" ]; then
+    gh secret set FLAKE_UPDATER_APP_ID --repo='$REPO' --body=\"\$FLAKE_UPDATER_APP_ID\"
+    echo '   ✅ FLAKE_UPDATER_APP_ID'
+  fi
+
+  if [ -n \"\${FLAKE_UPDATER_PRIVATE_KEY:-}\" ] && [ \"\$FLAKE_UPDATER_PRIVATE_KEY\" != \"REPLACE_ME\" ]; then
+    gh secret set FLAKE_UPDATER_PRIVATE_KEY --repo='$REPO' --body=\"\$FLAKE_UPDATER_PRIVATE_KEY\"
+    echo '   ✅ FLAKE_UPDATER_PRIVATE_KEY'
+  fi
+
   echo
   echo '   ℹ️  SOPS_AGE_KEY skipped (upload separately with: just sops-upload-github-key)'
 "
