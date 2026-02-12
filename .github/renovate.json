@@ -13,24 +13,37 @@
   "bun": {
     "enabled": true
   },
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "rangeStrategy": "bump",
   "semanticCommits": "enabled",
   "separateMinorPatch": true,
   "packageRules": [
     {
       "groupName": "semantic-release packages",
-      "matchPackagePatterns": ["^semantic-release", "^@semantic-release/"],
-      "automerge": false
+      "automerge": false,
+      "matchPackageNames": [
+        "/^semantic-release/",
+        "/^@semantic-release//"
+      ]
     },
     {
-      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "matchUpdateTypes": [
+        "patch",
+        "pin",
+        "digest"
+      ],
       "automerge": true,
       "minimumReleaseAge": "3 days"
     },
     {
-      "matchDepTypes": ["devDependencies"],
-      "matchUpdateTypes": ["minor"],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "minor"
+      ],
       "automerge": true,
       "minimumReleaseAge": "7 days"
     }
@@ -39,5 +52,7 @@
     "enabled": true,
     "automerge": true
   },
-  "schedule": ["before 5am on monday"]
+  "schedule": [
+    "before 5am on monday"
+  ]
 }
