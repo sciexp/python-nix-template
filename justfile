@@ -473,7 +473,7 @@ get-secret key:
 [group('secrets')]
 validate-secrets:
   @echo "Validating sops encrypted files..."
-  @for file in $(find vars -name "*.yaml"); do \
+  @for file in $(find vars \( -name "*.yaml" -o -name "*.json" \)); do \
     echo "Testing: $file"; \
     sops -d "$file" > /dev/null && echo "  ✅ Valid" || echo "  ❌ Failed"; \
   done
@@ -506,7 +506,7 @@ sops-add-key:
   chmod 600 ~/.config/sops/age/keys.txt
 
   # Prompt for key description
-  printf "Enter age key description (e.g., 'project [dev|ci|admin]'): "
+  printf "Enter age key description (e.g., 'python-nix-template [dev|ci]'): "
   read -r key_description
   [[ -z "${key_description}" ]] && { echo "❌ Description cannot be empty"; exit 1; }
 
@@ -562,11 +562,41 @@ rotate-secret secret_name:
 # Update keys for existing secrets files after adding new recipients
 [group('secrets')]
 updatekeys:
-  @for file in $(find vars -name "*.*"); do \
+  @for file in $(find vars \( -name "*.yaml" -o -name "*.json" \)); do \
     echo "Updating keys for: $file"; \
-    sops updatekeys "$file"; \
+    sops updatekeys -y "$file"; \
   done
   @echo "✅ Keys updated for all secrets files"
+
+# Bootstrap or rotate SOPS age keys (unified recipe for first-time and rotation)
+[group('secrets')]
+sops-bootstrap role='dev' method='ssh':
+  @scripts/sops-bootstrap.sh "{{ role }}" "{{ method }}"
+
+# Upload SOPS_AGE_KEY to GitHub (separate from other secrets to avoid chicken-and-egg)
+[group('secrets')]
+sops-upload-github-key repo="":
+  @scripts/sops-upload-github-key.sh "{{ repo }}"
+
+# Enumerate required secrets by parsing GitHub workflows
+[group('secrets')]
+sops-check-requirements:
+  @scripts/sops-check-requirements.sh
+
+# Comprehensive GitHub setup (uploads everything except SOPS_AGE_KEY)
+[group('secrets')]
+sops-setup-github repo="":
+  @scripts/sops-setup-github.sh "{{ repo }}"
+
+# Finalize key rotation by removing old keys
+[group('secrets')]
+sops-finalize-rotation role='dev':
+  @scripts/sops-finalize-rotation.sh "{{ role }}"
+
+# Quick rotation workflow (combines bootstrap + finalize after verification)
+[group('secrets')]
+sops-rotate role='dev' method='ssh':
+  @scripts/sops-rotate.sh "{{ role }}" "{{ method }}"
 
 ## Template
 
