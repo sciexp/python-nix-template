@@ -24,14 +24,14 @@ shared:
         - check-success=nix (x86_64-linux, ubuntu-latest, devshells)
         - check-skipped=nix (x86_64-linux, ubuntu-latest, devshells)
     - or:
-        - "check-success=test-python (python-nix-template, packages/python-nix-template) / test"
-        - "check-skipped=test-python (python-nix-template, packages/python-nix-template) / test"
+        - "check-success~=^test-python \\(python-nix-template, packages/python-nix-template.*\\) / test$"
+        - "check-skipped~=^test-python \\(python-nix-template, packages/python-nix-template.*\\) / test$"
     - or:
-        - "check-success=test-python (pnt-functional, packages/pnt-functional) / test"
-        - "check-skipped=test-python (pnt-functional, packages/pnt-functional) / test"
+        - "check-success~=^test-python \\(pnt-functional, packages/pnt-functional.*\\) / test$"
+        - "check-skipped~=^test-python \\(pnt-functional, packages/pnt-functional.*\\) / test$"
     - or:
-        - "check-success=test-python (pnt-cli, packages/pnt-cli) / test"
-        - "check-skipped=test-python (pnt-cli, packages/pnt-cli) / test"
+        - "check-success~=^test-python \\(pnt-cli, packages/pnt-cli.*\\) / test$"
+        - "check-skipped~=^test-python \\(pnt-cli, packages/pnt-cli.*\\) / test$"
     - or:
         - check-success=test-omnix-template
         - check-skipped=test-omnix-template
