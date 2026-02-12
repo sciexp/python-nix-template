@@ -1,10 +1,43 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended",
+    ":preserveSemverRanges",
+    "group:monorepos",
+    "group:recommended",
+    "helpers:pinGitHubActionDigests"
   ],
   "nix": {
     "enabled": true
   },
-  "labels": ["dependencies"]
+  "bun": {
+    "enabled": true
+  },
+  "labels": ["dependencies"],
+  "rangeStrategy": "bump",
+  "semanticCommits": "enabled",
+  "separateMinorPatch": true,
+  "packageRules": [
+    {
+      "groupName": "semantic-release packages",
+      "matchPackagePatterns": ["^semantic-release", "^@semantic-release/"],
+      "automerge": false
+    },
+    {
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor"],
+      "automerge": true,
+      "minimumReleaseAge": "7 days"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "automerge": true
+  },
+  "schedule": ["before 5am on monday"]
 }
