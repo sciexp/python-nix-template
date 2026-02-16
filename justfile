@@ -735,12 +735,12 @@ preview-version base-branch package-path:
 release-package package-name dry-run="false":
     #!/usr/bin/env bash
     set -euo pipefail
-    bun install
+    cd packages/{{package-name}}
     if [ "{{dry-run}}" = "true" ]; then
-        unset GITHUB_ACTIONS
-        cd packages/{{package-name}} && bun run test-release -- -b main
+        npx semantic-release --dry-run --no-ci
     else
-        cd packages/{{package-name}} && bun run release
+        echo "This will create a real release. Use dry_run=true for testing."
+        npx semantic-release
     fi
 
 # Update version for a specific package across all relevant files
