@@ -73,6 +73,9 @@ coverage.xml
 # Rust
 target/
 
+# worktrees
+.worktrees/
+
 # nix
 result
 result-*
