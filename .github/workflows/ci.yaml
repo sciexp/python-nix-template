@@ -384,7 +384,6 @@ jobs:
           enable-cachix: true
           cachix-name: ${{ vars.CACHIX_CACHE_NAME }}
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          extra-pull-names: nix-community,pyproject-nix,sciexp,srid
 
       - name: Build ${{ matrix.category }}
         if: steps.cache.outputs.should-run == 'true'
