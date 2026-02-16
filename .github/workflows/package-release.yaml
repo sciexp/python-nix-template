@@ -166,6 +166,12 @@ jobs:
         if: steps.cache.outputs.should-run == 'true'
         run: nix develop --accept-flake-config -c bun install
 
+      - name: Snapshot tags
+        id: tags-before
+        if: steps.cache.outputs.should-run == 'true'
+        run: |
+          echo "latest=$(git tag -l '${{ inputs.package-name }}-v*' | sort -V | tail -1)" >> $GITHUB_OUTPUT
+
       - name: Run semantic-release
         id: semantic-release
         if: steps.cache.outputs.should-run == 'true'
@@ -180,19 +186,18 @@ jobs:
         id: release-info
         run: |
           if [ "${{ inputs.release-dry-run }}" = "false" ]; then
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-            if [ -n "$LATEST_TAG" ]; then
+            LATEST_TAG=$(git tag -l '${{ inputs.package-name }}-v*' | sort -V | tail -1)
+            PREV_TAG="${{ steps.tags-before.outputs.latest }}"
+            if [ -n "$LATEST_TAG" ] && [ "$LATEST_TAG" != "$PREV_TAG" ]; then
               VERSION=$(echo "$LATEST_TAG" | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
               echo "version=$VERSION" >> $GITHUB_OUTPUT
               echo "released=true" >> $GITHUB_OUTPUT
               echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
             else
-              echo "version=unknown" >> $GITHUB_OUTPUT
               echo "released=false" >> $GITHUB_OUTPUT
               echo "tag=" >> $GITHUB_OUTPUT
             fi
           else
-            echo "version=unknown" >> $GITHUB_OUTPUT
             echo "released=false" >> $GITHUB_OUTPUT
             echo "tag=" >> $GITHUB_OUTPUT
           fi
