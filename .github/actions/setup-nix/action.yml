@@ -7,36 +7,41 @@ inputs:
       nix installation strategy:
       - 'full' (default): space reclamation + magic-nix-cache + cachix for builds
       - 'quick': minimal install for simple tasks (no space reclamation, no caching overhead)
+    type: string
     required: false
     default: full
   system:
     description: nix system to configure (e.g., x86_64-linux, aarch64-darwin)
+    type: string
     required: true
   sandbox:
     description: enable nix sandbox builds
+    type: string
     default: "true"
   extra-conf:
     description: additional nix configuration lines (appended to generated config)
+    type: string
     required: false
     default: ""
   enable-cachix:
     description: enable cachix binary cache
+    type: boolean
     default: false
   cachix-name:
     description: cachix cache name
+    type: string
     required: false
   cachix-auth-token:
     description: cachix auth token
+    type: string
     required: false
   cachix-skip-push:
     description: skip pushing to cachix (read-only)
+    type: boolean
     default: false
-  extra-pull-names:
-    description: comma-separated list of additional cachix caches to pull from
-    required: false
-    default: ""
   nix-version:
     description: nix version to install (e.g., 2.32.4, 2.31.2)
+    type: string
     required: false
     default: "2.32.4"
   hatchet:
@@ -46,18 +51,21 @@ inputs:
       - 'carve' (level 1): ~85GB, preserves Docker
       - 'cleave' (level 2, default): ~115GB, removes Docker
       - 'rampage' (level 3): ~130GB, removes Docker
+    type: string
     required: false
     default: "cleave"
   root-safe-haven:
     description: |
       Space in MB to reserve on root filesystem for non-Nix usage (e.g., Docker overlay).
       Only effective with carve/cleave/rampage protocols that expand from root.
+    type: string
     required: false
     default: "2048"
   mnt-safe-haven:
     description: |
       Space in MB to reserve on /mnt filesystem. On single-disk runners where /mnt
       is on root, this effectively reserves space for Docker overlay storage.
+    type: string
     required: false
     default: "4096"
 
@@ -70,7 +78,10 @@ runs:
       with:
         hatchet-protocol: ${{ inputs.hatchet }}
         nix-permission-edict: true
+        # Reserve space on /mnt for non-Nix TMPDIR usage
+        # Nix build temps now go to /nix/build (see build-dir in extra_nix_config)
         mnt-safe-haven: ${{ inputs.mnt-safe-haven }}
+        # Reserve space on root for non-Nix usage (e.g., Docker overlay)
         root-safe-haven: ${{ inputs.root-safe-haven }}
 
     - name: reclaim space (darwin)
@@ -102,7 +113,11 @@ runs:
     - name: install nix
       uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
       with:
+        # Use install_url to pin specific Nix version
+        # Switched from nix-quick-install-action (single-user) to install-nix-action (multi-user with daemon)
+        # to get access to Nix 2.32.4 which fixes callback race condition (NixOS/nix#13484)
         install_url: https://releases.nixos.org/nix/nix-${{ inputs.nix-version }}/install
+        # build-dir on /nix is workaround for https://github.com/wimpysworld/nothing-but-nix/issues/18
         extra_nix_config: |
           build-dir = /nix/build
           sandbox = ${{ inputs.sandbox }}
@@ -120,7 +135,9 @@ runs:
       if: inputs.installer == 'full'
       uses: DeterminateSystems/magic-nix-cache-action@61574a7f2bd30303aa02b97bc1e9fb4a2bdfeda4 # main
       with:
+        # Disable FlakeHub cache (we use Cachix instead)
         use-flakehub: false
+        # Disable telemetry
         diagnostic-endpoint: ""
 
     - name: setup cachix
@@ -131,7 +148,6 @@ runs:
         name: ${{ inputs.cachix-name }}
         authToken: ${{ inputs.cachix-auth-token }}
         skipPush: ${{ inputs.cachix-skip-push }}
-        extraPullNames: ${{ inputs.extra-pull-names }}
 
     - name: post setup-nix
       if: runner.os == 'macOS' && inputs.installer == 'full'
