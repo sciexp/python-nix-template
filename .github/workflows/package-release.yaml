@@ -135,9 +135,9 @@ jobs:
       id-token: write
     outputs:
       artifact-name: ${{ steps.set-outputs.outputs.artifact-name }}
-      version: ${{ steps.semantic-release.outputs.new_release_version || inputs.version }}
-      released: ${{ steps.semantic-release.outputs.new_release_published || 'false' }}
-      tag: ${{ steps.semantic-release.outputs.new_release_git_tag }}
+      version: ${{ steps.release-info.outputs.version || inputs.version }}
+      released: ${{ steps.release-info.outputs.released || 'false' }}
+      tag: ${{ steps.release-info.outputs.tag }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -162,31 +162,40 @@ jobs:
           installer: quick
           system: x86_64-linux
 
-      - name: Test semantic-release (dry-run)
-        if: steps.cache.outputs.should-run == 'true' && inputs.release-dry-run == 'true'
+      - name: Install dependencies
+        if: steps.cache.outputs.should-run == 'true'
+        run: nix develop --accept-flake-config -c bun install
+
+      - name: Run semantic-release
+        id: semantic-release
+        if: steps.cache.outputs.should-run == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          nix develop --accept-flake-config -c just release-package ${{ inputs.package-name }} true
+          nix develop --accept-flake-config -c just release-package ${{ inputs.package-name }} ${{ inputs.release-dry-run }}
 
-      - name: Run semantic-release
-        id: semantic-release
-        if: steps.cache.outputs.should-run == 'true' && inputs.release-dry-run != 'true'
-        uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # ratchet:cycjimmy/semantic-release-action@v4
-        with:
-          working_directory: ${{ inputs.package-path }}
-          dry_run: false
-          semantic_version: 24
-          extra_plugins: |
-            @semantic-release/changelog
-            semantic-release-major-tag
-            semantic-release-monorepo
-            conventional-changelog-conventionalcommits
-          ci: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract release info
+        if: always()
+        id: release-info
+        run: |
+          if [ "${{ inputs.release-dry-run }}" = "false" ]; then
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -n "$LATEST_TAG" ]; then
+              VERSION=$(echo "$LATEST_TAG" | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "released=true" >> $GITHUB_OUTPUT
+              echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+            else
+              echo "version=unknown" >> $GITHUB_OUTPUT
+              echo "released=false" >> $GITHUB_OUTPUT
+              echo "tag=" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "version=unknown" >> $GITHUB_OUTPUT
+            echo "released=false" >> $GITHUB_OUTPUT
+            echo "tag=" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set outputs
         id: set-outputs
@@ -195,15 +204,15 @@ jobs:
           ARTIFACT_NAME="${{ inputs.package-name }}-${{ github.run_id }}"
           echo "artifact-name=$ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
 
-          if [ "${{ steps.semantic-release.outputs.new_release_published }}" == "true" ]; then
-            echo "Package ${{ inputs.package-name }} released version ${{ steps.semantic-release.outputs.new_release_version }}"
-            echo "Tag: ${{ steps.semantic-release.outputs.new_release_git_tag }}"
+          if [ "${{ steps.release-info.outputs.released }}" == "true" ]; then
+            echo "Package ${{ inputs.package-name }} released version ${{ steps.release-info.outputs.version }}"
+            echo "Tag: ${{ steps.release-info.outputs.tag }}"
           else
             echo "No release needed for ${{ inputs.package-name }}"
           fi
 
       - name: Build package
-        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && (steps.semantic-release.outputs.new_release_published == 'true' || inputs.release-dry-run == 'true')
+        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && (steps.release-info.outputs.released == 'true' || inputs.release-dry-run == 'true')
         working-directory: ${{ inputs.package-path }}
         run: |
           nix develop --accept-flake-config -c uv build
@@ -213,14 +222,14 @@ jobs:
         if: ${{ inputs.debug-enabled }}
 
       - name: Upload artifacts
-        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && (steps.semantic-release.outputs.new_release_published == 'true' || inputs.release-dry-run == 'true')
+        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && (steps.release-info.outputs.released == 'true' || inputs.release-dry-run == 'true')
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: ${{ steps.set-outputs.outputs.artifact-name }}
           path: ${{ inputs.package-path }}/dist
 
       - name: Publish to PyPI
-        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && steps.semantic-release.outputs.new_release_published == 'true' && inputs.release-dry-run != 'true'
+        if: steps.cache.outputs.should-run == 'true' && inputs.build-wheels != 'true' && steps.release-info.outputs.released == 'true' && inputs.release-dry-run != 'true'
         working-directory: ${{ inputs.package-path }}
         run: nix develop --accept-flake-config -c uv publish
         env:
