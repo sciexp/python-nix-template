@@ -33,11 +33,14 @@ let
     filter = path: type: (sourceFilter path type) || (testFilter path type);
   };
 
+  cargoToml = builtins.fromTOML (builtins.readFile ../../../packages/pnt-cli/Cargo.toml);
+
   # Standalone crane-maturin build for test suite and Python package output.
   # nixpkgsPrebuilt installs from this derivation, avoiding duplicate Rust
   # compilation in the uv2nix overlay. passthru.tests provides checks.
   cmPackage = cmLib.buildMaturinPackage {
     pname = "pnt-cli";
+    version = cargoToml.workspace.package.version;
     inherit src testSrc python;
   };
 in
