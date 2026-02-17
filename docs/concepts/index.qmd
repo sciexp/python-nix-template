@@ -15,4 +15,4 @@ csl: ../bibstyle.csl
 
 # Introduction {#sec-introduction}
 
-This section provides an overview of the concepts and terminology used in the {{package-name-kebab-case}} project.
+This section provides an overview of the concepts and terminology used in the python-nix-template project.
