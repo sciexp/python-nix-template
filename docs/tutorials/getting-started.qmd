@@ -1,11 +1,11 @@
 ---
 title: "Getting Started"
-description: "Quick tutorial to get up and running with {{package-name-kebab-case}}"
+description: "Quick tutorial to get up and running with python-nix-template"
 ---
 
-# Getting Started with {{package-name-kebab-case}}
+# Getting Started with python-nix-template
 
-This tutorial will walk you through the basic usage of {{package-name-kebab-case}}.
+This tutorial will walk you through the basic usage of python-nix-template.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ See the [Installation Guide](../guides/installation.qmd) for detailed installati
 
 ```python
 # Example usage will be added here
-print("Hello from {{package-name-kebab-case}}!")
+print("Hello from python-nix-template!")
 ```
 
 ## Next Steps
