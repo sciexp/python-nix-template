@@ -1,0 +1,68 @@
+name: Wheel Release
+
+on:
+  release:
+    types: [published]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check-wheels:
+    name: Check if wheel build is needed
+    runs-on: ubuntu-latest
+    outputs:
+      build-wheels: ${{ steps.check.outputs.build-wheels }}
+      checkout-ref: ${{ steps.check.outputs.checkout-ref }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          sparse-checkout: packages
+          sparse-checkout-cone-mode: true
+
+      - name: Determine if release needs wheel build
+        id: check
+        run: |
+          # Extract package name from tag (format: package-name-vX.Y.Z)
+          TAG="${{ github.event.release.tag_name }}"
+          # Remove version suffix to get package name
+          PACKAGE_NAME=$(echo "$TAG" | sed 's/-v[0-9].*//')
+
+          echo "Tag: $TAG"
+          echo "Package: $PACKAGE_NAME"
+          echo "checkout-ref=$TAG" >> "$GITHUB_OUTPUT"
+
+          # Check if this package uses maturin/pyo3 (has Cargo.toml)
+          if [ -f "packages/$PACKAGE_NAME/Cargo.toml" ]; then
+            echo "Package $PACKAGE_NAME has Cargo.toml, wheels needed"
+            echo "build-wheels=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Package $PACKAGE_NAME has no Cargo.toml, skipping wheels"
+            echo "build-wheels=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-wheels:
+    needs: [check-wheels]
+    if: ${{ needs.check-wheels.outputs.build-wheels == 'true' }}
+    uses: ./.github/workflows/wheel-build.yaml
+    with:
+      checkout-ref: ${{ needs.check-wheels.outputs.checkout-ref }}
+
+  publish-wheels:
+    name: Publish wheels to PyPI
+    needs: [check-wheels, build-wheels]
+    if: ${{ needs.check-wheels.outputs.build-wheels == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+      - name: Publish to PyPI
+        run: uv publish dist/*
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.UV_PUBLISH_TOKEN }}
