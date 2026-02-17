@@ -17,7 +17,7 @@ csl: ../../bibstyle.csl
 
 ## Purpose of this Document {#sec-purpose}
 
-This system specification outlines the system architecture and design for the {{package-name-kebab-case}} project.
+This system specification outlines the system architecture and design for the python-nix-template project.
 
 | Topic | Reference |
 |-------|-----------|
