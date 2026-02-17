@@ -635,10 +635,10 @@ jobs:
     secrets: inherit
 
   # ---------------------------------------------------------------------------
-  # job 11: deploy-docs
+  # job 11: production-docs-deploy
   # production docs deployment on push to main/beta
   # ---------------------------------------------------------------------------
-  deploy-docs:
+  production-docs-deploy:
     needs: [set-variables, test-python, nix]
     if: ${{ needs.set-variables.outputs.has_docs == 'true' && github.repository_owner == 'sciexp' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
     uses: ./.github/workflows/deploy-docs.yaml
@@ -646,11 +646,14 @@ jobs:
       contents: read
       deployments: write
     concurrency:
-      group: deploy-docs-${{ github.workflow }}-${{ github.ref_name }}
+      group: production-docs-deploy-${{ github.workflow }}-${{ github.ref_name }}
       cancel-in-progress: true
     with:
-      debug_enabled: "false"
-      branch: ${{ github.ref_name }}
+      debug_enabled: ${{ needs.set-variables.outputs.debug }}
+      branch: ${{ needs.set-variables.outputs.checkout_ref }}
+      sanitized_branch: ${{ needs.set-variables.outputs.sanitized_branch }}
+      environment: production
+      force_run: ${{ needs.set-variables.outputs.force_ci }}
     secrets: inherit
 
   # ---------------------------------------------------------------------------
