@@ -15,4 +15,4 @@ csl: ../bibstyle.csl
 
 # Introduction {#sec-introduction}
 
-This section provides background information for the {{package-name-kebab-case}} project.
+This section provides background information for the python-nix-template project.
