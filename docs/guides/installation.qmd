@@ -1,18 +1,18 @@
 ---
 title: "Installation"
-description: "How to install {{package-name-kebab-case}}"
+description: "How to install python-nix-template"
 ---
 
 # Installation
 
-This guide covers different ways to install {{package-name-kebab-case}}.
+This guide covers different ways to install python-nix-template.
 
 ## Using UV (Recommended)
 
 The fastest way to get started is with UV:
 
 ```bash
-uv pip install {{package-name-kebab-case}}
+uv pip install python-nix-template
 ```
 
 ## Using Pip
@@ -20,7 +20,7 @@ uv pip install {{package-name-kebab-case}}
 You can also install with standard pip:
 
 ```bash
-pip install {{package-name-kebab-case}}
+pip install python-nix-template
 ```
 
 ## Development Installation
@@ -28,8 +28,8 @@ pip install {{package-name-kebab-case}}
 For development, clone the repository and set up the environment:
 
 ```bash
-git clone https://github.com/{{git-org}}/{{package-name-kebab-case}}.git
-cd {{package-name-kebab-case}}
+git clone https://github.com/sciexp/python-nix-template.git
+cd python-nix-template
 
 # With Nix (recommended)
 nix develop
@@ -43,6 +43,6 @@ uv sync
 Verify your installation by running:
 
 ```python
-import {{package-name-kebab-case}}
-print({{package-name-kebab-case}}.__version__)
+import python-nix-template
+print(python-nix-template.__version__)
 ```
