@@ -39,9 +39,9 @@ interlinks:
       url: https://numpy.org/doc/stable/
 
 website:
-  title: "{{package-name-kebab-case}}"
-  description: "{{project-description}}"
-  site-url: "https://{{git-org}}.github.io/{{package-name-kebab-case}}"
+  title: "python-nix-template"
+  description: "A Python project template for Nix using uv2nix and flake-parts"
+  site-url: "https://sciexp.github.io/python-nix-template"
   back-to-top-navigation: false
   page-navigation: true
 
@@ -50,7 +50,7 @@ website:
     left: ""
     right:
       - icon: github
-        href: https://github.com/{{git-org}}/{{package-name-kebab-case}}
+        href: https://github.com/sciexp/python-nix-template
 
   search:
     type: overlay
@@ -59,7 +59,7 @@ website:
     background: primary
     tools:
       - icon: github
-        href: https://github.com/{{git-org}}/{{package-name-kebab-case}}
+        href: https://github.com/sciexp/python-nix-template
     left:
       - sidebar:tutorials
       - sidebar:guides
@@ -124,7 +124,7 @@ quartodoc:
   sections:
     - title: API Reference
       desc: |
-        API reference for {{package-name-kebab-case}}.
+        API reference for python-nix-template.
       contents:
         - name: main
           children: embedded
