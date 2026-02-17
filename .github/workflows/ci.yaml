@@ -98,6 +98,7 @@ jobs:
       checkout_ref: ${{ steps.set-variables.outputs.checkout_ref }}
       checkout_rev: ${{ steps.set-variables.outputs.checkout_rev }}
       has_docs: ${{ steps.check-docs.outputs.has_docs }}
+      sanitized_branch: ${{ steps.set-variables.outputs.sanitized_branch }}
       packages: ${{ steps.discover-packages.outputs.packages }}
       force_ci: ${{ steps.set-variables.outputs.force_ci }}
 
@@ -161,6 +162,12 @@ jobs:
             CHECKOUT_REV="${{ github.sha }}"
           fi
 
+          # Sanitize branch name for Cloudflare preview alias (must be valid subdomain component)
+          # - Replace / and other non-alphanumeric chars with -
+          # - Collapse consecutive hyphens, remove leading/trailing hyphens
+          # - Truncate to 40 chars (safe for subdomain label limit of 63)
+          SANITIZED_BRANCH=$(echo "$CHECKOUT_REF" | tr '/' '-' | tr -c 'a-zA-Z0-9-' '-' | sed 's/--*/-/g; s/^-//; s/-$//' | cut -c1-40)
+
           {
             echo "debug=$DEBUG"
             echo "skip_ci=$SKIP_CI"
@@ -168,6 +175,7 @@ jobs:
             echo "dry_run_release=$DRY_RUN_RELEASE"
             echo "checkout_ref=$CHECKOUT_REF"
             echo "checkout_rev=$CHECKOUT_REV"
+            echo "sanitized_branch=$SANITIZED_BRANCH"
             echo "force_ci=$FORCE_CI"
           } >> "$GITHUB_OUTPUT"
 
