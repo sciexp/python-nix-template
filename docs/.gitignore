@@ -6,5 +6,5 @@ development/notes/
 objects.json
 objects.txt
 /_freeze
-*.quarto_ipynb
+**/*.quarto_ipynb
 .jupyter_cache/
