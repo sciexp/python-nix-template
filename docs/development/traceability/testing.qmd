@@ -13,4 +13,4 @@ csl: ../../bibstyle.csl
 
 ## Purpose of this Document {#sec-purpose}
 
-This document describes the testing approach and infrastructure for the {{package-name-kebab-case}} library.
+This document describes the testing approach and infrastructure for the python-nix-template library.
