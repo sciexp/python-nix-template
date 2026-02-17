@@ -17,4 +17,4 @@ csl: ../../bibstyle.csl
 
 ## Purpose of this Document {#sec-purpose}
 
-This requirements specification document defines what {{package-name-kebab-case}} should do from an external (black-box) perspective without specifying how it will be implemented internally.
+This requirements specification document defines what python-nix-template should do from an external (black-box) perspective without specifying how it will be implemented internally.
