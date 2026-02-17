@@ -480,7 +480,7 @@ jobs:
         if: steps.cache.outputs.should-run == 'true'
         run: |
           echo "::group::Preview semantic-release version"
-          OUTPUT=$(nix develop --accept-flake-config -c just preview-version main ${{ matrix.package.path }} 2>&1 | tee /dev/stderr)
+          OUTPUT=$(nix develop --accept-flake-config -c just preview-version main "${{ matrix.package.path }}" 2>&1 | tee /dev/stderr)
           echo "::endgroup::"
 
           # Strip ANSI escape codes before parsing (script outputs colored text)
