@@ -833,15 +833,90 @@ docs-check:
 docs-dev: docs-build
   bunx wrangler dev
 
-# Deploy docs
+# Deploy documentation to Cloudflare Workers (production)
 [group('docs')]
-docs-deploy: docs-build
-  bunx wrangler deploy
+docs-deploy-production: docs-build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    CURRENT_SHA=$(git rev-parse HEAD)
+    CURRENT_TAG=$(git rev-parse --short=12 HEAD)
+    CURRENT_SHORT=$(git rev-parse --short HEAD)
+    CURRENT_BRANCH=$(git branch --show-current)
+    if [ -n "${GITHUB_ACTIONS:-}" ]; then
+        DEPLOYER="${GITHUB_ACTOR:-github-actions}"
+        DEPLOY_CONTEXT="${GITHUB_WORKFLOW:-CI}"
+        DEPLOY_MSG="Deployed by ${DEPLOYER} from ${CURRENT_BRANCH} via ${DEPLOY_CONTEXT}"
+    else
+        DEPLOYER=$(whoami)
+        DEPLOY_HOST=$(hostname -s)
+        DEPLOY_MSG="Deployed by ${DEPLOYER} from ${CURRENT_BRANCH} on ${DEPLOY_HOST}"
+    fi
+    echo "Deploying to production from branch: ${CURRENT_BRANCH}"
+    echo "Current commit: ${CURRENT_SHORT} (${CURRENT_SHA})"
+    echo "Looking for existing version with tag: ${CURRENT_TAG}"
+    echo ""
+    EXISTING_VERSION=$(sops exec-env vars/shared.yaml \
+        "bunx wrangler versions list --json" | \
+        jq -r --arg tag "$CURRENT_TAG" \
+        '.[] | select(.annotations["workers/tag"] == $tag) | .id' | head -1)
+    if [ -n "$EXISTING_VERSION" ]; then
+        echo "Found existing version: ${EXISTING_VERSION}"
+        echo "Promoting to 100% production traffic..."
+        export DEPLOYMENT_MESSAGE="${DEPLOY_MSG}"
+        sops exec-env vars/shared.yaml "
+            bunx wrangler versions deploy ${EXISTING_VERSION}@100% --yes --message \"\$DEPLOYMENT_MESSAGE\"
+        "
+        echo "Promoted version ${EXISTING_VERSION} to production"
+    else
+        echo "No existing version found, falling back to direct deploy..."
+        sops exec-env vars/shared.yaml '
+            bunx wrangler deploy
+        '
+        echo "Built and deployed to production"
+    fi
+    echo "Production URL: https://python-nix-template.scientistexperience.net"
 
-# Preview docs on remote
+# Deploy documentation to Cloudflare Workers (preview)
 [group('docs')]
-docs-preview-deploy: data-sync docs-build
-  bunx wrangler versions upload --preview-alias b-$(git branch --show-current)
+docs-deploy-preview branch=`git branch --show-current`: docs-build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    SAFE_BRANCH=$(echo "{{branch}}" | tr '/' '-' | tr -c 'a-zA-Z0-9-' '-' | sed 's/--*/-/g; s/^-//; s/-$//' | cut -c1-40)
+    COMMIT_TAG=$(git rev-parse --short=12 HEAD)
+    COMMIT_SHORT=$(git rev-parse --short HEAD)
+    COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+    GIT_STATUS=$(git diff-index --quiet HEAD -- && echo "clean" || echo "dirty")
+    TAG="${COMMIT_TAG}"
+    MESSAGE="[{{branch}}] ${COMMIT_MSG} (${COMMIT_TAG}, ${GIT_STATUS})"
+    echo "Deploying preview for branch: {{branch}}"
+    echo "Sanitized alias: b-${SAFE_BRANCH}"
+    echo "Commit: ${COMMIT_SHORT} (${GIT_STATUS})"
+    echo "Tag: ${COMMIT_TAG}"
+    echo ""
+    export VERSION_TAG="${TAG}" VERSION_MESSAGE="${MESSAGE}" SAFE_BRANCH="${SAFE_BRANCH}"
+    sops exec-env vars/shared.yaml '
+        bunx wrangler versions upload \
+            --tag "$VERSION_TAG" \
+            --message "$VERSION_MESSAGE" \
+            --preview-alias "b-${SAFE_BRANCH}"
+    '
+    echo ""
+    echo "Preview uploaded: https://b-${SAFE_BRANCH}-python-nix-template.sciexp.workers.dev"
+
+# List recent Cloudflare Workers versions
+[group('docs')]
+docs-versions limit="10":
+    sops exec-env vars/shared.yaml "bunx wrangler versions list --limit {{limit}}"
+
+# List recent Cloudflare Workers deployments
+[group('docs')]
+docs-deployments:
+    sops exec-env vars/shared.yaml "bunx wrangler deployments list"
+
+# Tail live logs from Cloudflare Workers
+[group('docs')]
+docs-tail:
+    sops exec-env vars/shared.yaml "bunx wrangler tail"
 
 # Sync data from drive (using encrypted service account)
 [group('docs')]
