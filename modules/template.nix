@@ -110,6 +110,8 @@
             "packages/pnt-cli"
             "nix/packages/pnt-cli"
             "rust-toolchain.toml"
+            ".github/workflows/wheel-build.yaml"
+            ".github/workflows/wheel-release.yaml"
           ];
           value = false;
         }
