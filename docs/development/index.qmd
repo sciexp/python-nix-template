@@ -14,7 +14,7 @@ csl: ../bibstyle.csl
 
 # Introduction {#sec-introduction}
 
-This section provides comprehensive technical documentation for developers working on {{package-name-kebab-case}}. It follows the AMDiRE (Artefact-based Model for Domain-independent Requirements Engineering) framework to ensure a structured, traceable approach to development documentation [@Mendez-Fernandez2015-xj;@Chuprina2021-xx].
+This section provides comprehensive technical documentation for developers working on python-nix-template. It follows the AMDiRE (Artefact-based Model for Domain-independent Requirements Engineering) framework to ensure a structured, traceable approach to development documentation [@Mendez-Fernandez2015-xj;@Chuprina2021-xx].
 
 ## Artifact-based requirements framework {#sec-amdire}
 
