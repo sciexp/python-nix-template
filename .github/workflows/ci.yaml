@@ -174,7 +174,7 @@ jobs:
       - name: Discover packages
         id: discover-packages
         run: |
-          PACKAGES=$(ls -d packages/*/pyproject.toml | while read -r f; do
+          PACKAGES=$(find packages -maxdepth 2 -name pyproject.toml -path '*/*/pyproject.toml' | sort | while read -r f; do
             d=$(dirname "$f")
             n=$(basename "$d")
 
