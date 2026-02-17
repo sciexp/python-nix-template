@@ -291,7 +291,7 @@ Available recipes:
     docs-reference                                     # Build quartodoc API reference
     docs-sync                                          # Sync docs freeze data to DVC remote
     docs-tail                                          # Tail live logs from Cloudflare Workers
-    docs-versions limit="10"                           # List recent Cloudflare Workers versions
+    docs-versions                                      # List recent Cloudflare Workers versions
 
     [nix]
     ci                                                 # Run CI checks locally with `om ci`
