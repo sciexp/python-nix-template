@@ -93,6 +93,11 @@
           placeholder = "python_nix_template";
         }
         {
+          name = "package-name-camel-case";
+          description = "Name of the Python package (camelCase)";
+          placeholder = "pythonNixTemplate";
+        }
+        {
           name = "monorepo-package";
           description = "Include the functional programming monorepo package in the project";
           paths = [ "packages/pnt-functional" ];
