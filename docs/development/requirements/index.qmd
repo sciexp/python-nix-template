@@ -17,7 +17,7 @@ csl: ../../bibstyle.csl
 
 ## Purpose of this Document {#sec-purpose}
 
-This document will outline the requirements for the {{package-name-kebab-case}} project.
+This document will outline the requirements for the python-nix-template project.
 
 | Topic | Reference |
 |-------|-----------|
