@@ -17,4 +17,4 @@ csl: ../../bibstyle.csl
 
 ## Purpose of this Document {#sec-purpose}
 
-This document specifies the context to establish the motivation and conceptual foundation for the {{package-name-kebab-case}} project.
+This document specifies the context to establish the motivation and conceptual foundation for the python-nix-template project.
