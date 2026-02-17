@@ -852,8 +852,10 @@ docs-deploy-production: docs-build
         DEPLOY_MSG="Deployed by ${DEPLOYER} from ${CURRENT_BRANCH} on ${DEPLOY_HOST}"
     fi
     echo "Deploying to production from branch: ${CURRENT_BRANCH}"
-    echo "Current commit: ${CURRENT_SHORT} (${CURRENT_SHA})"
+    echo "Current commit: ${CURRENT_SHORT}"
+    echo "Full SHA: ${CURRENT_SHA}"
     echo "Looking for existing version with tag: ${CURRENT_TAG}"
+    echo "Deployment message: ${DEPLOY_MSG}"
     echo ""
     EXISTING_VERSION=$(sops exec-env vars/shared.yaml \
         "bunx wrangler versions list --json" | \
@@ -861,20 +863,48 @@ docs-deploy-production: docs-build
         '.[] | select(.annotations["workers/tag"] == $tag) | .id' | head -1)
     if [ -n "$EXISTING_VERSION" ]; then
         echo "Found existing version: ${EXISTING_VERSION}"
-        echo "Promoting to 100% production traffic..."
+        echo "  This version was already built and tested in preview"
+        echo "  Promoting to 100% production traffic..."
+        echo ""
         export DEPLOYMENT_MESSAGE="${DEPLOY_MSG}"
-        sops exec-env vars/shared.yaml "
+        if sops exec-env vars/shared.yaml "
             bunx wrangler versions deploy ${EXISTING_VERSION}@100% --yes --message \"\$DEPLOYMENT_MESSAGE\"
-        "
-        echo "Promoted version ${EXISTING_VERSION} to production"
+        "; then
+            echo ""
+            echo "Successfully promoted version ${EXISTING_VERSION} to production"
+            echo "  Tag: ${CURRENT_TAG}"
+            echo "  Full SHA: ${CURRENT_SHA}"
+            echo "  Deployed by: ${DEPLOY_MSG}"
+            echo "  Production URL: https://python-nix-template.scientistexperience.net"
+        else
+            echo ""
+            echo "Failed to promote version ${EXISTING_VERSION}"
+            echo "  Deployment was cancelled or failed"
+            exit 1
+        fi
     else
-        echo "No existing version found, falling back to direct deploy..."
-        sops exec-env vars/shared.yaml '
+        echo "No existing version found with tag: ${CURRENT_TAG}"
+        echo "  This should only happen if:"
+        echo "    - This is the first deployment"
+        echo "    - Commit was made directly on main (not recommended)"
+        echo "    - Version was cleaned up (retention policy)"
+        echo ""
+        echo "  Falling back to direct build and deploy..."
+        echo ""
+        if sops exec-env vars/shared.yaml '
             bunx wrangler deploy
-        '
-        echo "Built and deployed to production"
+        '; then
+            echo ""
+            echo "Built and deployed to production"
+            echo "  Full SHA: ${CURRENT_SHA}"
+            echo "  Deployed by: ${DEPLOY_MSG}"
+            echo "  Production URL: https://python-nix-template.scientistexperience.net"
+        else
+            echo ""
+            echo "Failed to build and deploy"
+            exit 1
+        fi
     fi
-    echo "Production URL: https://python-nix-template.scientistexperience.net"
 
 # Deploy documentation to Cloudflare Workers (preview)
 [group('docs')]
@@ -882,6 +912,7 @@ docs-deploy-preview branch=`git branch --show-current`: docs-build
     #!/usr/bin/env bash
     set -euo pipefail
     SAFE_BRANCH=$(echo "{{branch}}" | tr '/' '-' | tr -c 'a-zA-Z0-9-' '-' | sed 's/--*/-/g; s/^-//; s/-$//' | cut -c1-40)
+    COMMIT_SHA=$(git rev-parse HEAD)
     COMMIT_TAG=$(git rev-parse --short=12 HEAD)
     COMMIT_SHORT=$(git rev-parse --short HEAD)
     COMMIT_MSG=$(git log -1 --pretty=format:'%s')
@@ -891,7 +922,9 @@ docs-deploy-preview branch=`git branch --show-current`: docs-build
     echo "Deploying preview for branch: {{branch}}"
     echo "Sanitized alias: b-${SAFE_BRANCH}"
     echo "Commit: ${COMMIT_SHORT} (${GIT_STATUS})"
+    echo "Full SHA: ${COMMIT_SHA}"
     echo "Tag: ${COMMIT_TAG}"
+    echo "Message: ${COMMIT_MSG}"
     echo ""
     export VERSION_TAG="${TAG}" VERSION_MESSAGE="${MESSAGE}" SAFE_BRANCH="${SAFE_BRANCH}"
     sops exec-env vars/shared.yaml '
@@ -901,7 +934,11 @@ docs-deploy-preview branch=`git branch --show-current`: docs-build
             --preview-alias "b-${SAFE_BRANCH}"
     '
     echo ""
-    echo "Preview uploaded: https://b-${SAFE_BRANCH}-python-nix-template.sciexp.workers.dev"
+    echo "Version uploaded successfully"
+    echo "  Tag: ${COMMIT_TAG}"
+    echo "  Full SHA: ${COMMIT_SHA}"
+    echo "  Message: ${MESSAGE}"
+    echo "  Preview URL: https://b-${SAFE_BRANCH}-python-nix-template.sciexp.workers.dev"
 
 # List recent Cloudflare Workers versions
 [group('docs')]
