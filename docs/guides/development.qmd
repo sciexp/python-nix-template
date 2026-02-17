@@ -1,11 +1,11 @@
 ---
 title: "Development"
-description: "Development guide for {{package-name-kebab-case}}"
+description: "Development guide for python-nix-template"
 ---
 
 # Development Guide
 
-This guide covers development workflows for {{package-name-kebab-case}}.
+This guide covers development workflows for python-nix-template.
 
 ## Development Environment
 
