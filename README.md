@@ -282,13 +282,16 @@ Available recipes:
     data-sync                                          # Sync data from drive (using encrypted service account)
     docs-build                                         # Build docs
     docs-check                                         # Check docs
-    docs-deploy                                        # Deploy docs
+    docs-deploy-preview branch=`git branch --show-current` # Deploy documentation to Cloudflare Workers (preview)
+    docs-deploy-production                             # Deploy documentation to Cloudflare Workers (production)
+    docs-deployments                                   # List recent Cloudflare Workers deployments
     docs-dev                                           # Run local docs deployment
     docs-extensions                                    # Add quartodoc extension
     docs-local                                         # Preview docs locally
-    docs-preview-deploy                                # Preview docs on remote
     docs-reference                                     # Build quartodoc API reference
     docs-sync                                          # Sync docs freeze data to DVC remote
+    docs-tail                                          # Tail live logs from Cloudflare Workers
+    docs-versions limit="10"                           # List recent Cloudflare Workers versions
 
     [nix]
     ci                                                 # Run CI checks locally with `om ci`
