@@ -13,7 +13,7 @@ csl: ../../bibstyle.csl
 
 ## Purpose of this Document {#sec-purpose}
 
-This document outlines the traceability and validation approach for the {{package-name-kebab-case}} project.
+This document outlines the traceability and validation approach for the python-nix-template project.
 
 | Topic | Reference |
 |-------|-----------|
