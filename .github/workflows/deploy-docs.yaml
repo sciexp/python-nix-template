@@ -5,23 +5,54 @@ on:
     inputs:
       debug_enabled:
         description: "Run with tmate.io debugging enabled"
-        required: true
+        required: false
         type: string
         default: "false"
       branch:
         description: "Git branch or ref to checkout"
         required: true
         type: string
+      sanitized_branch:
+        description: "URL-safe branch name for preview alias (auto-computed if empty)"
+        required: false
+        type: string
+        default: ""
+      environment:
+        description: "Deployment environment (preview or production)"
+        required: false
+        type: string
+        default: "preview"
+      force_run:
+        description: "Force execution even if already successful"
+        required: false
+        type: string
+        default: "false"
   workflow_call:
     inputs:
       debug_enabled:
         description: "Run with tmate.io debugging enabled"
+        required: false
         type: string
         default: "false"
       branch:
         description: "Git branch or ref to checkout"
         required: true
         type: string
+      sanitized_branch:
+        description: "URL-safe branch name for preview alias (auto-computed if empty)"
+        required: false
+        type: string
+        default: ""
+      environment:
+        description: "Deployment environment (preview or production)"
+        required: false
+        type: string
+        default: "production"
+      force_run:
+        description: "Force execution even if already successful"
+        required: false
+        type: string
+        default: "false"
 
 defaults:
   run:
@@ -32,8 +63,14 @@ permissions:
   deployments: write
 
 jobs:
-  build-docs:
+  deploy-docs:
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment == 'preview' && format('https://b-{0}-python-nix-template.sciexp.workers.dev', inputs.sanitized_branch || inputs.branch) || 'https://python-nix-template.scientistexperience.net' }}
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -43,62 +80,19 @@ jobs:
       - name: Setup Nix
         uses: ./.github/actions/setup-nix
         with:
+          installer: quick
           system: x86_64-linux
-          enable-cachix: true
-          cachix-name: ${{ vars.CACHIX_CACHE_NAME }}
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Setup tmate debug session
+        if: inputs.debug_enabled == 'true'
         uses: mxschmitt/action-tmate@c0afd6f790e3a5564914980036ebf83216678101 # v3
-        if: ${{ inputs.debug_enabled == 'true' }}
 
-      - name: Build docs
+      - name: Deploy docs
         env:
           SOPS_AGE_KEY: ${{ secrets.CI_AGE_KEY }}
         run: |
-          df -h
-          nix develop --accept-flake-config -c just docs-build
-          df -h
-
-      - name: Upload docs
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-        with:
-          name: docs-site
-          path: |
-            docs/_site
-            wrangler.jsonc
-
-  deploy-docs:
-    needs: build-docs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download docs
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: docs-site
-
-      - name: Site artifact tree
-        run: |
-          if command -v tree &> /dev/null; then
-            tree --du -alh
+          if [ "${{ inputs.environment }}" = "preview" ]; then
+            nix develop --accept-flake-config -c just docs-deploy-preview "${{ inputs.sanitized_branch || inputs.branch }}"
           else
-            echo "tree command not found, skipping file tree display"
+            nix develop --accept-flake-config -c just docs-deploy-production
           fi
-
-      - name: Deploy preview
-        id: deployment
-        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # ratchet:cloudflare/wrangler-action@v3
-        with:
-          wranglerVersion: "4.37.1"
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: versions upload --preview-alias b-${{ inputs.branch }}
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Preview rollout command
-        env:
-          WRANGLER_OUTPUT: ${{ steps.deployment.outputs.command-output }}
-        run: |
-          WRANGLER_VERSION_ID=$(echo "$WRANGLER_OUTPUT" | grep -oP 'Version ID: \K[a-f0-9-]+')
-          echo "WRANGLER_VERSION_ID=$WRANGLER_VERSION_ID"
-          echo "bunx wrangler versions deploy ${WRANGLER_VERSION_ID}@100 --yes --dry-run"
