@@ -28,7 +28,7 @@ jobs:
           # Extract package name from tag (format: package-name-vX.Y.Z)
           TAG="${{ github.event.release.tag_name }}"
           # Remove version suffix to get package name
-          PACKAGE_NAME=$(echo "$TAG" | sed 's/-v[0-9].*//')
+          PACKAGE_NAME="${TAG%%-v[0-9]*}"
 
           echo "Tag: $TAG"
           echo "Package: $PACKAGE_NAME"
