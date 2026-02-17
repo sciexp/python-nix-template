@@ -76,18 +76,29 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.branch }}
+          fetch-depth: 0  # for git diff in composite action
+
+      - name: Check execution cache
+        id: cache
+        uses: ./.github/actions/cached-ci-job
+        with:
+          check-name: preview-docs-deploy
+          hash-sources: 'docs/**/* .github/actions/setup-nix/action.yml .github/workflows/deploy-docs.yaml justfile'
+          force-run: ${{ inputs.force_run }}
 
       - name: Setup Nix
+        if: steps.cache.outputs.should-run == 'true'
         uses: ./.github/actions/setup-nix
         with:
           installer: quick
           system: x86_64-linux
 
       - name: Setup tmate debug session
-        if: inputs.debug_enabled == 'true'
+        if: inputs.debug_enabled == 'true' && steps.cache.outputs.should-run == 'true'
         uses: mxschmitt/action-tmate@c0afd6f790e3a5564914980036ebf83216678101 # v3
 
       - name: Deploy docs
+        if: steps.cache.outputs.should-run == 'true'
         env:
           SOPS_AGE_KEY: ${{ secrets.CI_AGE_KEY }}
         run: |
@@ -96,3 +107,27 @@ jobs:
           else
             nix develop --accept-flake-config -c just docs-deploy-production
           fi
+
+      - name: Create job result marker
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        shell: bash
+        run: |
+          mkdir -p "${{ steps.cache.outputs.cache-path }}"
+          cat > "${{ steps.cache.outputs.cache-path }}/marker" <<EOF
+          {
+            "success": true,
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "cache_key": "${{ steps.cache.outputs.cache-key }}",
+            "workflow_run_id": "${{ github.run_id }}",
+            "environment": "${{ inputs.environment }}",
+            "branch": "${{ inputs.branch }}"
+          }
+          EOF
+
+      - name: Save job result to cache
+        if: success() && steps.cache.outputs.should-run == 'true' && steps.cache.outputs.cache-source == 'none'
+        uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
+        with:
+          path: ${{ steps.cache.outputs.cache-path }}
+          key: ${{ steps.cache.outputs.cache-key }}
