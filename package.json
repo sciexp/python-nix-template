@@ -1,8 +1,8 @@
 {
-  "name": "python-nix-template-template",
+  "name": "python-nix-template",
   "version": "0.0.0-development",
   "private": true,
-  "description": "Python Nix Template with uv2nix integration",
+  "description": "A Python project template for Nix using uv2nix and flake-parts",
   "repository": {
     "type": "git",
     "url": "https://github.com/sciexp/python-nix-template.git"
