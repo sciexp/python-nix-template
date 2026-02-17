@@ -178,13 +178,6 @@ jobs:
             d=$(dirname "$f")
             n=$(basename "$d")
 
-            # Infer build-wheels from Cargo.toml presence (maturin/pyo3 package)
-            if [ -f "$d/Cargo.toml" ]; then
-              build_wheels="true"
-            else
-              build_wheels="false"
-            fi
-
             # Read per-package CI metadata from .ci.json if present
             ci_json="$d/.ci.json"
             if [ -f "$ci_json" ]; then
@@ -198,10 +191,9 @@ jobs:
             jq -nc \
               --arg name "$n" \
               --arg path "$d" \
-              --arg build_wheels "$build_wheels" \
               --arg build_images "$build_images" \
               --argjson images "$images" \
-              '{name: $name, path: $path, "build-wheels": $build_wheels, "build-images": $build_images, images: ($images | tojson)}'
+              '{name: $name, path: $path, "build-images": $build_images, images: ($images | tojson)}'
           done | jq -sc '.')
           echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
           echo "Discovered packages: $PACKAGES"
@@ -629,7 +621,6 @@ jobs:
       checkout-ref: ${{ needs.set-variables.outputs.checkout_ref }}
       build-images: ${{ matrix.package.build-images }}
       images-to-build: ${{ matrix.package.images }}
-      build-wheels: ${{ matrix.package.build-wheels || 'false' }}
     secrets: inherit
 
   # ---------------------------------------------------------------------------
