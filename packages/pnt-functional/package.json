@@ -1,5 +1,5 @@
 {
-    "description": "Python Nix Template with uv2nix integration",
+    "description": "A Python project template for Nix using uv2nix and flake-parts",
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/github": "^12.0.0",
