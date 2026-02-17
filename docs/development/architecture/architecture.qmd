@@ -17,4 +17,4 @@ csl: ../../bibstyle.csl
 
 ## Purpose of this Document {#sec-purpose}
 
-This system specification provides a glass-box view of the architecture of the {{package-name-kebab-case}} package, detailing its internal structure, computational methods, and implementation approach. 
+This system specification provides a glass-box view of the architecture of the python-nix-template package, detailing its internal structure, computational methods, and implementation approach. 
