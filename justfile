@@ -905,8 +905,8 @@ docs-deploy-preview branch=`git branch --show-current`: docs-build
 
 # List recent Cloudflare Workers versions
 [group('docs')]
-docs-versions limit="10":
-    sops exec-env vars/shared.yaml "bunx wrangler versions list --limit {{limit}}"
+docs-versions:
+    sops exec-env vars/shared.yaml "bunx wrangler versions list"
 
 # List recent Cloudflare Workers deployments
 [group('docs')]
