@@ -160,7 +160,7 @@ jobs:
         id: tags-before
         if: steps.cache.outputs.should-run == 'true'
         run: |
-          echo "latest=$(git tag -l '${{ inputs.package-name }}-v*' | sort -V | tail -1)" >> $GITHUB_OUTPUT
+          echo "latest=$(git tag -l '${{ inputs.package-name }}-v*' | sort -V | tail -1)" >> "$GITHUB_OUTPUT"
 
       - name: Run semantic-release
         id: semantic-release
@@ -169,7 +169,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          nix develop --accept-flake-config -c just release-package ${{ inputs.package-name }} ${{ inputs.release-dry-run }}
+          nix develop --accept-flake-config -c just release-package "${{ inputs.package-name }}" "${{ inputs.release-dry-run }}"
 
       - name: Extract release info
         if: always()
@@ -180,16 +180,22 @@ jobs:
             PREV_TAG="${{ steps.tags-before.outputs.latest }}"
             if [ -n "$LATEST_TAG" ] && [ "$LATEST_TAG" != "$PREV_TAG" ]; then
               VERSION=$(echo "$LATEST_TAG" | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
-              echo "released=true" >> $GITHUB_OUTPUT
-              echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+              {
+                echo "version=$VERSION"
+                echo "released=true"
+                echo "tag=$LATEST_TAG"
+              } >> "$GITHUB_OUTPUT"
             else
-              echo "released=false" >> $GITHUB_OUTPUT
-              echo "tag=" >> $GITHUB_OUTPUT
+              {
+                echo "released=false"
+                echo "tag="
+              } >> "$GITHUB_OUTPUT"
             fi
           else
-            echo "released=false" >> $GITHUB_OUTPUT
-            echo "tag=" >> $GITHUB_OUTPUT
+            {
+              echo "released=false"
+              echo "tag="
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set outputs
