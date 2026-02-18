@@ -85,17 +85,17 @@
         {
           name = "package-name-kebab-case";
           description = "Name of the Python package (kebab-case)";
-          placeholder = "python-nix-template";
+          placeholder = "pnt-core";
         }
         {
           name = "package-name-snake-case";
           description = "Name of the Python package (snake_case)";
-          placeholder = "python_nix_template";
+          placeholder = "pnt_core";
         }
         {
           name = "package-name-camel-case";
           description = "Name of the Python package (camelCase)";
-          placeholder = "pythonNixTemplate";
+          placeholder = "pntCore";
         }
         {
           name = "monorepo-package";
