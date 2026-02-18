@@ -250,49 +250,49 @@ ci-check package: (ci-lint package) (ci-typecheck package) (ci-test package)
 
 # Package commands (conda)
 [group('conda')]
-conda-build package="python-nix-template":
+conda-build package="pnt-core":
     pixi build --manifest-path=packages/{{package}}/pyproject.toml
 
 # Create and sync conda environment with pixi
 [group('conda')]
-conda-env package="python-nix-template":
+conda-env package="pnt-core":
     pixi install --manifest-path=packages/{{package}}/pyproject.toml
     @echo "Conda environment is ready. Activate it with 'pixi shell'"
 
 # Update pixi lockfile
 [group('conda')]
-pixi-lock package="python-nix-template":
+pixi-lock package="pnt-core":
     pixi list --manifest-path=packages/{{package}}/pyproject.toml
     pixi tree --manifest-path=packages/{{package}}/pyproject.toml
 
 # Update conda environment
 [group('conda')]
-conda-lock package="python-nix-template":
+conda-lock package="pnt-core":
     pixi project export conda-explicit-spec packages/{{package}}/conda/ --manifest-path=packages/{{package}}/pyproject.toml --ignore-pypi-errors
 
 # Run tests in conda environment with pixi
 [group('conda')]
-conda-test package="python-nix-template":
+conda-test package="pnt-core":
     pixi run -e test --manifest-path=packages/{{package}}/pyproject.toml test
 
 # Run linting in conda environment with pixi
 [group('conda')]
-conda-lint package="python-nix-template":
+conda-lint package="pnt-core":
     pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml lint-check
 
 # Run linting and fix errors in conda environment with pixi
 [group('conda')]
-conda-lint-fix package="python-nix-template":
+conda-lint-fix package="pnt-core":
     pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml lint
 
 # Run type checking in conda environment with pixi
 [group('conda')]
-conda-type package="python-nix-template":
+conda-type package="pnt-core":
     pixi run -e types --manifest-path=packages/{{package}}/pyproject.toml types
 
 # Run all checks in conda environment (lint, type, test)
 [group('conda')]
-conda-check package="python-nix-template": (conda-lint package) (conda-type package) (conda-test package)
+conda-check package="pnt-core": (conda-lint package) (conda-type package) (conda-test package)
     @printf "\n\033[92mAll conda checks passed!\033[0m\n"
 
 ## Containers
@@ -354,7 +354,7 @@ ci:
 
 # Run tests for a package
 [group('python')]
-test package="python-nix-template":
+test package="pnt-core":
     cd packages/{{package}} && pytest
 
 # Run tests for all packages
@@ -370,22 +370,22 @@ test-all:
 
 # Build a package with uv
 [group('python')]
-uv-build package="python-nix-template":
+uv-build package="pnt-core":
     cd packages/{{package}} && uv build
 
 # Sync a package environment with uv
 [group('python')]
-uv-sync package="python-nix-template":
+uv-sync package="pnt-core":
     cd packages/{{package}} && uv sync
 
 # Update lockfile for a package
 [group('python')]
-uv-lock package="python-nix-template":
+uv-lock package="pnt-core":
     cd packages/{{package}} && uv lock
 
 # Run linting for a package
 [group('python')]
-lint package="python-nix-template":
+lint package="pnt-core":
     cd packages/{{package}} && ruff check src/
 
 # Run linting for all packages
@@ -395,17 +395,17 @@ lint-all:
 
 # Run linting and fix errors for a package
 [group('python')]
-lint-fix package="python-nix-template":
+lint-fix package="pnt-core":
     cd packages/{{package}} && ruff check --fix src/
 
 # Run type checking for a package
 [group('python')]
-type package="python-nix-template":
+type package="pnt-core":
     cd packages/{{package}} && pyright src/
 
 # Run all checks for a package (lint, type, test)
 [group('python')]
-check package="python-nix-template": (lint package) (type package) (test package)
+check package="pnt-core": (lint package) (type package) (test package)
     @printf "\nAll Python checks passed for {{package}}.\n"
 
 ## Rust
@@ -728,7 +728,7 @@ test-release-direct:
 
 # Test package release
 [group('release')]
-test-package-release package-name="python-nix-template" branch="main":
+test-package-release package-name="pnt-core" branch="main":
     cd packages/{{package-name}} && bun run test-release -- -b {{branch}}
 
 # Preview release version for a package (dry-run semantic-release with merge simulation)
