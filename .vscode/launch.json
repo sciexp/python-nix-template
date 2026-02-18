@@ -2,10 +2,10 @@
   "version": "0.1.0",
   "configurations": [
     {
-      "name": "python-nix-template: Debug CLI",
+      "name": "pnt-core: Debug CLI",
       "type": "debugpy",
       "request": "launch",
-      "module": "python_nix_template",
+      "module": "pnt_core",
       "args": [
       ],
       "console": "integratedTerminal",
