@@ -12,11 +12,10 @@
       packageWorkspaces,
       editablePythonSets,
       pythonVersions,
+      hasMaturinPackages ? false,
       ...
     }:
     let
-      hasCli = builtins.pathExists ../packages/pnt-cli;
-
       # Merge deps from all independent package workspaces, unioning extras lists
       # for shared dependency names rather than silently dropping via //
       allDeps = lib.foldlAttrs (
@@ -55,10 +54,10 @@
               sops
               ssh-to-age
             ]
-            ++ lib.optionals hasCli (
+            ++ lib.optionals hasMaturinPackages (
               with pkgs;
               [
-                # Rust tooling for pnt-cli pyo3 extension
+                # Rust tooling for maturin/pyo3 packages
                 cargo
                 rustc
                 clippy
