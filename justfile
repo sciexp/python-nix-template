@@ -293,17 +293,17 @@ conda-check package="python-nix-template": (conda-lint package) (conda-type pack
 
 # Build production container image
 [group('containers')]
-container-build-production CONTAINER="pnt-cli":
+container-build-production CONTAINER:
     nix build ".#{{CONTAINER}}ProductionImage" -L
 
 # Load production container to local Docker daemon
 [group('containers')]
-container-load-production CONTAINER="pnt-cli":
+container-load-production CONTAINER:
     nix run ".#{{CONTAINER}}ProductionImage.copyToDockerDaemon"
 
 # Push production container manifest (requires registry auth)
 [group('containers')]
-container-push-production CONTAINER="pnt-cli" VERSION="0.0.0" +TAGS="":
+container-push-production CONTAINER VERSION="0.0.0" +TAGS="":
     VERSION={{VERSION}} TAGS={{TAGS}} nix run --impure ".#{{CONTAINER}}Manifest" -L
 
 # Display container CI matrix
