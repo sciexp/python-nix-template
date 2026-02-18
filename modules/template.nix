@@ -175,6 +175,7 @@
         default = {
           params = {
             package-name = "awesome-package";
+            repo-name = "test-repo";
             author = "John Doe";
             author-email = "john@example.com";
           };
