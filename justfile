@@ -216,6 +216,11 @@ list-packages-json:
       printf '{"name":"%s","path":"%s","maturin":%s}\n' "$n" "$d" "$m"; \
     done | jq -sc '.'
 
+# Discover maturin (Rust/pyo3) packages as JSON array
+[group('CI/CD')]
+list-maturin-packages:
+    @just list-packages-json | jq '[.[] | select(.maturin)]'
+
 # Sync dependencies for a package via uv
 [group('CI/CD')]
 ci-sync package:
