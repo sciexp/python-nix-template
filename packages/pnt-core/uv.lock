@@ -1197,6 +1197,75 @@ wheels = [
 ]
 
 [[package]]
+name = "pnt-core"
+version = "0.2.1"
+source = { editable = "." }
+
+[package.dev-dependencies]
+dev = [
+    { name = "hypothesis" },
+    { name = "ipython" },
+    { name = "jupyter" },
+    { name = "jupyter-cache" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "quartodoc" },
+    { name = "ruff" },
+    { name = "xdoctest" },
+]
+docs = [
+    { name = "jupyter" },
+    { name = "jupyter-cache" },
+    { name = "quartodoc" },
+]
+interactive = [
+    { name = "ipython" },
+]
+lint = [
+    { name = "ruff" },
+]
+test = [
+    { name = "hypothesis" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "xdoctest" },
+]
+types = [
+    { name = "pyright" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "hypothesis", specifier = ">=6.125.1" },
+    { name = "ipython", specifier = ">=8.32.0" },
+    { name = "jupyter", specifier = ">=1.1.1" },
+    { name = "jupyter-cache", specifier = ">=1.0.1" },
+    { name = "pyright", specifier = ">=1.1.395" },
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "quartodoc", specifier = ">=0.9.1" },
+    { name = "ruff", specifier = ">=0.9.4" },
+    { name = "xdoctest", specifier = ">=1.2.0" },
+]
+docs = [
+    { name = "jupyter", specifier = ">=1.1.1" },
+    { name = "jupyter-cache", specifier = ">=1.0.1" },
+    { name = "quartodoc", specifier = ">=0.9.1" },
+]
+interactive = [{ name = "ipython", specifier = ">=8.32.0" }]
+lint = [{ name = "ruff", specifier = ">=0.9.4" }]
+test = [
+    { name = "hypothesis", specifier = ">=6.125.1" },
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "xdoctest", specifier = ">=1.2.0" },
+]
+types = [{ name = "pyright", specifier = ">=1.1.395" }]
+
+[[package]]
 name = "prometheus-client"
 version = "0.24.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1396,75 +1465,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/29/bf/eca6a3d43db1dae70
 wheels = [
     { url = "https://files.pythonhosted.org/packages/51/e5/fecf13f06e5e5f67e8837d777d1bc43fac0ed2b77a676804df5c34744727/python_json_logger-4.0.0-py3-none-any.whl", hash = "sha256:af09c9daf6a813aa4cc7180395f50f2a9e5fa056034c9953aec92e381c5ba1e2", size = 15548, upload-time = "2025-10-06T04:15:17.553Z" },
 ]
-
-[[package]]
-name = "python-nix-template"
-version = "0.2.1"
-source = { editable = "." }
-
-[package.dev-dependencies]
-dev = [
-    { name = "hypothesis" },
-    { name = "ipython" },
-    { name = "jupyter" },
-    { name = "jupyter-cache" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "quartodoc" },
-    { name = "ruff" },
-    { name = "xdoctest" },
-]
-docs = [
-    { name = "jupyter" },
-    { name = "jupyter-cache" },
-    { name = "quartodoc" },
-]
-interactive = [
-    { name = "ipython" },
-]
-lint = [
-    { name = "ruff" },
-]
-test = [
-    { name = "hypothesis" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "xdoctest" },
-]
-types = [
-    { name = "pyright" },
-]
-
-[package.metadata]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "hypothesis", specifier = ">=6.125.1" },
-    { name = "ipython", specifier = ">=8.32.0" },
-    { name = "jupyter", specifier = ">=1.1.1" },
-    { name = "jupyter-cache", specifier = ">=1.0.1" },
-    { name = "pyright", specifier = ">=1.1.395" },
-    { name = "pytest", specifier = ">=8.3.4" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "quartodoc", specifier = ">=0.9.1" },
-    { name = "ruff", specifier = ">=0.9.4" },
-    { name = "xdoctest", specifier = ">=1.2.0" },
-]
-docs = [
-    { name = "jupyter", specifier = ">=1.1.1" },
-    { name = "jupyter-cache", specifier = ">=1.0.1" },
-    { name = "quartodoc", specifier = ">=0.9.1" },
-]
-interactive = [{ name = "ipython", specifier = ">=8.32.0" }]
-lint = [{ name = "ruff", specifier = ">=0.9.4" }]
-test = [
-    { name = "hypothesis", specifier = ">=6.125.1" },
-    { name = "pytest", specifier = ">=8.3.4" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "xdoctest", specifier = ">=1.2.0" },
-]
-types = [{ name = "pyright", specifier = ">=1.1.395" }]
 
 [[package]]
 name = "pytokens"
