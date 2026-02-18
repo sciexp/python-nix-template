@@ -23,10 +23,13 @@ tl;dr
 ```sh
 PROJECT_DIRECTORY=pnt-mono && \
 PROJECT_SNAKE_CASE=$(echo "$PROJECT_DIRECTORY" | tr '-' '_') && \
+PROJECT_CAMEL_CASE=$(echo "$PROJECT_DIRECTORY" | perl -pe 's/-(.)/uc($1)/ge') && \
 PARAMS=$(cat <<EOF
 {
   "package-name-kebab-case": "$PROJECT_DIRECTORY",
   "package-name-snake-case": "$PROJECT_SNAKE_CASE",
+  "package-name-camel-case": "$PROJECT_CAMEL_CASE",
+  "repo-name": "$PROJECT_DIRECTORY",
   "monorepo-package": true,
   "pyo3-package": true,
   "git-org": "pnt-mono",
@@ -62,10 +65,13 @@ development dependencies or `nix develop --accept-flake-config` to enter (or add
 ```sh
 PROJECT_DIRECTORY=pnt-new && \
 PROJECT_SNAKE_CASE=$(echo "$PROJECT_DIRECTORY" | tr '-' '_') && \
+PROJECT_CAMEL_CASE=$(echo "$PROJECT_DIRECTORY" | perl -pe 's/-(.)/uc($1)/ge') && \
 PARAMS=$(cat <<EOF
 {
   "package-name-kebab-case": "$PROJECT_DIRECTORY",
   "package-name-snake-case": "$PROJECT_SNAKE_CASE",
+  "package-name-camel-case": "$PROJECT_CAMEL_CASE",
+  "repo-name": "$PROJECT_DIRECTORY",
   "monorepo-package": false,
   "pyo3-package": false,
   "git-org": "pnt-new",
