@@ -23,12 +23,12 @@ uv and pixi serve as dependency resolution tools consumed by the nix layer, not 
 Runtime dependencies (`beartype`, `expression`) are available on both PyPI and conda-forge.
 No channel-specific dependency graph differences for this package.
 
-### python-nix-template
+### pnt-core
 
 | Channel | Supported | Lock file | Runtime dependencies |
 |---------|-----------|-----------|---------------------|
-| uv/PyPI | Yes | `packages/python-nix-template/uv.lock` | (none) |
-| pixi/conda-forge | Yes | `packages/python-nix-template/pixi.lock` | python |
+| uv/PyPI | Yes | `packages/pnt-core/uv.lock` | (none) |
+| pixi/conda-forge | Yes | `packages/pnt-core/pixi.lock` | python |
 
 This package has no runtime dependencies beyond the Python interpreter.
 Dev dependencies (pytest, ruff, hypothesis, pyright, jupyter, quartodoc) are available on both channels.
@@ -53,4 +53,4 @@ This allows packages to be built as conda packages in addition to PyPI wheels.
 | Build | `just uv-build <pkg>` | `just conda-build <pkg>` |
 | Lock | `just uv-lock <pkg>` | `just pixi-lock <pkg>` |
 
-All recipes accept a package parameter defaulting to `python-nix-template`.
+All recipes accept a package parameter defaulting to `pnt-core`.

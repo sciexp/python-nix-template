@@ -115,7 +115,7 @@ website:
 quartodoc:
   dir: reference
   parser: google
-  package: python_nix_template
+  package: pnt_core
   title: Reference
   sidebar: reference/_sidbar.yml
   render_interlinks: true
@@ -124,7 +124,7 @@ quartodoc:
   sections:
     - title: API Reference
       desc: |
-        API reference for python-nix-template.
+        API reference for pnt-core.
       contents:
         - name: main
           children: embedded

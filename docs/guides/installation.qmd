@@ -12,7 +12,7 @@ This guide covers different ways to install python-nix-template.
 The fastest way to get started is with UV:
 
 ```bash
-uv pip install python-nix-template
+uv pip install pnt-core
 ```
 
 ## Using Pip
@@ -20,7 +20,7 @@ uv pip install python-nix-template
 You can also install with standard pip:
 
 ```bash
-pip install python-nix-template
+pip install pnt-core
 ```
 
 ## Development Installation
@@ -43,6 +43,6 @@ uv sync
 Verify your installation by running:
 
 ```python
-import python-nix-template
-print(python-nix-template.__version__)
+import pnt_core
+print(pnt_core.__version__)
 ```

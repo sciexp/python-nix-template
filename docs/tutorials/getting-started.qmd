@@ -23,7 +23,7 @@ See the [Installation Guide](../guides/installation.qmd) for detailed installati
 
 ```python
 # Example usage will be added here
-print("Hello from python-nix-template!")
+print("Hello from pnt-core!")
 ```
 
 ## Next Steps

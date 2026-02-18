@@ -410,7 +410,7 @@ This is a deliberate tradeoff: check caching provides fast CI feedback on the Ru
 Maturin packages are incompatible with uv2nix's `pyprojectFixupEditableHook`, which expects `EDITABLE_ROOT` to be set during the build process.
 Maturin's build backend does not set this variable.
 
-The `mkEditablePythonSet` in `nix/modules/python.nix` composes editable overlays only for pure Python packages (`pnt-functional`, `python-nix-template`), excluding `pnt-cli`.
+The `mkEditablePythonSet` in `nix/modules/python.nix` composes editable overlays only for pure Python packages (`pnt-functional`, `pnt-core`), excluding `pnt-cli`.
 The pnt-cli package is built as a regular wheel in the devshell.
 
 For iterative Rust development, the workflow is: enter the devshell via `nix develop`, then run `maturin develop --uv` in the package directory.
