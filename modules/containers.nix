@@ -7,17 +7,23 @@ let
   gitHubOrg = "sciexp";
   repoName = "python-nix-template";
 
-  hasCli = builtins.pathExists ../packages/pnt-cli;
+  # Discover maturin packages from packages/ directory. Each subdirectory
+  # containing a Cargo.toml is a maturin/pyo3 package that gets a production
+  # container. This mirrors the discovery logic in python.nix.
+  packageDirs = builtins.readDir ../packages;
+  packageNames = builtins.filter (name: packageDirs.${name} == "directory") (
+    builtins.attrNames packageDirs
+  );
+  isMaturin = name: builtins.pathExists (../packages + "/${name}/Cargo.toml");
+  maturinPackageNames = builtins.filter isMaturin packageNames;
 
-  # Production container definitions (nix2container)
-  # Add new containers here; containerMatrix auto-discovers them.
-  productionContainerDefs = lib.optionalAttrs hasCli {
-    pnt-cli = {
-      name = "pnt-cli";
-      entrypoint = "pnt-cli";
-      description = "pnt-cli with pyo3 native bindings";
-    };
-  };
+  # Production container definitions derived from discovered maturin packages.
+  # Each maturin package exposes a CLI binary via pyo3 and gets a container.
+  productionContainerDefs = lib.genAttrs maturinPackageNames (name: {
+    inherit name;
+    entrypoint = name;
+    description = "${name} with pyo3 native bindings";
+  });
 in
 {
   perSystem =
