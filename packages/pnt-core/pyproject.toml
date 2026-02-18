@@ -4,20 +4,20 @@ authors = [
 ]
 dependencies = []
 description = "Add your description here"
-name = "python-nix-template"
+name = "pnt-core"
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 version = "0.2.1"
 
 [project.scripts]
-python-nix-template = "python_nix_template:main"
+pnt-core = "pnt_core:main"
 
 [build-system]
 build-backend = "hatchling.build"
 requires      = ["hatchling"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/python_nix_template"]
+packages = ["src/pnt_core"]
 
 [dependency-groups]
 dev = [
@@ -60,7 +60,7 @@ preview   = ["pixi-build"]
 python = ">=3.12,<3.14"
 
 [tool.pixi.pypi-dependencies]
-python-nix-template = { path = ".", editable = true }
+pnt-core = { path = ".", editable = true }
 
 [tool.pixi.environments]
 default     = { solve-group = "default" }
@@ -82,7 +82,7 @@ lint-check = "ruff check src/"
 types = "pyright src/"
 
 [tool.pixi.package]
-name    = "python-nix-template"
+name    = "pnt-core"
 version = "0.2.1"
 
 [tool.pixi.package.run-dependencies]
@@ -103,17 +103,17 @@ addopts = """
 -rA
 --xdoctest
 --disable-warnings
---cov=src/python_nix_template/
+--cov=src/pnt_core/
 --cov-report=term-missing
 --cov-report=xml
 --durations=0
 """
 log_level = "INFO"
 testpaths = [
-  "src/python_nix_template/tests",
+  "src/pnt_core/tests",
 ]
 
 [tool.coverage.run]
 omit = [
-  "src/python_nix_template/tests/*",
+  "src/pnt_core/tests/*",
 ]

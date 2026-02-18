@@ -1,4 +1,4 @@
 {
   "build-images": false,
-  "images": ["python-nix-template", "python-nix-template-dev"]
+  "images": ["pnt-core", "pnt-core-dev"]
 }

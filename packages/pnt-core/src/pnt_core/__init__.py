@@ -9,4 +9,4 @@ del metadata
 
 
 def main() -> None:
-    print("Hello from python-nix-template!")
+    print("Hello from pnt-core!")
