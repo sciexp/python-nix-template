@@ -19,6 +19,20 @@
         py313 = pkgs.python313;
       };
 
+      # Discover packages from packages/ directory. Each subdirectory is a
+      # Python package. Packages containing Cargo.toml are maturin/pyo3
+      # packages requiring a corresponding nix/packages/{name}/default.nix
+      # module that exports { overlay, checks }.
+      packageDirs = builtins.readDir ../packages;
+      packageNames = builtins.filter (name: packageDirs.${name} == "directory") (
+        builtins.attrNames packageDirs
+      );
+
+      isMaturin = name: builtins.pathExists (../packages + "/${name}/Cargo.toml");
+      maturinPackageNames = builtins.filter isMaturin packageNames;
+      purePackageNames = builtins.filter (name: !(isMaturin name)) packageNames;
+      hasMaturinPackages = maturinPackageNames != [ ];
+
       # Load each Python package independently (no root workspace).
       # Each package directory contains its own pyproject.toml and uv.lock,
       # resolved independently following the LangChain federation model.
@@ -39,39 +53,24 @@
           };
         };
 
-      hasFunctional = builtins.pathExists ../packages/pnt-functional;
-      hasCli = builtins.pathExists ../packages/pnt-cli;
+      packageWorkspaces = lib.genAttrs packageNames (name: loadPackage name (../packages + "/${name}"));
 
-      packageWorkspaces = {
-        python-nix-template = loadPackage "python-nix-template" ../packages/python-nix-template;
-      }
-      // lib.optionalAttrs hasCli {
-        pnt-cli = loadPackage "pnt-cli" ../packages/pnt-cli;
-      }
-      // lib.optionalAttrs hasFunctional {
-        pnt-functional = loadPackage "pnt-functional" ../packages/pnt-functional;
-      };
-
-      # Per-package Nix modules with optional Rust overlays.
-      # Packages with Rust extensions get a dedicated module in nix/packages/
-      # that encapsulates crane configuration and exports an overlay + checks.
-      # When pnt-cli is absent (pyo3-package: false), returns an inert module
-      # with no-op overlay and empty checks to avoid import path errors.
-      emptyModule = {
-        overlay = _final: _prev: { };
-        checks = { };
-      };
-
+      # Per-package Nix modules with Rust overlays. Each maturin package
+      # requires nix/packages/{name}/default.nix exporting { overlay, checks }.
+      # Eval-time error when Cargo.toml exists but the module is missing.
       mkPackageModule =
-        python:
-        if hasCli then
-          import ../nix/packages/pnt-cli {
+        name: python:
+        let
+          modulePath = ../nix/packages + "/${name}/default.nix";
+        in
+        if builtins.pathExists modulePath then
+          import modulePath {
             inherit pkgs lib python;
             crane = inputs.crane;
             inherit (inputs) crane-maturin pyproject-nix;
           }
         else
-          emptyModule;
+          throw "Maturin package ${name} requires nix/packages/${name}/default.nix";
 
       # Compose per-package uv2nix overlays with shared overrides.
       #
@@ -92,49 +91,38 @@
               [
                 inputs.pyproject-build-systems.overlays.default
               ]
-              ++ lib.optional hasCli packageWorkspaces.pnt-cli.overlay
-              ++ lib.optional hasFunctional packageWorkspaces.pnt-functional.overlay
+              ++ map (name: packageWorkspaces.${name}.overlay) packageNames
+              ++ map (name: (mkPackageModule name python).overlay) maturinPackageNames
               ++ [
-                packageWorkspaces.python-nix-template.overlay
-                # Rust integration overlay for pnt-cli (crane + maturin)
-                (mkPackageModule python).overlay
                 packageOverrides
                 sdistOverrides
               ]
             )
           );
 
-      # Editable set excludes pnt-cli: maturin packages are incompatible with
-      # uv2nix's editable overlay (pyprojectFixupEditableHook expects EDITABLE_ROOT
-      # which maturin's build process does not set). pnt-cli is built as a regular
-      # wheel in the devshell; use `maturin develop` for iterative Rust development.
+      # Editable set excludes maturin packages: maturin packages are
+      # incompatible with uv2nix's editable overlay (pyprojectFixupEditableHook
+      # expects EDITABLE_ROOT which maturin's build process does not set).
+      # Maturin packages are built as regular wheels in the devshell; use
+      # `maturin develop` for iterative Rust development.
       mkEditablePythonSet =
         python:
         (mkPythonSet python).overrideScope (
           lib.composeManyExtensions (
-            lib.optional hasFunctional packageWorkspaces.pnt-functional.editableOverlay
+            map (name: packageWorkspaces.${name}.editableOverlay) purePackageNames
             ++ [
-              packageWorkspaces.python-nix-template.editableOverlay
               (
                 final: prev:
-                {
-                  python-nix-template = prev.python-nix-template.overrideAttrs (old: {
+                lib.genAttrs purePackageNames (
+                  name:
+                  prev.${name}.overrideAttrs (old: {
                     nativeBuildInputs =
                       old.nativeBuildInputs
                       ++ final.resolveBuildSystem {
                         editables = [ ];
                       };
-                  });
-                }
-                // lib.optionalAttrs hasFunctional {
-                  pnt-functional = prev.pnt-functional.overrideAttrs (old: {
-                    nativeBuildInputs =
-                      old.nativeBuildInputs
-                      ++ final.resolveBuildSystem {
-                        editables = [ ];
-                      };
-                  });
-                }
+                  })
+                )
               )
             ]
           )
@@ -144,10 +132,12 @@
       editablePythonSets = lib.mapAttrs (_: mkEditablePythonSet) pythonVersions;
 
       # Rust checks from per-package modules (using default Python version)
-      rustChecks = (mkPackageModule pythonVersions.py313).checks;
+      rustChecks = lib.foldl' (
+        acc: name: acc // (mkPackageModule name pythonVersions.py313).checks
+      ) { } maturinPackageNames;
     in
     {
-      checks = lib.optionalAttrs hasCli rustChecks;
+      checks = lib.optionalAttrs hasMaturinPackages rustChecks;
 
       _module.args = {
         inherit
@@ -155,6 +145,10 @@
           pythonSets
           editablePythonSets
           pythonVersions
+          packageNames
+          maturinPackageNames
+          purePackageNames
+          hasMaturinPackages
           ;
         defaultPython = pythonVersions.py313;
       };
