@@ -212,7 +212,8 @@ list-packages-json:
     @ls -d packages/*/pyproject.toml | while read f; do \
       d=$(dirname "$f"); \
       n=$(basename "$d"); \
-      printf '{"name":"%s","path":"%s"}\n' "$n" "$d"; \
+      if [ -f "$d/Cargo.toml" ]; then m=true; else m=false; fi; \
+      printf '{"name":"%s","path":"%s","maturin":%s}\n' "$n" "$d" "$m"; \
     done | jq -sc '.'
 
 # Sync dependencies for a package via uv
