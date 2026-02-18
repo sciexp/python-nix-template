@@ -98,6 +98,11 @@
           placeholder = "pntCore";
         }
         {
+          name = "repo-name";
+          description = "Repository name (kebab-case)";
+          placeholder = "python-nix-template";
+        }
+        {
           name = "monorepo-package";
           description = "Include the functional programming monorepo package in the project";
           paths = [ "packages/pnt-functional" ];
