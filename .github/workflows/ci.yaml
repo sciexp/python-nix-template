@@ -186,6 +186,10 @@ jobs:
             d=$(dirname "$f")
             n=$(basename "$d")
 
+            # Detect maturin/pyo3 package by Cargo.toml presence
+            is_maturin="false"
+            if [ -f "$d/Cargo.toml" ]; then is_maturin="true"; fi
+
             # Read per-package CI metadata from .ci.json if present
             ci_json="$d/.ci.json"
             if [ -f "$ci_json" ]; then
@@ -199,9 +203,10 @@ jobs:
             jq -nc \
               --arg name "$n" \
               --arg path "$d" \
+              --argjson is_maturin "$is_maturin" \
               --arg build_images "$build_images" \
               --argjson images "$images" \
-              '{name: $name, path: $path, "build-images": $build_images, images: ($images | tojson)}'
+              '{name: $name, path: $path, "is_maturin": $is_maturin, "build-images": $build_images, images: ($images | tojson)}'
           done | jq -sc '.')
           echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
           echo "Discovered packages: $PACKAGES"
