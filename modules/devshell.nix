@@ -85,17 +85,17 @@
     in
     {
       devShells = rec {
-        pythonNixTemplate312 = mkDevShell {
-          name = "python-nix-template-3.12";
+        pntCore312 = mkDevShell {
+          name = "pnt-core-3.12";
           pythonVersion = "py312";
         };
 
-        pythonNixTemplate313 = mkDevShell {
-          name = "python-nix-template-3.13";
+        pntCore313 = mkDevShell {
+          name = "pnt-core-3.13";
           pythonVersion = "py313";
         };
 
-        default = pythonNixTemplate313;
+        default = pntCore313;
       };
     };
 }
