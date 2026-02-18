@@ -406,27 +406,27 @@ check package="python-nix-template": (lint package) (type package) (test package
 
 # Build Rust crates for a package
 [group('rust')]
-cargo-build package="pnt-cli":
+cargo-build package:
     cd packages/{{package}}/crates && cargo build
 
 # Run Rust tests via cargo test
 [group('rust')]
-cargo-test package="pnt-cli":
+cargo-test package:
     cd packages/{{package}}/crates && cargo test
 
 # Run Rust clippy lints
 [group('rust')]
-cargo-clippy package="pnt-cli":
+cargo-clippy package:
     cd packages/{{package}}/crates && cargo clippy --all-targets -- --deny warnings
 
 # Run Rust tests via cargo-nextest
 [group('rust')]
-cargo-nextest package="pnt-cli":
+cargo-nextest package:
     cd packages/{{package}}/crates && cargo nextest run --no-tests=pass
 
 # Run all Rust checks (clippy, test)
 [group('rust')]
-cargo-check package="pnt-cli": (cargo-clippy package) (cargo-test package)
+cargo-check package: (cargo-clippy package) (cargo-test package)
     @printf "\nAll Rust checks passed for {{package}}.\n"
 
 ## Secrets
