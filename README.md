@@ -262,15 +262,15 @@ Available recipes:
     test-docs-deploy branch=`git branch --show-current` # Test full deploy-docs workflow locally with act
 
     [conda]
-    conda-build package="python-nix-template"          # Package commands (conda)
-    conda-check package="python-nix-template"          # Run all checks in conda environment (lint, type, test)
-    conda-env package="python-nix-template"            # Create and sync conda environment with pixi
-    conda-lint package="python-nix-template"           # Run linting in conda environment with pixi
-    conda-lint-fix package="python-nix-template"       # Run linting and fix errors in conda environment with pixi
-    conda-lock package="python-nix-template"           # Update conda environment
-    conda-test package="python-nix-template"           # Run tests in conda environment with pixi
-    conda-type package="python-nix-template"           # Run type checking in conda environment with pixi
-    pixi-lock package="python-nix-template"            # Update pixi lockfile
+    conda-build package="pnt-core"          # Package commands (conda)
+    conda-check package="pnt-core"          # Run all checks in conda environment (lint, type, test)
+    conda-env package="pnt-core"            # Create and sync conda environment with pixi
+    conda-lint package="pnt-core"           # Run linting in conda environment with pixi
+    conda-lint-fix package="pnt-core"       # Run linting and fix errors in conda environment with pixi
+    conda-lock package="pnt-core"           # Update conda environment
+    conda-test package="pnt-core"           # Run tests in conda environment with pixi
+    conda-type package="pnt-core"           # Run type checking in conda environment with pixi
+    pixi-lock package="pnt-core"            # Update pixi lockfile
 
     [containers]
     container-build-production CONTAINER="pnt-cli"     # Build production container image
@@ -300,21 +300,21 @@ Available recipes:
     flake-update                                       # Update all flake inputs to their latest versions
 
     [python]
-    check package="python-nix-template"                # Run all checks for a package (lint, type, test)
-    lint package="python-nix-template"                 # Run linting for a package
+    check package="pnt-core"                # Run all checks for a package (lint, type, test)
+    lint package="pnt-core"                 # Run linting for a package
     lint-all                                           # Run linting for all packages
-    lint-fix package="python-nix-template"             # Run linting and fix errors for a package
-    test package="python-nix-template"                 # Run tests for a package
+    lint-fix package="pnt-core"             # Run linting and fix errors for a package
+    test package="pnt-core"                 # Run tests for a package
     test-all                                           # Run tests for all packages
-    type package="python-nix-template"                 # Run type checking for a package
-    uv-build package="python-nix-template"             # Build a package with uv
-    uv-lock package="python-nix-template"              # Update lockfile for a package
-    uv-sync package="python-nix-template"              # Sync a package environment with uv
+    type package="pnt-core"                 # Run type checking for a package
+    uv-build package="pnt-core"             # Build a package with uv
+    uv-lock package="pnt-core"              # Update lockfile for a package
+    uv-sync package="pnt-core"              # Sync a package environment with uv
 
     [release]
     preview-version base-branch package-path           # Preview release version for a package (dry-run semantic-release with merge simulation)
     release-package package-name dry-run="false"       # Run semantic-release for a package
-    test-package-release package-name="python-nix-template" branch="main" # Test package release
+    test-package-release package-name="pnt-core" branch="main" # Test package release
     test-release                                       # Release testing with bun
     test-release-as-main                               # Test release as if on main branch
     test-release-direct                                # Test release directly on release branch
