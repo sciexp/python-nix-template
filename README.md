@@ -353,7 +353,7 @@ Available recipes:
     validate-secrets                                   # Validate all sops encrypted files can be decrypted
 
     [template]
-    template-init                                      # Initialize new project from template
+    template-init template-ref                         # Initialize new project from template
     template-verify                                    # Verify template functionality by creating and checking a test project
 ```
 
