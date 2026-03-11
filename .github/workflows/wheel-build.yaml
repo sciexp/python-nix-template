@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.checkout-ref || github.ref }}
-      - uses: PyO3/maturin-action@b1bd829e37fef14c63f19162034228a2f3dc1021 # v1
+      - uses: PyO3/maturin-action@04ac600d27cdf7a9a280dadf7147097c42b757ad # v1
         with:
           command: sdist
           args: --out dist
@@ -70,7 +70,7 @@ jobs:
           python-version: |
             3.12
             3.13
-      - uses: PyO3/maturin-action@b1bd829e37fef14c63f19162034228a2f3dc1021 # v1
+      - uses: PyO3/maturin-action@04ac600d27cdf7a9a280dadf7147097c42b757ad # v1
         with:
           target: ${{ matrix.target }}
           args: --release --out dist -i python3.12 python3.13
