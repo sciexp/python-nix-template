@@ -234,7 +234,7 @@ jobs:
 
       - name: Upload artifacts
         if: steps.cache.outputs.should-run == 'true' && steps.detect-maturin.outputs.is-maturin != 'true' && (steps.release-info.outputs.released == 'true' || inputs.release-dry-run == 'true')
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ steps.set-outputs.outputs.artifact-name }}
           path: ${{ inputs.package-path }}/dist
