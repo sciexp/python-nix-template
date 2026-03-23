@@ -22,11 +22,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1762971636,
-        "narHash": "sha256-Xq99+5Q6amg6Uxf5D/80s8Wfb5/ohEpC1b6jkift04w=",
+        "lastModified": 1773779560,
+        "narHash": "sha256-xhJo7jXXDQTxeqsIA9dGVZi8qlvA7yu53HV989n88Qk=",
         "owner": "vlaci",
         "repo": "crane-maturin",
-        "rev": "46b5ebcd3bda30c8dcf917bd2a4828c64c48177d",
+        "rev": "480615ae6347f7dd4bcffc72cda67a31bc1ba8de",
         "type": "github"
       },
       "original": {
