@@ -16,17 +16,12 @@
       }
     },
     "crane-maturin": {
-      "inputs": {
-        "flake-parts": [
-          "flake-parts"
-        ]
-      },
       "locked": {
-        "lastModified": 1762971636,
-        "narHash": "sha256-Xq99+5Q6amg6Uxf5D/80s8Wfb5/ohEpC1b6jkift04w=",
+        "lastModified": 1774529081,
+        "narHash": "sha256-7mKbKUE+CIu/u7EXVHCWYYQcaBvUoPba6vL1y75mKS0=",
         "owner": "vlaci",
         "repo": "crane-maturin",
-        "rev": "46b5ebcd3bda30c8dcf917bd2a4828c64c48177d",
+        "rev": "44b5de49833f468b3feb7d661ac3d1443b43c785",
         "type": "github"
       },
       "original": {
