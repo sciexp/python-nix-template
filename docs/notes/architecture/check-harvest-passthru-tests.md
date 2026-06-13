@@ -35,7 +35,9 @@ The code already honors this; the design names it as an invariant and documents 
 ## The passthru.tests mechanism
 
 The centerpiece is an overlay that attaches `passthru.tests` to each pure package node, adapted directly from the uv2nix canonical testing pattern.
-The venv is built from a dedicated `test` group spec, and basedpyright from a dedicated `typecheck` group spec, so each check pulls exactly the dependencies it needs.
+The pytest venv is built from a dedicated `test` group spec.
+The basedpyright venv is built from the `["typecheck" "test"]` group spec rather than `["typecheck"]` alone: basedpyright scans the whole `src/` tree including `src/<pkg>/tests`, whose modules import the test toolchain (pytest, hypothesis), so those imports must resolve for type-checking to succeed.
+Each check still pulls exactly the dependencies it needs, with the test toolchain present only where the type-checker must see it.
 For `pnt-functional`, a beartype claw `conftest.py` is injected before pytest so the runtime type-checking hook is active during tests.
 
 ```nix
@@ -50,7 +52,15 @@ pyprojectTestOverrides =
       let
         beartypePkg = beartypeTargets.${name} or null;
         testVenv = mkVirtualEnv "${name}-pytest-env" { ${name} = [ "test" ]; };
-        typecheckVenv = mkVirtualEnv "${name}-typecheck-env" { ${name} = [ "typecheck" ]; };
+        # The typecheck venv carries both `typecheck` and `test`: basedpyright
+        # scans the whole src/ tree including src/<pkg>/tests, whose modules
+        # import the test toolchain, so those imports must resolve.
+        typecheckVenv = mkVirtualEnv "${name}-typecheck-env" {
+          ${name} = [
+            "typecheck"
+            "test"
+          ];
+        };
         beartypeConftest = pkgs.writeText "beartype-conftest.py" ''
           from beartype.claw import beartype_package
           beartype_package("${beartypePkg}")
@@ -92,7 +102,7 @@ pyprojectTestOverrides =
   lib.genAttrs purePackageNames (
     name:
     prev.${name}.overrideAttrs (old: {
-      passthru = old.passthru // { tests = mkPureTests name; };
+      passthru = (old.passthru or { }) // { tests = mkPureTests name; };
     })
   );
 ```
@@ -163,7 +173,7 @@ ruffChecks = lib.foldl' (acc: name: acc // { "${name}-ruff" = mkRuffCheck name; 
 checks = packageChecks // ruffChecks;
 ```
 
-This yields `pnt-core-pytest`, `pnt-core-basedpyright`, `pnt-functional-pytest`, `pnt-functional-basedpyright`, `pnt-cli-pytest`, `pnt-cli-clippy`, `pnt-cli-doc`, `pnt-cli-fmt`, `pnt-cli-cargo-test`, plus the `pnt-*-ruff` checks, with `gitleaks` and `treefmt` contributed separately by `formatting.nix`.
+This yields `pnt-core-pytest`, `pnt-core-basedpyright`, `pnt-functional-pytest`, `pnt-functional-basedpyright`, `pnt-cli-pytest`, `pnt-cli-clippy`, `pnt-cli-doc`, `pnt-cli-fmt`, `pnt-cli-test`, plus the `pnt-*-ruff` checks, with `gitleaks` and `treefmt` contributed separately by `formatting.nix`.
 One mechanism, one naming convention, for both package kinds.
 
 The harvest is taken at `py313` only, matching `defaultPython`, even though both `pythonSets.py312` and `pythonSets.py313` are built.
@@ -206,11 +216,17 @@ Two semantic pyproject changes are part of this work.
 The existing `types` dependency group is renamed to `typecheck`, and the pinned `pyright` is replaced with `basedpyright`, so the Nix check tool and the pixi/uv parity path agree on the type engine that CLAUDE.md and the project skills already standardize on.
 Each affected package's `uv.lock` is regenerated afterward, and basedpyright is confirmed to resolve into the lock.
 
+The same "type-check needs the test toolchain visible" rationale that drives the Nix venv's `["typecheck" "test"]` group spec also governs the conda/uv parity paths, because basedpyright scans `src/<pkg>/tests` regardless of which path invokes it.
+The pixi `typecheck` environment therefore carries both features, `{ features = ["test", "typecheck"], ... }`, and each package's `pixi.lock` is regenerated so the conda parity path resolves `basedpyright`, `pytest`, and the rest of the test toolchain under that environment.
+The `just ci-typecheck` recipe likewise runs `uv sync` before `uv run --no-sync basedpyright src/`: the dev shell exports `UV_NO_SYNC=1`, so without an explicit sync the project venv is empty and basedpyright cannot resolve any import.
+After the sync the recipe type-checks all three packages — including `pnt-cli`, which now carries `basedpyright` in its `typecheck` group even though no Nix basedpyright check is emitted for it.
+
 Runtime `[project.dependencies]` (for example `pnt-functional`'s `beartype` and `expression`) are in every venv unconditionally because the package node depends on them.
 Check-specific tools live in named groups, pulled per-check via `{ <pkg> = ["<group>"]; }`, never via `deps.default`.
 After this design, `deps.default` is consumed only by the dev shell and the `packages` aggregate venv, not by any check.
 The `lint` group is retained solely for the pixi/uv non-Nix parity path, since ruff in the Nix check comes from nixpkgs rather than from a venv.
-For `pnt-cli`, the maturin path owns its own pytest and type surface through crane-maturin, so its groups are unchanged.
+For `pnt-cli`, the maturin path owns its own pytest and type surface through crane-maturin, so no Nix basedpyright check is emitted for it (the structural invariant exempts it, since its type surface is the Rust crate).
+Its dependency groups are nonetheless renamed to the uniform `typecheck`/`basedpyright` naming and its `uv.lock` regenerated, so the dependency-group vocabulary is consistent across all three packages even though the maturin path, not a uv2nix typecheck venv, regulates its types.
 
 ## Per-package basedpyright
 
@@ -294,13 +310,16 @@ The implementation record below maps each change to its file.
 | `modules/python.nix` | Remove the internal `mkPythonSet` re-derivations in the old check builders; add `pyprojectTestOverrides` (pytest, basedpyright, beartype conftest) and compose it into `mkPythonSet`; keep `mkRuffCheck`; remove the bespoke `mkPurePytestCheck`, `pureChecks`, and `basedpyrightCheck` builders and the standalone `rustChecks` fold; document the editable-vs-production rule. |
 | `modules/checks/per-package.nix` (new) | The uniform harvest fold producing `<pkg>-<check>` for pure and maturin packages, plus the `ruffChecks` fold; assembles `checks`. |
 | `modules/checks/invariants.nix` (new) | The traceability meta-check asserting required regulators and `packages`-output exposure, with reason-carrying exemptions. |
-| `modules/formatting.nix` | Add `checks.treefmt = config.treefmt.build.check inputs.self;` so formatting is enforced by `nix flake check` rather than only by the optional pre-commit hook; `gitleaks` is unchanged. |
-| `modules/packages.nix` | Expose each package as a `packages.<name>` entry (per-package production venv; for `pnt-cli` the wheel) alongside the existing aggregates, satisfying the invariant precondition. |
+| `modules/formatting.nix` | Set `treefmt.flakeCheck = true` so the treefmt formatting regulator participates in `nix flake check` rather than only the optional pre-commit hook; the full-tree `checks.gitleaks` scan is unchanged. |
+| `modules/packages.nix` | Expose each package as a `packages.<name>` entry (per-package production venv; for `pnt-cli` the wheel) alongside the existing aggregates, satisfying the invariant precondition; the `perSystem` destructure drops unused arguments (`config`, `self'`, `pkgs`, `editablePythonSets`, `pythonVersions`, `purePackageNames`) and the top-level `inputs`. |
 | `nix/packages/pnt-cli/default.nix` | Reduce the module to exporting its overlay; remove the local `checks` rename and coverage-drop, which the central harvest now performs; crane-maturin construction is unchanged. |
 | `packages/pnt-core/pyproject.toml` | Rename `types` group to `typecheck`; replace `pyright` with `basedpyright`; keep `lint` and `test` minimal; adjust `default-groups`. |
 | `packages/pnt-functional/pyproject.toml` | Same group and engine changes as `pnt-core`. |
-| `packages/pnt-core/uv.lock`, `packages/pnt-functional/uv.lock` | Regenerate after the group and engine changes; confirm basedpyright resolves into each lock. |
-| `packages/pnt-cli/pyproject.toml` | No change; the maturin path owns its own harness. |
+| `packages/pnt-functional/src/pnt_functional/tests/test_main.py` | Convert the absolute `from pnt_functional.main import ...` to a relative `from ..main import ...` (mirroring `pnt-core` and carrying the omnix#425 rationale) so `--cov=src/pnt_functional/` instruments the in-tree src rather than the installed wheel; without this the check emits a no-data-collected warning and reports 0% coverage. |
+| `packages/pnt-functional/src/pnt_functional/tests/__init__.py` (new) | Add the empty package marker that `pnt-core` already carries. The relative import requires the `tests` directory to be a package so pytest imports the test module as `pnt_functional.tests.test_main` with a known parent package; without it the relative import raises `ImportError: attempted relative import with no known parent package`. |
+| `packages/pnt-core/uv.lock`, `packages/pnt-functional/uv.lock`, `packages/pnt-cli/uv.lock` | Regenerate after the group and engine changes; confirm basedpyright resolves into each lock and bare `pyright` is gone. |
+| `packages/pnt-core/pixi.lock`, `packages/pnt-functional/pixi.lock` | Regenerate so the conda parity path resolves `basedpyright` under the `typecheck` environment; the old `types` environment and `pyright` are gone. `pnt-cli` has no `[tool.pixi]` configuration and so has no pixi.lock. |
+| `packages/pnt-cli/pyproject.toml` | Rename the `types` group to `typecheck` and replace `pyright` with `basedpyright>=1.21`, matching the pure-package vocabulary, and regenerate `uv.lock`. No Nix basedpyright check is emitted for `pnt-cli`; the structural invariant continues to exempt it because its type surface is the Rust crate, and the rename is for dependency-group consistency only. |
 
 The end state is a green `nix flake check` on the local system for the affected checks.
 The traceability invariant is intended to be observed failing under the current `packages`-output gap and then to turn green once each package is exposed, which is a small demonstration of the CCV integrity property the template is otherwise too small to assert via mutation testing.
