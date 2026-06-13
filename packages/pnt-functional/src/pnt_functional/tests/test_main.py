@@ -1,7 +1,8 @@
-"""Tests for main module."""
-
+# https://github.com/juspay/omnix/issues/425: use relative import until resolved
+# from pnt_functional.main import create_greeting, greet, validate_name
 from expression import Error, Ok
-from pnt_functional.main import create_greeting, greet, validate_name
+
+from ..main import create_greeting, greet, validate_name
 
 
 def test_validate_name_valid():
