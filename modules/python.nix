@@ -19,6 +19,27 @@
         py313 = pkgs.python313;
       };
 
+      # Pinned Rust toolchain via oxalica/rust-overlay, applied to the perSystem
+      # pkgs with `.extend` (the canonical flake-parts overlay pattern; a sibling
+      # module cannot override perSystem `_module.args.pkgs` past flake-parts'
+      # default). Tracks this template's own rust-toolchain.toml as the source of
+      # truth: rustToolchainVersion is a nix constant kept in lockstep with
+      # rust-toolchain.toml `channel` at 1.94.1; extensions mirror that file's
+      # `components` plus the crane-needed llvm-tools-preview. Threaded into the
+      # pnt-cli crane call via mkPackageModule and exported through _module.args
+      # for devshell.nix.
+      rustPkgs = pkgs.extend (import inputs.rust-overlay);
+      rustToolchainVersion = "1.94.1";
+      rustToolchain = rustPkgs.rust-bin.stable.${rustToolchainVersion}.default.override {
+        extensions = [
+          "rust-src"
+          "rust-analyzer"
+          "clippy"
+          "rustfmt"
+          "llvm-tools-preview"
+        ];
+      };
+
       # Discover packages from packages/ directory. Each subdirectory is a
       # Python package. Packages containing Cargo.toml are maturin/pyo3
       # packages requiring a corresponding nix/packages/{name}/default.nix
@@ -65,7 +86,12 @@
         in
         if builtins.pathExists modulePath then
           import modulePath {
-            inherit pkgs lib python;
+            inherit
+              pkgs
+              lib
+              python
+              rustToolchain
+              ;
             crane = inputs.crane;
             inherit (inputs) crane-maturin pyproject-nix;
           }
@@ -269,6 +295,7 @@
           maturinPackageNames
           purePackageNames
           hasMaturinPackages
+          rustToolchain
           ;
         defaultPython = pythonVersions.py313;
       };

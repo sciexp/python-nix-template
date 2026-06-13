@@ -12,9 +12,13 @@
   crane-maturin,
   pyproject-nix,
   python,
+  rustToolchain,
 }:
 let
-  cmLib = crane-maturin.mkLib crane pkgs;
+  # Pin the toolchain backing crane-maturin to rust-toolchain.toml's 1.94.1 (rustToolchain from python.nix). overrideToolchain
+  # rewrites the craneLib scope so cargoClippy/cargoDoc/cargoNextest/cargoFmt and
+  # the dependency builds resolve cargo, rustc, clippy, and rustfmt from rustToolchain.
+  cmLib = (crane-maturin.mkLib crane pkgs).overrideToolchain (_: rustToolchain);
   hacks = pkgs.callPackage pyproject-nix.build.hacks { };
 
   pyFilter = path: _type: builtins.match ".*\\.pyi?$|.*/pyproject\\.toml$" path != null;
@@ -38,11 +42,16 @@ let
   # Standalone crane-maturin build for test suite and Python package output.
   # nixpkgsPrebuilt installs from this derivation, avoiding duplicate Rust
   # compilation in the uv2nix overlay. passthru.tests provides checks.
-  cmPackage = cmLib.buildMaturinPackage {
-    pname = "pnt-cli";
-    version = cargoToml.workspace.package.version;
-    inherit src testSrc python;
-  };
+  cmPackage =
+    (cmLib.buildMaturinPackage.override {
+      cargo = rustToolchain;
+      rustc = rustToolchain;
+    })
+      {
+        pname = "pnt-cli";
+        version = cargoToml.workspace.package.version;
+        inherit src testSrc python;
+      };
 in
 {
   # Install crane-maturin's pre-built output into the uv2nix package set via

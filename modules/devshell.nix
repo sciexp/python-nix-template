@@ -12,6 +12,7 @@
       packageWorkspaces,
       editablePythonSets,
       pythonVersions,
+      rustToolchain,
       hasMaturinPackages ? false,
       ...
     }:
@@ -57,10 +58,9 @@
             ++ lib.optionals hasMaturinPackages (
               with pkgs;
               [
-                # Rust tooling for maturin/pyo3 packages
-                cargo
-                rustc
-                clippy
+                # Pinned Rust toolchain (cargo, rustc, clippy, rustfmt) from python.nix
+                # via rust-overlay, version aligned to rust-toolchain.toml. maturin stays from nixpkgs.
+                rustToolchain
                 cargo-nextest
                 maturin
               ]

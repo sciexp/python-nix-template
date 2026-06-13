@@ -27,6 +27,9 @@
     crane.url = "github:ipetkov/crane";
     crane-maturin.url = "github:cameronraysmith/crane-maturin/1ae386e2c1a51e23720b6542ddda2cd1bcbb7ee2";
 
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+
     nix2container.url = "github:nlewo/nix2container";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
 
