@@ -13,6 +13,9 @@
       pythonSets,
       editablePythonSets,
       pythonVersions,
+      packageNames,
+      purePackageNames,
+      maturinPackageNames,
       ...
     }:
     let
@@ -29,13 +32,27 @@
         ) { } packageWorkspaces;
 
       defaultDeps = mergeWorkspaceDeps (deps: deps.default);
+
+      # Per-package production output: a pure package resolves to a minimal venv
+      # containing only that package and its runtime closure (no dev groups); a
+      # maturin package resolves to its installed wheel node. Every discovered
+      # package is exposed so the structural-traceability invariant can assert
+      # packages.<system> coverage by name.
+      perPackageOutput =
+        name:
+        if builtins.elem name maturinPackageNames then
+          pythonSets.py313.${name}
+        else
+          pythonSets.py313.mkVirtualEnv name { ${name} = [ ]; };
+
+      packageOutputs = lib.genAttrs packageNames perPackageOutput;
     in
     {
-      packages = rec {
+      packages = packageOutputs // {
         pntCore312 = pythonSets.py312.mkVirtualEnv "pnt-core-3.12" defaultDeps;
         pntCore313 = pythonSets.py313.mkVirtualEnv "pnt-core-3.13" defaultDeps;
 
-        default = pntCore313;
+        default = pythonSets.py313.mkVirtualEnv "pnt-core-3.13" defaultDeps;
       };
     };
 }
