@@ -35,7 +35,7 @@ dev = [
   { include-group = "interactive" },
   { include-group = "lint" },
   { include-group = "test" },
-  { include-group = "types" },
+  { include-group = "typecheck" },
 ]
 interactive = [
   "ipython>=8.32.0",
@@ -49,12 +49,12 @@ test = [
   "pytest>=8.3.4",
   "xdoctest>=1.2.0",
 ]
-types = [
-  "pyright>=1.1.395",
+typecheck = [
+  "basedpyright>=1.21",
 ]
 
 [tool.uv]
-default-groups = ["lint", "test", "types"]
+default-groups = ["lint", "test", "typecheck"]
 
 [tool.pixi.project]
 channels  = ["conda-forge"]
@@ -75,7 +75,7 @@ dev         = { features = ["dev"], solve-group = "default" }
 interactive = { features = ["interactive"], solve-group = "default" }
 lint        = { features = ["lint"], solve-group = "default" }
 test        = { features = ["test"], solve-group = "default" }
-types       = { features = ["types"], solve-group = "default" }
+typecheck   = { features = ["typecheck"], solve-group = "default" }
 
 [tool.pixi.feature.test.tasks]
 test = "pytest"
@@ -84,8 +84,8 @@ test = "pytest"
 lint       = "ruff check --fix src/"
 lint-check = "ruff check src/"
 
-[tool.pixi.feature.types.tasks]
-types = "pyright src/"
+[tool.pixi.feature.typecheck.tasks]
+typecheck = "basedpyright src/"
 
 [tool.pixi.package]
 name    = "pnt-functional"
