@@ -74,10 +74,10 @@ ghsecrets repo="sciexp/python-nix-template":
   @echo
   PAGER=cat gh secret list --repo={{ repo }}
 
-# Run pre-commit hooks (see pre-commit.nix and note the yaml is git-ignored)
+# Run prek hooks (see modules/formatting.nix and note the yaml is git-ignored)
 [group('CI/CD')]
 pre-commit:
-  pre-commit run --all-files
+  prek run --all-files
 
 # List available workflows and associated jobs using act
 [group('CI/CD')]

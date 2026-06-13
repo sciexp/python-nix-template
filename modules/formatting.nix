@@ -16,6 +16,7 @@
         programs.taplo.enable = true;
       };
 
+      pre-commit.check.enable = false;
       pre-commit.settings = {
         package = pkgs.prek;
         hooks.treefmt.enable = true;

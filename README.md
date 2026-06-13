@@ -261,7 +261,7 @@ Available recipes:
     ghvars repo="sciexp/python-nix-template"           # Update github vars for repo from environment variables
     list-packages-json                                 # Discover packages as JSON array for CI matrix
     list-workflows                                     # List available workflows and associated jobs using act
-    pre-commit                                         # Run pre-commit hooks (see pre-commit.nix and note the yaml is git-ignored)
+    pre-commit                                         # Run prek hooks (see modules/formatting.nix and note the yaml is git-ignored)
     scan-secrets                                       # Scan repository for hardcoded secrets
     scan-staged                                        # Scan staged files for hardcoded secrets (pre-commit)
     test-docs-build branch=`git branch --show-current` # Test build-docs job locally with act
