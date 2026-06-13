@@ -1,20 +1,10 @@
 {
-  inputs,
-  ...
-}:
-{
   perSystem =
     {
-      config,
-      self',
-      pkgs,
       lib,
       packageWorkspaces,
       pythonSets,
-      editablePythonSets,
-      pythonVersions,
       packageNames,
-      purePackageNames,
       maturinPackageNames,
       ...
     }:
