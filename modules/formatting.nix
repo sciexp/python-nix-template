@@ -10,6 +10,11 @@
     {
       treefmt = {
         projectRootFile = "flake.nix";
+        # Expose treefmt as a flake check (checks.treefmt = build.check projectRoot)
+        # so the formatting regulator participates in `nix flake check`, not only
+        # the optional pre-commit hook. This is the flakeModule's default; set
+        # explicitly to keep it from silently regressing.
+        flakeCheck = true;
         programs.nixfmt.enable = true;
         programs.ruff-format.enable = true;
         programs.ruff-check.enable = true;
