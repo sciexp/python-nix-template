@@ -6,7 +6,7 @@
     flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 
   inputs = {
-    nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz";
+    nixpkgs.url = "https://channels.nixos.org/nixos-unstable-small/nixexprs.tar.xz";
     systems.url = "github:nix-systems/default";
 
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -15,15 +15,17 @@
     import-tree.url = "github:vic/import-tree";
 
     pyproject-nix.url = "github:pyproject-nix/pyproject.nix";
+    pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
+    uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.inputs.pyproject-nix.follows = "pyproject-nix";
     pyproject-build-systems.url = "github:pyproject-nix/build-system-pkgs";
+    pyproject-build-systems.inputs.nixpkgs.follows = "nixpkgs";
     pyproject-build-systems.inputs.pyproject-nix.follows = "pyproject-nix";
     pyproject-build-systems.inputs.uv2nix.follows = "uv2nix";
 
     crane.url = "github:ipetkov/crane";
     crane-maturin.url = "github:vlaci/crane-maturin";
-    crane-maturin.inputs.flake-parts.follows = "flake-parts";
 
     nix2container.url = "github:nlewo/nix2container";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
