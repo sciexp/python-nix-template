@@ -17,16 +17,17 @@
     },
     "crane-maturin": {
       "locked": {
-        "lastModified": 1774529081,
-        "narHash": "sha256-7mKbKUE+CIu/u7EXVHCWYYQcaBvUoPba6vL1y75mKS0=",
-        "owner": "vlaci",
+        "lastModified": 1781360987,
+        "narHash": "sha256-gd7RWlhhioWo1rFwbLkOmRSBp7GPNoH9M2QnFpLfg6w=",
+        "owner": "cameronraysmith",
         "repo": "crane-maturin",
-        "rev": "44b5de49833f468b3feb7d661ac3d1443b43c785",
+        "rev": "1ae386e2c1a51e23720b6542ddda2cd1bcbb7ee2",
         "type": "github"
       },
       "original": {
-        "owner": "vlaci",
+        "owner": "cameronraysmith",
         "repo": "crane-maturin",
+        "rev": "1ae386e2c1a51e23720b6542ddda2cd1bcbb7ee2",
         "type": "github"
       }
     },
