@@ -10,3 +10,6 @@ select = [
   "I", # isort
   "W", # pycodestyle warnings
 ]
+
+[lint.isort]
+known-third-party = ["pnt_functional", "pnt_core", "pnt_cli"]
