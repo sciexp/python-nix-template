@@ -75,7 +75,11 @@ dev         = { features = ["dev"], solve-group = "default" }
 interactive = { features = ["interactive"], solve-group = "default" }
 lint        = { features = ["lint"], solve-group = "default" }
 test        = { features = ["test"], solve-group = "default" }
-typecheck   = { features = ["typecheck"], solve-group = "default" }
+# typecheck carries `test` alongside `typecheck`: basedpyright scans the whole
+# src/ tree including src/pnt_functional/tests, whose modules import the test
+# toolchain (pytest), so those imports must resolve. This mirrors the Nix
+# typecheck venv's ["typecheck" "test"] group spec in modules/python.nix.
+typecheck = { features = ["test", "typecheck"], solve-group = "default" }
 
 [tool.pixi.feature.test.tasks]
 test = "pytest"
