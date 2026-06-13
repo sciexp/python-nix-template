@@ -5,6 +5,11 @@
 # The overlay uses pyproject-nix's nixpkgsPrebuilt to install from
 # crane-maturin's output, eliminating duplicate Rust compilation while
 # preserving uv2nix resolver metadata (passthru.dependencies) from prev.
+#
+# The module exports only { overlay }. crane-maturin's tests are re-attached to
+# the package node's passthru.tests below, and the central harvest in
+# modules/checks/per-package.nix reads pythonSets.py313.pnt-cli.passthru.tests
+# uniformly with the pure packages — there is no module-local checks rename.
 {
   pkgs,
   lib,
@@ -73,17 +78,4 @@ in
           };
         });
   };
-
-  checks =
-    lib.mapAttrs'
-      (name: drv: {
-        name = "pnt-cli-${name}";
-        value = drv;
-      })
-      (
-        builtins.removeAttrs cmPackage.passthru.tests [
-          "test-coverage"
-          "pytest-coverage"
-        ]
-      );
 }
