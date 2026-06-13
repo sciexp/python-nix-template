@@ -239,7 +239,7 @@ ci-test package:
 # Run type checking for a package
 [group('CI/CD')]
 ci-typecheck package:
-    cd packages/{{package}} && uv run pyright src/
+    cd packages/{{package}} && uv sync --quiet && uv run --no-sync basedpyright src/
 
 # Run all checks for a package (lint, typecheck, test)
 [group('CI/CD')]
@@ -273,11 +273,23 @@ conda-lock package="pnt-core":
 # Run tests in conda environment with pixi
 [group('conda')]
 conda-test package="pnt-core":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! grep -q '^\[tool\.pixi' "packages/{{package}}/pyproject.toml"; then
+        echo "Skipping conda-test for {{package}}: no [tool.pixi] configuration."
+        exit 0
+    fi
     pixi run -e test --manifest-path=packages/{{package}}/pyproject.toml test
 
 # Run linting in conda environment with pixi
 [group('conda')]
 conda-lint package="pnt-core":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! grep -q '^\[tool\.pixi' "packages/{{package}}/pyproject.toml"; then
+        echo "Skipping conda-lint for {{package}}: no [tool.pixi] configuration."
+        exit 0
+    fi
     pixi run -e lint --manifest-path=packages/{{package}}/pyproject.toml lint-check
 
 # Run linting and fix errors in conda environment with pixi
@@ -288,7 +300,13 @@ conda-lint-fix package="pnt-core":
 # Run type checking in conda environment with pixi
 [group('conda')]
 conda-type package="pnt-core":
-    pixi run -e types --manifest-path=packages/{{package}}/pyproject.toml types
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! grep -q '^\[tool\.pixi' "packages/{{package}}/pyproject.toml"; then
+        echo "Skipping conda-type for {{package}}: no [tool.pixi] configuration."
+        exit 0
+    fi
+    pixi run -e typecheck --manifest-path=packages/{{package}}/pyproject.toml typecheck
 
 # Run all checks in conda environment (lint, type, test)
 [group('conda')]
