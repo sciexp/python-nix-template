@@ -1,2 +1,11 @@
 # Gitleaks configuration
 # https://github.com/gitleaks/gitleaks
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+# Age encryption public keys (age1<bech32-58>) are public-key material, not
+# secrets — they encrypt but cannot decrypt without the private key.
+description = "Age public keys in scripts/sops-bootstrap.sh"
+regexes = ['''age1[a-z0-9]{58}''']

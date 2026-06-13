@@ -5,7 +5,7 @@ from expression import Error, Ok, Result
 
 
 @beartype
-def validate_name(name: str) -> Result[str, Error]:
+def validate_name(name: str) -> Result[str, str]:
     """Validate a name.
 
     Args:
@@ -25,7 +25,7 @@ def validate_name(name: str) -> Result[str, Error]:
 
 
 @beartype
-def create_greeting(name: str) -> Result[str, Error]:
+def create_greeting(name: str) -> Result[str, str]:
     """Create a greeting message.
 
     Args:

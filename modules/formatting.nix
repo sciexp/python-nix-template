@@ -27,5 +27,20 @@
           pass_filenames = false;
         };
       };
+
+      # Full-tree gitleaks secret scan against the pinned flake source snapshot.
+      # Uses --no-git because the Nix store path has no .git directory; covers
+      # file contents only (not commit history).
+      checks.gitleaks =
+        pkgs.runCommand "gitleaks"
+          {
+            nativeBuildInputs = [ pkgs.gitleaks ];
+            src = inputs.self;
+          }
+          ''
+            cd "$src"
+            gitleaks detect --no-git --verbose --redact --source .
+            touch "$out"
+          '';
     };
 }

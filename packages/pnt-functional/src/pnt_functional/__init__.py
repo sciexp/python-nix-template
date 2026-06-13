@@ -5,7 +5,7 @@ from importlib import metadata
 from pnt_functional.main import greet
 
 try:
-    __version__ = metadata.version(__package__)
+    __version__ = metadata.version(__package__ or "")
 except metadata.PackageNotFoundError:
     __version__ = "unknown"
 

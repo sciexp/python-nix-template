@@ -135,9 +135,129 @@
       rustChecks = lib.foldl' (
         acc: name: acc // (mkPackageModule name pythonVersions.py313).checks
       ) { } maturinPackageNames;
+
+      # Pytest check for a pure Python package using the uv2nix-resolved venv.
+      # The virtual env includes the package itself plus its default dependency
+      # groups (test, lint, types per pyproject.toml [tool.uv] default-groups),
+      # providing pytest, pytest-cov, hypothesis, xdoctest, and beartype for
+      # packages that list it as a runtime dependency.
+      #
+      # When beartypePackage is set to the Python import path (e.g. "pnt_functional"),
+      # activates beartype's package-wide import hook by injecting a conftest.py with
+      # beartype.claw.beartype_package so all callables are runtime type-checked, not
+      # only those carrying an explicit @beartype decorator. BEARTYPE_HOOK_PACKAGE in
+      # the derivation environment records the activation target for inspection via
+      # nix derivation show.
+      mkPurePytestCheck =
+        {
+          name,
+          python,
+          beartypePackage ? null,
+        }:
+        let
+          pythonSet = mkPythonSet python;
+          workspace = packageWorkspaces.${name}.workspace;
+          testEnv = pythonSet.mkVirtualEnv "${name}-test-env" workspace.deps.default;
+          beartypeConftestFile =
+            if beartypePackage != null then
+              pkgs.writeText "beartype-conftest.py" ''
+                from beartype.claw import beartype_package
+                beartype_package("${beartypePackage}")
+              ''
+            else
+              null;
+        in
+        pkgs.stdenv.mkDerivation (
+          {
+            name = "${name}-pytest";
+            src = lib.cleanSource (../packages + "/${name}");
+            nativeBuildInputs = [ testEnv ];
+            buildPhase = ''
+              runHook preBuild
+              ${if beartypeConftestFile != null then "cp ${beartypeConftestFile} conftest.py" else ""}
+              pytest
+              runHook postBuild
+            '';
+            installPhase = ''
+              runHook preInstall
+              touch $out
+              runHook postInstall
+            '';
+          }
+          // lib.optionalAttrs (beartypePackage != null) {
+            BEARTYPE_HOOK_PACKAGE = beartypePackage;
+          }
+        );
+
+      pureChecks = lib.foldl' (
+        acc: name:
+        acc
+        // {
+          "${name}-pytest" = mkPurePytestCheck {
+            inherit name;
+            python = pythonVersions.py313;
+            beartypePackage = if name == "pnt-functional" then "pnt_functional" else null;
+          };
+        }
+      ) { } purePackageNames;
+
+      # Per-package ruff lint check. Runs ruff check against the package's
+      # src/ directory using the repository-root ruff.toml via --config,
+      # keeping lint configuration centralized. No Python virtual environment
+      # is required since ruff is a standalone binary. Applied to all packages
+      # (pure and maturin) that contain Python source under src/.
+      mkRuffCheck =
+        name:
+        pkgs.runCommand "${name}-ruff"
+          {
+            nativeBuildInputs = [ pkgs.ruff ];
+            src = lib.cleanSource (../packages + "/${name}");
+          }
+          ''
+            cd "$src"
+            ruff check --no-cache --config ${../ruff.toml} src/
+            touch "$out"
+          '';
+
+      ruffChecks = lib.foldl' (
+        acc: name:
+        acc
+        // {
+          "${name}-ruff" = mkRuffCheck name;
+        }
+      ) { } packageNames;
+
+      # Net-new basedpyright type-checking derivation covering the full pure-Python
+      # source tree. Merges default dependency groups from all pure packages into a
+      # single virtual environment so basedpyright resolves beartype, expression, and
+      # other runtime imports. The --pythonpath flag points at the venv Python wrapper
+      # so basedpyright discovers the correct sys.path including installed package stubs.
+      basedpyrightCheck =
+        let
+          pythonSet = mkPythonSet pythonVersions.py313;
+          mergedDeps = lib.foldl' (
+            acc: name: acc // packageWorkspaces.${name}.workspace.deps.default
+          ) { } purePackageNames;
+          typeEnv = pythonSet.mkVirtualEnv "basedpyright-env" mergedDeps;
+        in
+        pkgs.runCommand "basedpyright"
+          {
+            nativeBuildInputs = [
+              pkgs.basedpyright
+              typeEnv
+            ];
+            src = inputs.self;
+          }
+          ''
+            cd "$src"
+            basedpyright \
+              --pythonpath "$(command -v python3)" \
+              ${lib.concatMapStrings (name: "packages/${name}/src ") purePackageNames}
+            touch "$out"
+          '';
     in
     {
-      checks = lib.optionalAttrs hasMaturinPackages rustChecks;
+      checks = rustChecks // pureChecks // ruffChecks // { basedpyright = basedpyrightCheck; };
 
       _module.args = {
         inherit
