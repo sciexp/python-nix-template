@@ -131,11 +131,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1781332575,
-        "narHash": "sha256-b5zDI290fPWS3GogqVonydrdcpQPsRCzLIOA3T0ctrs=",
-        "rev": "51effaf9783e0226281ad10e95a4af6c8a145316",
+        "lastModified": 1781463712,
+        "narHash": "sha256-R7loMc5NSCpf0YKCghGbEE7iYfM+YVyvm0fjAIrgLOU=",
+        "rev": "8cbc2e9e16ca6e0de33d43add7dee24bec408308",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixos/unstable-small/nixos-26.11pre1015892.51effaf9783e/nixexprs.tar.xz"
+        "url": "https://releases.nixos.org/nixos/unstable-small/nixos-26.11pre1016615.8cbc2e9e16ca/nixexprs.tar.xz"
       },
       "original": {
         "type": "tarball",
