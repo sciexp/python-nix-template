@@ -1,0 +1,63 @@
+---
+linear_story_id: "CAM-23"
+linear_story_identifier: "CAM-23"
+linear_story_title: "Create python-nix-template shell application to deploy quarto docs"
+linear_story_url: "https://linear.app/cameronraysmith/issue/CAM-23"
+linear_story_state: "In Progress"
+linear_team: "CAM"
+last_synced_state: "In Progress"
+last_synced_at: "2026-06-18T16:42:19Z"
+review_round: 0
+attempt_log:
+  - { at: "2026-06-18T16:42:19Z", transition: "bind->todo", outcome: "dropped", note: "issue already In Progress (manually set pre-proposal); Todo is strictly-behind, state transition skipped as no-op per strictly-behind rule" }
+  - { at: "2026-06-18T16:42:19Z", transition: "bind->describe", outcome: "posted", note: "Linear description seeded from proposal business content" }
+---
+
+## Why
+
+pnt renders its quarto docs site but has no reproducible, nix-native way to build and deploy it, and its DVC data store still depends on GCS and Google Drive remotes gated behind a GCP service-account decrypt dance. A nix-built docs derivation plus a `deploy-sites` app gives a single reproducible build-and-deploy entrypoint shared by local and CI, and migrating the DVC remote to Cloudflare R2 removes the GCP dependency and demonstrates a clean s3-compatible template pattern.
+
+## What Changes
+
+**Docs build**
+- From: docs rendered ad hoc via the devshell quarto and justfile invocations.
+- To: a pure `perSystem.packages.pnt-docs` derivation building `_site` reproducibly from the uv2nix venv and `docs/` source.
+- Reason: a hermetic, cacheable docs build (the render executes no code, so it is already hermetic).
+- Impact: non-breaking; adds `modules/docs.nix`.
+
+**Docs deploy**
+- From: deploy logic inline in the justfile/CI calling wrangler directly.
+- To: a `perSystem.apps.deploy-sites` shell application consuming the nix-built `_site` payload, run under real node, with preview and production paths.
+- Reason: one reproducible deploy entrypoint usable identically from a clean checkout and CI.
+- Impact: non-breaking; adds `modules/apps/deploy-sites.{nix,sh}`.
+
+**CI deploy wiring**
+- From: `.github/workflows/deploy-docs.yaml` builds and deploys docs with bespoke steps.
+- To: CI deploys via `nix run .#deploy-sites` against the nix-built `.#pnt-docs` payload, sops supplying the env.
+- Reason: single entrypoint; the build is the nix derivation.
+- Impact: non-breaking workflow change.
+
+**DVC data backend**
+- From: DVC remote on GCS plus Google Drive, decrypted via a GCP service account (`vars/dvc-sa.json`).
+- To: DVC remote on Cloudflare R2 (s3-compatible) with an R2 S3 keypair in sops `vars/shared.yaml`; the GCP SA and gdrive remote are retired.
+- Reason: removes the GCP dependency and demonstrates a clean s3-compatible template pattern; DVC is retained.
+- Impact: one-way migration of the backing store, gated behind a verified push round-trip.
+
+## Capabilities
+
+### New Capabilities
+
+- `docs-site-deployment`: reproducible nix-native build, deploy, and CI wiring for the pnt quarto documentation site, including the migration of the DVC data backing store to Cloudflare R2.
+
+### Modified Capabilities
+
+<!-- None: this is a new capability for pnt; openspec/specs/ has no existing specs. -->
+
+## Impact
+
+- New nix modules: `modules/docs.nix`, `modules/apps/deploy-sites.nix`, `modules/apps/deploy-sites.sh`; likely a `nix/` FOD helper for vendored interlinks inventories.
+- Modified: `.github/workflows/deploy-docs.yaml`, `justfile`, `.dvc/config`, sops `vars/shared.yaml`.
+- Retired: `vars/dvc-sa.json` (GCP SA) and the DVC gdrive remote.
+- Dependencies: `pkgs.quarto`, the uv2nix venv (`pntCore313`, quartodoc), Cloudflare Workers (worker `python-nix-template`) and R2; wrangler run under real node.
+- Secrets: `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` for deploy, R2 S3 `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` for DVC.
+- Out of scope / deferred follow-up: the buildbot-nix/hercules-ci effect that would run `deploy-sites` as a CI effect (blocked by CAM-23 and vanixiets PR-A); documented in design.md, not implemented, and no Linear issue is created for it now.

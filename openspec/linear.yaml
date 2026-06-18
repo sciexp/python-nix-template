@@ -1,0 +1,12 @@
+workspace:
+  slug: "cameronraysmith"
+defaults:
+  archive_documents:
+    enabled: true
+    title_prefix: "OpenSpec:"
+  max_review_rounds: 3
+teams:
+  CAM:
+    id: "0ee3fb44-535c-47b7-b000-51617a6a3e18"
+    name: "Cameron Smith"
+projects: {}

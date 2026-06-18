@@ -13,6 +13,8 @@
 *.md
 !README.md
 !docs/**/*.md
+!openspec/*.md
+!openspec/**/*.md
 logs/
 
 ## Environments
