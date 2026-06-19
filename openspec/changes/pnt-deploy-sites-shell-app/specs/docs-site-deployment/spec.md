@@ -1,33 +1,23 @@
 ## ADDED Requirements
 
-### Requirement: pnt-docs build derivation
+### Requirement: deploy-sites build+deploy application
 
-The system SHALL provide a `perSystem.packages.pnt-docs` derivation, defined in `modules/docs.nix`, that builds the quarto documentation site reproducibly into `_site` from the uv2nix venv (`config.packages.pntCore313`, providing pnt_core and the `docs` dependency-group quartodoc) and a `lib.fileset`-scoped `docs/` source, by running `quartodoc build` followed by `quarto render docs`.
-The derivation MUST be a direct perSystem module rather than a pkgs-by-name package, and MUST vendor external Sphinx `objects.inv` interlink inventories as fixed-output derivations or otherwise degrade interlinks gracefully when offline.
+The system SHALL provide a `perSystem.apps.deploy-sites` `writeShellApplication`, defined in `modules/apps/deploy-sites.nix` with logic in `modules/apps/deploy-sites.sh`, that bakes a `lib.fileset` source (`.dvc/config`, `docs/`, `wrangler.jsonc`) plus the toolchain into its closure and, at runtime, copies the baked source to a tmpdir, runs `dvc pull --force --allow-missing` then `quartodoc build` + `quartodoc interlinks` + `quarto render docs` to produce `_site`, then deploys it to Cloudflare Workers.
+The application MUST support a preview path (`versions upload --preview-alias b-<safe-branch> --tag <sha12>`) and a production path (promotion of the version whose `workers/tag` annotation matches the sha12, otherwise `wrangler deploy`), MUST run wrangler under real `node` rather than bun, MUST derive git metadata env-first (`GIT_REV_SHORT12`) with a git fallback, and MUST read its credentials from the inherited environment (`CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` for deploy, `AWS_*` for the R2 `dvc pull`).
 
-#### Scenario: nix build produces a stable site
+#### Scenario: nix build produces the app
 
-- **WHEN** `nix build .#pnt-docs` is run
-- **THEN** it yields a stable `_site` with a sane `index.html`
+- **WHEN** `nix build .#deploy-sites` is run
+- **THEN** it builds the app
 
-#### Scenario: flake check passes with the docs derivation present
+#### Scenario: preview build and deploy from a clean checkout
 
-- **WHEN** `nix flake check` is run after `modules/docs.nix` is added
-- **THEN** the check is green
-
-### Requirement: deploy-sites application
-
-The system SHALL provide a `perSystem.apps.deploy-sites` application, defined as a `writeShellApplication` in `modules/apps/deploy-sites.nix` with logic in `modules/apps/deploy-sites.sh`, that consumes the pnt-docs `_site` payload and deploys it to Cloudflare Workers.
-The application MUST support a preview path (`wrangler versions upload --preview-alias b-<safe-branch> --tag <sha12>`) and a production path (promotion of the version whose `workers/tag` annotation matches the sha12, otherwise `wrangler deploy`), MUST run wrangler under real `node` rather than bun, and MUST read its credentials from the inherited environment variables `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
-
-#### Scenario: preview deploy from a clean checkout
-
-- **WHEN** `nix run .#deploy-sites -- preview <branch>` is run from a clean checkout with the Cloudflare credentials present in the environment
-- **THEN** it uploads a preview of the docs site
+- **WHEN** `nix run .#deploy-sites -- preview <branch>` is run from a clean checkout with the Cloudflare and R2 credentials present in the environment
+- **THEN** it builds the site and uploads a working preview
 
 ### Requirement: CI deploys via the nix app
 
-The system SHALL deploy the documentation site in CI by invoking `nix run .#deploy-sites` against the nix-built `.#pnt-docs` payload.
+The system SHALL build and deploy the documentation site in CI by invoking `nix run .#deploy-sites`, which builds the site at runtime then deploys it.
 `.github/workflows/deploy-docs.yaml` and the justfile MUST be rewired to use this entrypoint, with sops continuing to supply the Cloudflare environment.
 
 #### Scenario: workflow_dispatch produces a live preview URL

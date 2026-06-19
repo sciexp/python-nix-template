@@ -15,26 +15,20 @@ attempt_log:
 
 ## Why
 
-pnt renders its quarto docs site but has no reproducible, nix-native way to build and deploy it, and its DVC data store still depends on GCS and Google Drive remotes gated behind a GCP service-account decrypt dance. A nix-built docs derivation plus a `deploy-sites` app gives a single reproducible build-and-deploy entrypoint shared by local and CI, and migrating the DVC remote to Cloudflare R2 removes the GCP dependency and demonstrates a clean s3-compatible template pattern.
+pnt renders its quarto docs site but has no reproducible, nix-native way to build and deploy it, and its DVC data store still depends on GCS and Google Drive remotes gated behind a GCP service-account decrypt dance. A single `deploy-sites` build+deploy app, into which nix bakes the toolchain and the source, gives one reproducible build-and-deploy entrypoint shared by local and CI, and migrating the DVC remote to Cloudflare R2 removes the GCP dependency and demonstrates a clean s3-compatible template pattern.
 
 ## What Changes
 
-**Docs build**
-- From: docs rendered ad hoc via the devshell quarto and justfile invocations.
-- To: a pure `perSystem.packages.pnt-docs` derivation building `_site` reproducibly from the uv2nix venv and `docs/` source.
-- Reason: a hermetic, cacheable docs build (the render executes no code, so it is already hermetic).
-- Impact: non-breaking; adds `modules/docs.nix`.
-
-**Docs deploy**
-- From: deploy logic inline in the justfile/CI calling wrangler directly.
-- To: a `perSystem.apps.deploy-sites` shell application consuming the nix-built `_site` payload, run under real node, with preview and production paths.
-- Reason: one reproducible deploy entrypoint usable identically from a clean checkout and CI.
+**Docs build and deploy**
+- From: docs rendered ad hoc via the devshell quarto and justfile invocations, with deploy logic inline in the justfile/CI calling wrangler directly.
+- To: a single `perSystem.apps.deploy-sites` build+deploy `writeShellApplication` into which nix bakes the toolchain and the source fileset (`.dvc/config`, `docs/`, `wrangler.jsonc`); the app does the imperative quarto build (`dvc pull` -> `quartodoc build`/`interlinks` -> `quarto render docs`) then the wrangler deploy (preview/production) under real node.
+- Reason: notebook execution is out-of-band and the freeze cache is DVC-tracked, so a derivation's no-network sandbox cannot recover from a stale freeze while the imperative path can re-execute; pre-merge build validation comes from PR-mode effects (which fail the merge gate on a broken preview build), not from a derivation.
 - Impact: non-breaking; adds `modules/apps/deploy-sites.{nix,sh}`.
 
 **CI deploy wiring**
 - From: `.github/workflows/deploy-docs.yaml` builds and deploys docs with bespoke steps.
-- To: CI deploys via `nix run .#deploy-sites` against the nix-built `.#pnt-docs` payload, sops supplying the env.
-- Reason: single entrypoint; the build is the nix derivation.
+- To: CI builds and deploys via `nix run .#deploy-sites` (the app builds the site at runtime then deploys it), sops supplying the env.
+- Reason: single entrypoint; the build is the app's runtime quarto render.
 - Impact: non-breaking workflow change.
 
 **DVC data backend**
@@ -47,7 +41,7 @@ pnt renders its quarto docs site but has no reproducible, nix-native way to buil
 
 ### New Capabilities
 
-- `docs-site-deployment`: reproducible nix-native build, deploy, and CI wiring for the pnt quarto documentation site, including the migration of the DVC data backing store to Cloudflare R2.
+- `docs-site-deployment`: a single nix-native `deploy-sites` app that builds and deploys the pnt quarto documentation site (nix bakes the toolchain and source; the app renders at runtime then deploys), plus the CI wiring and the migration of the DVC data backing store to Cloudflare R2.
 
 ### Modified Capabilities
 
@@ -55,9 +49,9 @@ pnt renders its quarto docs site but has no reproducible, nix-native way to buil
 
 ## Impact
 
-- New nix modules: `modules/docs.nix`, `modules/apps/deploy-sites.nix`, `modules/apps/deploy-sites.sh`; likely a `nix/` FOD helper for vendored interlinks inventories.
+- New nix modules: `modules/apps/deploy-sites.nix`, `modules/apps/deploy-sites.sh`.
 - Modified: `.github/workflows/deploy-docs.yaml`, `justfile`, `.dvc/config`, sops `vars/shared.yaml`.
 - Deferred retirement (follow-up, not this change): `vars/dvc-sa.json` (GCP SA) and the DVC `gcs`/`drive` remotes; all three remotes are kept for now.
-- Dependencies: `pkgs.quarto`, the uv2nix venv (`pntCore313`, quartodoc), Cloudflare Workers (worker `python-nix-template`) and R2; wrangler run under real node.
-- Secrets: `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` for deploy, R2 S3 `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` for DVC.
-- Out of scope / deferred follow-up: the buildbot-nix/hercules-ci effect that would run `deploy-sites` as a CI effect (blocked by CAM-23 and vanixiets PR-A); documented in design.md, not implemented, and no Linear issue is created for it now.
+- Dependencies (baked toolchain): `quarto` (with `QUARTO_PYTHON` -> the uv2nix docs venv), the uv2nix docs venv providing `quartodoc` + `pnt_core`, `dvc` + `dvc-s3`, `nodejs` + `wrangler`, `jq`, `git`, `coreutils`; Cloudflare Workers (worker `python-nix-template`) and R2; wrangler run under real node.
+- Secrets: `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` for deploy, R2 S3 `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` for the DVC pull.
+- Out of scope / deferred follow-up: the buildbot-nix/hercules-ci effect that would run the `deploy-sites` build+deploy app as a CI effect, invoking it via an eval-time store path so the build happens in-effect (blocked by CAM-23 and vanixiets PR-A); documented in design.md, not implemented, and no Linear issue is created for it now.

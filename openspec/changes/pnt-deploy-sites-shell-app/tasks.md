@@ -1,29 +1,23 @@
-## 1. pnt-docs derivation
+## 1. deploy-sites build+deploy app
 
-- [ ] 1.1 Add `modules/docs.nix` defining `perSystem.packages.pnt-docs` as a `stdenv.mkDerivation` taking `pkgs.quarto`, the uv2nix venv `config.packages.pntCore313`, and a `lib.fileset`-scoped `docs/` source; run `quartodoc build` then `quarto render docs` to produce `_site`. Keep it a direct perSystem module, not pkgs-by-name (see design.md D1).
-- [ ] 1.2 Vendor the external Sphinx `objects.inv` interlink inventories (python.org/beartype/matplotlib/numpy) as fixed-output derivations (likely a `nix/` helper), or accept graceful offline interlinks degradation (design.md D5).
-- [ ] 1.3 Verify acceptance: `nix build .#pnt-docs` yields a stable `_site` with a sane `index.html`, and `nix flake check` is green.
+- [ ] 1.1 Add `modules/apps/deploy-sites.nix` defining `perSystem.apps.deploy-sites` as a `writeShellApplication` that bakes the source fileset (`.dvc/config`, `docs/`, `wrangler.jsonc`) plus the toolchain `runtimeInputs`: `quarto` (with `QUARTO_PYTHON` pointed at the uv2nix docs venv), the python env providing `quartodoc` + `pnt_core`, `dvc` + `dvc-s3`, `nodejs` + `wrangler`, `jq`, `git`, `coreutils`.
+- [ ] 1.2 Add `modules/apps/deploy-sites.sh` with `preview`/`production` subcommands: copy the baked source to a tmpdir -> `dvc pull --force --allow-missing` -> `quartodoc build` + `quartodoc interlinks` -> `quarto render docs` to produce `_site` -> then the `node`-wrangler deploy. Preview = `node "$WRANGLER" versions upload --preview-alias b-<safe-branch> --tag <sha12>`; production = promote the version whose `workers/tag` annotation matches the sha12 (`versions list --json` match -> `versions deploy <id>@100%`), else fresh-build fallback `node "$WRANGLER" deploy`. Derive git metadata env-first (`GIT_REV_SHORT12`) with a git fallback; read credentials from inherited `CLOUDFLARE_*`/`AWS_*` env; run wrangler under real `node`, not bun.
+- [ ] 1.3 Verify acceptance: `nix build .#deploy-sites` builds the app, and `nix run .#deploy-sites -- preview <branch>` builds the site and deploys a working preview under `sops exec-env`.
 
-## 2. deploy-sites app
+## 2. GHA rewire
 
-- [ ] 2.1 Add `modules/apps/deploy-sites.nix` (`perSystem.apps.deploy-sites` as a `writeShellApplication`) and `modules/apps/deploy-sites.sh` porting the justfile preview/production wrangler logic: preview = `wrangler versions upload --preview-alias b-<safe-branch> --tag <sha12>`; production = version-promotion by the `workers/tag` sha12 annotation, else `wrangler deploy`.
-- [ ] 2.2 Run wrangler under real `node`, not bun; read credentials from inherited env `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID`.
-- [ ] 2.3 Verify acceptance: `nix run .#deploy-sites -- preview <branch>` uploads a preview from a clean checkout.
+- [ ] 2.1 Modify `.github/workflows/deploy-docs.yaml` to deploy via `nix run .#deploy-sites` (the app now builds AND deploys; there is no separate `.#pnt-docs` payload), with sops still supplying the env; keep the `docs-deploy-{preview,production}` justfile recipes as thin wrappers calling `nix run .#deploy-sites`.
+- [ ] 2.2 Verify acceptance: a `workflow_dispatch` run produces a live preview URL.
 
-## 3. GHA rewire
+## 3. DVC GCS/Drive to R2 (additive; retirement deferred)
 
-- [ ] 3.1 Modify `.github/workflows/deploy-docs.yaml` (and the justfile) to deploy via `nix run .#deploy-sites` against the nix-built `.#pnt-docs` payload, with sops still supplying the env.
-- [ ] 3.2 Verify acceptance: a `workflow_dispatch` run produces a live preview URL.
+- [x] 3.1 Confirm the R2 bucket `sciexp` exists on account 1ece4a9a8f092f8cbdd679d22b9ecb1f (created out-of-band).
+- [x] 3.2 Add a `r2` remote to `.dvc/config` (`url = s3://sciexp/projects/python-nix-template/cas`, `endpointurl = https://1ece4a9a8f092f8cbdd679d22b9ecb1f.r2.cloudflarestorage.com`, `region = auto`) and set it as default; keep the `gcs` and `drive` remotes.
+- [x] 3.3 Add the R2 S3 keypair (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) to sops `vars/shared.yaml` (manual; owner-only, never automated).
+- [x] 3.4 Retarget the justfile `data-sync`/`docs-sync` recipes to r2 (`sops exec-env vars/shared.yaml` + `dvc-s3`, dropping the GCP-SA decrypt dance); make `dvc-run` universal (SA decrypt + `sops exec-env` + `--with dvc-s3,dvc-gs,dvc-gdrive`).
+- [x] 3.5 Verify: `dvc push -r r2` seeds R2 from the local cache and `just data-sync` pulls cleanly (run after the keypair is set).
+- [ ] 3.6 Deferred / out of scope: retire the GCP service account (`vars/dvc-sa.json`, `gcp-sa-*` recipes) and the `gcs`/`drive` remotes in a future follow-up once R2 is proven; all three remotes are kept for now.
 
-## 4. DVC GCS/Drive to R2 (additive; retirement deferred)
+## 4. Deferred / out of scope (do not implement)
 
-- [x] 4.1 Confirm the R2 bucket `sciexp` exists on account 1ece4a9a8f092f8cbdd679d22b9ecb1f (created out-of-band).
-- [x] 4.2 Add a `r2` remote to `.dvc/config` (`url = s3://sciexp/projects/python-nix-template/cas`, `endpointurl = https://1ece4a9a8f092f8cbdd679d22b9ecb1f.r2.cloudflarestorage.com`, `region = auto`) and set it as default; keep the `gcs` and `drive` remotes.
-- [x] 4.3 Add the R2 S3 keypair (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) to sops `vars/shared.yaml` (manual; owner-only, never automated).
-- [x] 4.4 Retarget the justfile `data-sync`/`docs-sync` recipes to r2 (`sops exec-env vars/shared.yaml` + `dvc-s3`, dropping the GCP-SA decrypt dance); make `dvc-run` universal (SA decrypt + `sops exec-env` + `--with dvc-s3,dvc-gs,dvc-gdrive`).
-- [x] 4.5 Verify: `dvc push -r r2` seeds R2 from the local cache and `just data-sync` pulls cleanly (run after the keypair is set).
-- [ ] 4.6 Deferred / out of scope: retire the GCP service account (`vars/dvc-sa.json`, `gcp-sa-*` recipes) and the `gcs`/`drive` remotes in a future follow-up once R2 is proven; all three remotes are kept for now.
-
-## 5. Deferred / out of scope (do not implement)
-
-- [ ] 5.1 Document (do not implement) the buildbot-nix/hercules-ci effect that would run `deploy-sites` as a CI effect: hercules-ci-effects input plus flakeModule; a `mkEffect` deploy-sites effect referencing the app via an eval-time store path; a `python-nix-template-effects-secrets` clan-vars generator in vanixiets wired via `services.buildbot-nix.master.effects.perRepoSecretFiles` and imported on magnetite; `buildbot-nix.toml` gating. Blocked by CAM-23 and vanixiets PR-A; tracked as a future follow-up, with no Linear issue created now. Full spec in design.md (Non-Goals) and brainstorm.md.
+- [ ] 4.1 Document (do not implement) the buildbot-nix/hercules-ci effect that would run the `deploy-sites` build+deploy app as a CI effect, invoking it via an eval-time `/nix/store` path so the build happens IN the effect (the effect sandbox has full network + nix daemon + root, and the app bakes its own source so there is no no-working-tree obstacle): hercules-ci-effects input plus flakeModule; a `mkEffect` deploy-sites effect referencing the app via the store path; a `python-nix-template-effects-secrets` clan-vars generator in vanixiets wired via `services.buildbot-nix.master.effects.perRepoSecretFiles` and imported on magnetite; `buildbot-nix.toml` gating. Blocked by CAM-23 and vanixiets PR-A; tracked as a future follow-up, with no Linear issue created now. Full spec in design.md (Non-Goals) and brainstorm.md.
