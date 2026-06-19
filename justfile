@@ -685,14 +685,14 @@ gcp-sa-key-encrypt:
   @rm -f vars/dvc-sa.tmp.json
   @echo "✅ Service account key encrypted and saved to vars/dvc-sa.json"
 
-# Helper: Run any DVC command with decrypted service account
+# Helper: Run any DVC command (r2 default; gcs/drive via service account)
 [group('secrets')]
 dvc-run +command:
   #!/usr/bin/env bash
   set -euo pipefail
   sops -d vars/dvc-sa.json > .dvc-sa.json
   trap 'rm -f .dvc-sa.json' EXIT
-  uvx --with dvc-gdrive,dvc-gs dvc {{command}}
+  sops exec-env vars/shared.yaml 'uvx --with dvc-s3,dvc-gs,dvc-gdrive dvc {{command}}'
 
 # List existing service account keys (for auditing)
 [group('secrets')]
@@ -979,31 +979,28 @@ docs-deployments:
 docs-tail:
     sops exec-env vars/shared.yaml "bunx wrangler tail"
 
-# Sync data from drive (using encrypted service account)
+# Sync data from the R2 DVC remote
 [group('docs')]
 data-sync:
   #!/usr/bin/env bash
   set -euo pipefail
-  echo "Decrypting service account for DVC..."
-  sops -d vars/dvc-sa.json > .dvc-sa.json
-  trap 'rm -f .dvc-sa.json' EXIT
-  uvx --with dvc-gdrive,dvc-gs dvc pull --force --allow-missing
+  echo "Pulling DVC data from R2..."
+  sops exec-env vars/shared.yaml 'uvx --with dvc-s3 dvc pull --force --allow-missing'
   echo "✅ DVC data synced"
 
 # docs-sync: docs-build
-# Sync docs freeze data to DVC remote
+# Sync docs freeze data to the R2 DVC remote
 [group('docs')]
 docs-sync:
   #!/usr/bin/env bash
   set -euo pipefail
-  echo "Syncing docs freeze data to DVC remote..."
-  sops -d vars/dvc-sa.json > .dvc-sa.json
-  chmod 600 .dvc-sa.json
-  trap 'rm -f .dvc-sa.json' EXIT
-  uvx --with dvc-gdrive,dvc-gs dvc status
-  uvx --with dvc-gdrive,dvc-gs dvc add docs/_freeze -v
-  uvx --with dvc-gdrive,dvc-gs dvc push
-  uvx --with dvc-gdrive,dvc-gs dvc status
+  echo "Syncing docs freeze data to R2 DVC remote..."
+  sops exec-env vars/shared.yaml '
+    uvx --with dvc-s3 dvc status
+    uvx --with dvc-s3 dvc add docs/_freeze -v
+    uvx --with dvc-s3 dvc push
+    uvx --with dvc-s3 dvc status
+  '
   git status
   printf "\n\033[92mCommit relevant updates to the docs/_freeze.dvc lock file to the git repo\033[0m\n"
 

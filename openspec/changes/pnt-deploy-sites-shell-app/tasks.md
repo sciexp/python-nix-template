@@ -15,13 +15,14 @@
 - [ ] 3.1 Modify `.github/workflows/deploy-docs.yaml` (and the justfile) to deploy via `nix run .#deploy-sites` against the nix-built `.#pnt-docs` payload, with sops still supplying the env.
 - [ ] 3.2 Verify acceptance: a `workflow_dispatch` run produces a live preview URL.
 
-## 4. DVC GCS to R2
+## 4. DVC GCS/Drive to R2 (additive; retirement deferred)
 
-- [ ] 4.1 Provision an R2 bucket and a dashboard-minted R2 S3 HMAC keypair (via wrangler/MCP/dashboard; no terranix).
-- [ ] 4.2 Rewrite `.dvc/config` to an s3 remote (`url=s3://<bucket>/projects/python-nix-template/cas`, `endpointurl=https://<accountid>.r2.cloudflarestorage.com`, `region=auto`).
-- [ ] 4.3 Add the R2 keypair to sops `vars/shared.yaml` (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`).
-- [ ] 4.4 Swap the justfile DVC recipes from `uvx --with dvc-gdrive,dvc-gs` to `--with dvc-s3` and drop the `sops -d vars/dvc-sa.json` GCP-SA dance; retire `vars/dvc-sa.json` and the gdrive remote.
-- [ ] 4.5 Verify acceptance: `just data-sync` pulls from R2 cleanly, a push round-trips, and the docs build is still green.
+- [x] 4.1 Confirm the R2 bucket `sciexp` exists on account 1ece4a9a8f092f8cbdd679d22b9ecb1f (created out-of-band).
+- [x] 4.2 Add a `r2` remote to `.dvc/config` (`url = s3://sciexp/projects/python-nix-template/cas`, `endpointurl = https://1ece4a9a8f092f8cbdd679d22b9ecb1f.r2.cloudflarestorage.com`, `region = auto`) and set it as default; keep the `gcs` and `drive` remotes.
+- [ ] 4.3 Add the R2 S3 keypair (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) to sops `vars/shared.yaml` (manual; owner-only, never automated).
+- [x] 4.4 Retarget the justfile `data-sync`/`docs-sync` recipes to r2 (`sops exec-env vars/shared.yaml` + `dvc-s3`, dropping the GCP-SA decrypt dance); make `dvc-run` universal (SA decrypt + `sops exec-env` + `--with dvc-s3,dvc-gs,dvc-gdrive`).
+- [ ] 4.5 Verify: `dvc push -r r2` seeds R2 from the local cache and `just data-sync` pulls cleanly (run after the keypair is set).
+- [ ] 4.6 Deferred / out of scope: retire the GCP service account (`vars/dvc-sa.json`, `gcp-sa-*` recipes) and the `gcs`/`drive` remotes in a future follow-up once R2 is proven; all three remotes are kept for now.
 
 ## 5. Deferred / out of scope (do not implement)
 

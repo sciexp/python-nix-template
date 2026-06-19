@@ -1,6 +1,10 @@
 [core]
-    remote = gcs
+    remote = r2
     analytics = false
+['remote "r2"']
+    url = s3://sciexp/projects/python-nix-template/cas
+    endpointurl = https://1ece4a9a8f092f8cbdd679d22b9ecb1f.r2.cloudflarestorage.com
+    region = auto
 ['remote "gcs"']
     url = gs://sciexp/projects/python-nix-template/cas
     credentialpath = ../.dvc-sa.json

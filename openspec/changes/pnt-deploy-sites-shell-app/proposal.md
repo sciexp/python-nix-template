@@ -38,10 +38,10 @@ pnt renders its quarto docs site but has no reproducible, nix-native way to buil
 - Impact: non-breaking workflow change.
 
 **DVC data backend**
-- From: DVC remote on GCS plus Google Drive, decrypted via a GCP service account (`vars/dvc-sa.json`).
-- To: DVC remote on Cloudflare R2 (s3-compatible) with an R2 S3 keypair in sops `vars/shared.yaml`; the GCP SA and gdrive remote are retired.
-- Reason: removes the GCP dependency and demonstrates a clean s3-compatible template pattern; DVC is retained.
-- Impact: one-way migration of the backing store, gated behind a verified push round-trip.
+- From: DVC default remote on GCS, with a Google Drive remote alongside, decrypted via a GCP service account (`vars/dvc-sa.json`).
+- To: a Cloudflare R2 (s3-compatible) remote added as the new default with an R2 S3 keypair in sops `vars/shared.yaml`; the `gcs` and `drive` remotes are kept, and GCP-SA/gdrive retirement is deferred to a follow-up once R2 is proven.
+- Reason: removes the GCP dependency from the default data path and demonstrates a clean s3-compatible template pattern; DVC is retained.
+- Impact: additive and non-destructive (all three remotes kept); the deferred follow-up that retires the GCP SA and old remotes is the one-way step, gated behind a verified push round-trip.
 
 ## Capabilities
 
@@ -57,7 +57,7 @@ pnt renders its quarto docs site but has no reproducible, nix-native way to buil
 
 - New nix modules: `modules/docs.nix`, `modules/apps/deploy-sites.nix`, `modules/apps/deploy-sites.sh`; likely a `nix/` FOD helper for vendored interlinks inventories.
 - Modified: `.github/workflows/deploy-docs.yaml`, `justfile`, `.dvc/config`, sops `vars/shared.yaml`.
-- Retired: `vars/dvc-sa.json` (GCP SA) and the DVC gdrive remote.
+- Deferred retirement (follow-up, not this change): `vars/dvc-sa.json` (GCP SA) and the DVC `gcs`/`drive` remotes; all three remotes are kept for now.
 - Dependencies: `pkgs.quarto`, the uv2nix venv (`pntCore313`, quartodoc), Cloudflare Workers (worker `python-nix-template`) and R2; wrangler run under real node.
 - Secrets: `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` for deploy, R2 S3 `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` for DVC.
 - Out of scope / deferred follow-up: the buildbot-nix/hercules-ci effect that would run `deploy-sites` as a CI effect (blocked by CAM-23 and vanixiets PR-A); documented in design.md, not implemented, and no Linear issue is created for it now.

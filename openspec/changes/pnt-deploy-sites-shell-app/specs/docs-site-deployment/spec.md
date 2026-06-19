@@ -37,8 +37,9 @@ The system SHALL deploy the documentation site in CI by invoking `nix run .#depl
 
 ### Requirement: DVC data backing store on Cloudflare R2
 
-The system SHALL back DVC with a Cloudflare R2 (s3-compatible) remote instead of GCS and Google Drive.
-`.dvc/config` MUST define an s3 remote with `endpointurl` of the form `https://<accountid>.r2.cloudflarestorage.com` and `region=auto`; the R2 S3 keypair MUST be stored in sops `vars/shared.yaml`; the justfile DVC recipes MUST use `uvx --with dvc-s3` in place of `--with dvc-gdrive,dvc-gs` and MUST drop the GCP service-account decrypt step; and the GCP service account (`vars/dvc-sa.json`) and the gdrive remote MUST be retired.
+The system SHALL add a Cloudflare R2 (s3-compatible) remote as the default DVC remote, keeping the existing `gcs` and `drive` remotes.
+`.dvc/config` MUST define an s3 remote named `r2` with `endpointurl` of the form `https://<accountid>.r2.cloudflarestorage.com` and `region=auto`, and MUST set `r2` as the default remote while preserving the `gcs` and `drive` remotes; the R2 S3 keypair MUST be stored in sops `vars/shared.yaml`; the justfile `data-sync` and `docs-sync` recipes MUST use `uvx --with dvc-s3` under `sops exec-env vars/shared.yaml` and MUST drop the GCP service-account decrypt step, while `dvc-run` remains universal across all three remotes (`--with dvc-s3,dvc-gs,dvc-gdrive`).
+Retirement of the GCP service account (`vars/dvc-sa.json`) and the `gcs`/`drive` remotes is deferred to a follow-up once R2 is proven, and is out of scope for this change.
 The migration MUST NOT introduce terranix.
 
 #### Scenario: data-sync pulls from R2 and a push round-trips

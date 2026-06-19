@@ -47,9 +47,9 @@ The structural reference is ironstar-docs (`pkgs/by-name/ironstar-docs/package.n
 - **Rationale**: Single deploy entrypoint shared by local and CI; the build is the nix derivation, not an ad hoc CI step.
 - **Alternatives considered**: a bespoke CI deploy script. Rejected for the same reproducibility/duplication reasons as D2.
 
-### D4: DVC migrates GCS/Drive to R2 via sops, without terranix
+### D4: DVC adds R2 as the default remote via sops, without terranix; GCS/Drive retirement deferred
 
-- **Choice**: Keep DVC; rewrite `.dvc/config` to an s3 remote (`url=s3://<bucket>/projects/python-nix-template/cas`, `endpointurl=https://<accountid>.r2.cloudflarestorage.com`, `region=auto`). Provision an R2 bucket plus a dashboard-minted R2 S3 HMAC keypair (split from the Workers bearer token). Land the keypair in sops `vars/shared.yaml` (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` for native dvc-s3 pickup via `sops exec-env`). Swap the justfile `uvx --with dvc-gdrive,dvc-gs` to `--with dvc-s3`, drop the `sops -d vars/dvc-sa.json` GCP-SA dance, and retire the GCP SA plus the gdrive remote.
+- **Choice**: Keep DVC; add an s3 remote `r2` to `.dvc/config` (`url=s3://sciexp/projects/python-nix-template/cas`, `endpointurl=https://1ece4a9a8f092f8cbdd679d22b9ecb1f.r2.cloudflarestorage.com`, `region=auto`) and make it the default, keeping the existing `gcs` and `drive` remotes. Provision an R2 bucket plus a dashboard-minted R2 S3 HMAC keypair (split from the Workers bearer token). Land the keypair in sops `vars/shared.yaml` (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` for native dvc-s3 pickup via `sops exec-env`). Retarget the justfile `data-sync`/`docs-sync` recipes to r2 via `sops exec-env vars/shared.yaml` plus `--with dvc-s3`, dropping the `sops -d vars/dvc-sa.json` GCP-SA dance; make `dvc-run` universal (`--with dvc-s3,dvc-gs,dvc-gdrive`). Defer retiring the GCP SA and the `gcs`/`drive` remotes to a follow-up once R2 is proven.
 - **Rationale**: R2 is a clean s3-compatible target and a useful demonstrated template pattern; DVC and the docs build are orthogonal, so this is build-independent. The keypair is dashboard-minted because the Cloudflare TF provider cannot mint R2 S3 keypairs (dashboard-only); vanixiets captures its R2 keypair manually via a clan-vars placeholder.
 - **Alternatives considered**: terranix-managed provisioning (rejected: one bucket is not worth the ceremony given pnt has zero terranix and flat sops, and the provider cannot mint the keypair anyway) and dropping DVC entirely (rejected: DVC is retained as the demonstrated pattern).
 
@@ -65,16 +65,16 @@ The structural reference is ironstar-docs (`pkgs/by-name/ironstar-docs/package.n
 - [Risk] wrangler under bun hangs against the Cloudflare API. -> Mitigation: run wrangler under real node, not bun (D2).
 - [Risk] The R2 S3 keypair cannot be provisioned as code. -> Mitigation: mint it via the Cloudflare dashboard and land it in sops `vars/shared.yaml` manually, mirroring vanixiets' clan-vars placeholder approach (D4).
 - [Trade-off] No terranix for the single R2 bucket. -> Accepted: the ceremony is not justified for one bucket, and the provider cannot mint the keypair regardless.
-- [Trade-off] Retiring the GCP SA and gdrive remote is a one-way migration of the DVC backing store. -> Accepted: a push round-trip against R2 is part of the acceptance criteria before retirement is final.
+- [Trade-off] All three remotes (r2 default, gcs, drive) are kept for now; retiring the GCP SA and gcs/drive remotes is a deferred one-way migration of the DVC backing store. -> Accepted: a push round-trip against R2 is part of the acceptance criteria before that follow-up retirement is undertaken.
 
 ## Migration Plan
 
 1. Land `modules/docs.nix` and verify `nix build .#pnt-docs` plus `nix flake check`.
 2. Land `modules/apps/deploy-sites.{nix,sh}` and verify `nix run .#deploy-sites -- preview <branch>` from a clean checkout.
 3. Rewire `.github/workflows/deploy-docs.yaml` and the justfile to deploy via the nix app against the nix-built payload; verify a `workflow_dispatch` run yields a live preview URL.
-4. Provision the R2 bucket and keypair, rewrite `.dvc/config`, add the keypair to sops, swap the justfile DVC recipes, and retire the GCP SA plus gdrive remote; verify `just data-sync` pulls and a push round-trips and docs still build.
+4. Provision the R2 bucket and keypair, add the `r2` remote to `.dvc/config` as default (keeping `gcs` and `drive`), add the keypair to sops, and retarget the justfile DVC recipes; verify `just data-sync` pulls and a push round-trips and docs still build. Defer retiring the GCP SA and the `gcs`/`drive` remotes to a follow-up once R2 is proven.
 
-Rollback: each work item is independent. The DVC migration is the only step with a one-way characteristic (retiring the old remote); it is gated behind a verified push round-trip before the old remote is removed.
+Rollback: each work item is independent. Adding the R2 remote is non-destructive (all three remotes are kept). The deferred follow-up that retires the GCP SA and old remotes is the only step with a one-way characteristic, and it is gated behind a verified push round-trip before any old remote is removed.
 
 ## Open Questions
 
