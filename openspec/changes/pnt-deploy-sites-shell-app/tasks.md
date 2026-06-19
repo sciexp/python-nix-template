@@ -19,9 +19,9 @@
 
 - [x] 4.1 Confirm the R2 bucket `sciexp` exists on account 1ece4a9a8f092f8cbdd679d22b9ecb1f (created out-of-band).
 - [x] 4.2 Add a `r2` remote to `.dvc/config` (`url = s3://sciexp/projects/python-nix-template/cas`, `endpointurl = https://1ece4a9a8f092f8cbdd679d22b9ecb1f.r2.cloudflarestorage.com`, `region = auto`) and set it as default; keep the `gcs` and `drive` remotes.
-- [ ] 4.3 Add the R2 S3 keypair (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) to sops `vars/shared.yaml` (manual; owner-only, never automated).
+- [x] 4.3 Add the R2 S3 keypair (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) to sops `vars/shared.yaml` (manual; owner-only, never automated).
 - [x] 4.4 Retarget the justfile `data-sync`/`docs-sync` recipes to r2 (`sops exec-env vars/shared.yaml` + `dvc-s3`, dropping the GCP-SA decrypt dance); make `dvc-run` universal (SA decrypt + `sops exec-env` + `--with dvc-s3,dvc-gs,dvc-gdrive`).
-- [ ] 4.5 Verify: `dvc push -r r2` seeds R2 from the local cache and `just data-sync` pulls cleanly (run after the keypair is set).
+- [x] 4.5 Verify: `dvc push -r r2` seeds R2 from the local cache and `just data-sync` pulls cleanly (run after the keypair is set).
 - [ ] 4.6 Deferred / out of scope: retire the GCP service account (`vars/dvc-sa.json`, `gcp-sa-*` recipes) and the `gcs`/`drive` remotes in a future follow-up once R2 is proven; all three remotes are kept for now.
 
 ## 5. Deferred / out of scope (do not implement)
