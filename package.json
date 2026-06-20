@@ -15,6 +15,9 @@
     "packages/*"
   ],
   "packageManager": "bun@1.3.4",
+  "dependencies": {
+    "wrangler": "^4.93.0"
+  },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/github": "^12.0.0",

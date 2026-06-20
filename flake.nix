@@ -39,6 +39,12 @@
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
     git-hooks.inputs.flake-compat.follows = "";
+
+    bun2nix.url = "github:nix-community/bun2nix";
+    bun2nix.inputs.nixpkgs.follows = "nixpkgs";
+    bun2nix.inputs.flake-parts.follows = "flake-parts";
+    bun2nix.inputs.systems.follows = "systems";
+    bun2nix.inputs.treefmt-nix.follows = "treefmt-nix";
   };
 
   nixConfig = {
