@@ -45,7 +45,7 @@
             [
               just
               pixi
-              quarto
+              config.packages.quarto
               uv
               bun
               nodejs
@@ -70,6 +70,7 @@
             UV_NO_SYNC = "1";
             UV_PYTHON = "${virtualenv}/bin/python";
             UV_PYTHON_DOWNLOADS = "never";
+            QUARTO_PYTHON = "${virtualenv}/bin/python3";
           };
 
           shellHook = ''

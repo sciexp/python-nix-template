@@ -51,7 +51,7 @@
         # include them by default, and writeShellApplication pins PATH to
         # runtimeInputs at runtime.
         runtimeInputs = [
-          pkgs.quarto
+          config.packages.quarto
           docsVenv
           dvcWithS3
           pkgs.nodejs

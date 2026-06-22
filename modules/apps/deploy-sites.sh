@@ -212,6 +212,17 @@ cd "$tmpdir"
 # Notebooks are never executed here; the per-document freeze cache pulled from
 # R2 is the authoritative render input.
 build_site() {
+  # Isolate HOME and XDG dirs into the per-run tmpdir. A host quarto/deno SASS
+  # cache contaminated by a different quarto version surfaces as a deno_kv
+  # SassCache RangeError during `quarto render`. Fresh per-run dirs give quarto
+  # a clean cache.
+  local run_home="$tmpdir/.home"
+  export HOME="$run_home"
+  export XDG_CACHE_HOME="$run_home/.cache"
+  export XDG_DATA_HOME="$run_home/.local/share"
+  export XDG_CONFIG_HOME="$run_home/.config"
+  mkdir -p "$HOME" "$XDG_CACHE_HOME" "$XDG_DATA_HOME" "$XDG_CONFIG_HOME"
+
   # This repo is SCM-coupled DVC (.dvc/config has no `core.no_scm`), so `dvc
   # pull` requires a git repo at the root. The baked source has no .git, so
   # initialise a throwaway repo in the tmpdir to give DVC its SCM root. This is
