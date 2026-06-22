@@ -171,6 +171,21 @@
         "url": "https://channels.nixos.org/nixos-unstable-small/nixexprs.tar.xz"
       }
     },
+    "pkgs-by-name-for-flake-parts": {
+      "locked": {
+        "lastModified": 1769286518,
+        "narHash": "sha256-F7VlUICvYp2wJKyQqM6d46BNEZCzMQ6dMH9zbmjuybc=",
+        "owner": "drupol",
+        "repo": "pkgs-by-name-for-flake-parts",
+        "rev": "7ba1cd4a9a72c9c6c272018a63f090f2c912a171",
+        "type": "github"
+      },
+      "original": {
+        "owner": "drupol",
+        "repo": "pkgs-by-name-for-flake-parts",
+        "type": "github"
+      }
+    },
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
@@ -227,6 +242,7 @@
         "import-tree": "import-tree",
         "nix2container": "nix2container",
         "nixpkgs": "nixpkgs",
+        "pkgs-by-name-for-flake-parts": "pkgs-by-name-for-flake-parts",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
         "rust-overlay": "rust-overlay",

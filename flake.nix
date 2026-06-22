@@ -14,6 +14,8 @@
 
     import-tree.url = "github:vic/import-tree";
 
+    pkgs-by-name-for-flake-parts.url = "github:drupol/pkgs-by-name-for-flake-parts";
+
     pyproject-nix.url = "github:pyproject-nix/pyproject.nix";
     pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
