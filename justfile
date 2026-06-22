@@ -840,6 +840,19 @@ docs-reference:
 # Build docs
 [group('docs')]
 docs-build: data-sync docs-reference
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Render against a persistent project-local cache so a contaminated host
+    # quarto cache cannot break the render. quarto's deno_kv SASS cache lives
+    # under HOME (~/Library/Caches/quarto on macOS) and XDG_CACHE_HOME on Linux;
+    # a cache from a different quarto version surfaces as a deno_kv SassCache
+    # RangeError. Isolating XDG_CACHE_HOME alone is insufficient on macOS, so
+    # relocate HOME too (gitignored, persistent for fast re-renders), mirroring
+    # deploy-sites.sh build_site().
+    render_home="{{ justfile_directory() }}/.cache/quarto-home"
+    export HOME="$render_home"
+    export XDG_CACHE_HOME="$render_home/.cache"
+    mkdir -p "$HOME" "$XDG_CACHE_HOME"
     quarto render docs
 
 # Preview docs locally

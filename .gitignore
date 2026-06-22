@@ -61,6 +61,9 @@ wheels/
 .pytest_cache/
 .ruff_cache/
 
+# project-local quarto render HOME/cache (`just docs-build` render isolation)
+/.cache/
+
 # coverage
 .coverage
 coverage.xml

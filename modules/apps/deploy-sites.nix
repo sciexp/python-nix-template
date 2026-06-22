@@ -11,8 +11,9 @@
       # Docs venv: pnt_core plus its `docs` dependency group (quartodoc, jupyter,
       # jupyter-cache). Built from the same production pythonSet that backs
       # modules/packages.nix, so the single-set property holds — no check or app
-      # re-derives the package set. The plain pntCore313 venv carries runtime
-      # deps only and lacks quartodoc; this dedicated venv adds the docs group.
+      # re-derives the package set. The deploy-sites app runs standalone outside
+      # the devshell (in CI and the hercules-ci-effects sandbox), so it bakes its
+      # own venv pinning the docs group rather than depending on the devshell venv.
       docsVenv = pythonSets.py313.mkVirtualEnv "pnt-docs-env" {
         pnt-core = [ "docs" ];
       };
@@ -65,10 +66,9 @@
         ];
         runtimeEnv = {
           DOCS_SRC = "${docsSrc}";
-          # quarto's wrapper sets QUARTO_PYTHON only with --set-default, so this
-          # value (the docs venv carrying quartodoc + pnt_core) wins at runtime
-          # without needing a python3=null quarto override (which would force
-          # `null.withPackages` and break evaluation).
+          # The vendored quarto package sets no QUARTO_PYTHON, so each consumer
+          # supplies it; point it at the docs venv (quartodoc + pnt_core) that
+          # backs the runtime build.
           QUARTO_PYTHON = "${docsVenv}/bin/python3";
           # wrangler comes from the bun2nix-built deps tree, not nixpkgs
           # `wrangler` (whose source build is broken and uncached on
